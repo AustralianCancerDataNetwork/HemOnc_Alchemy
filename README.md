@@ -13,3 +13,11 @@ Else, to request a demo version of the sqlite reference database, please reach o
 Copy the file `.env_sample` (as `.env`) to set the environment variable for the directory where your db connection config file will live. 
 
 Copy the file `oa_system_config_sample.yaml` in the same way, updating the absolute path for your reference database.
+
+### ERD
+
+An overview ERD can be found [here](notebooks/db_fig.pdf) for reference and ease of use
+
+### Examples
+
+Some key example queries can be found [here](notebooks/03_example_usage.ipynb)
