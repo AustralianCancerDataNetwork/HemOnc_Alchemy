@@ -1,0 +1,1074 @@
+{
+    "AGE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "IS_DIGIT": true
+                },
+                {
+                    "LEMMA": "year",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": "old"
+                }
+            ],
+            [
+                {
+                    "LOWER": "age"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "less",
+                            "lower",
+                            "greater",
+                            "older",
+                            "younger"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LOWER": "than",
+                    "OP": "?"
+                },
+                {
+                    "IS_DIGIT": true
+                }
+            ],
+            [
+                {
+                    "IS_DIGIT": true
+                },
+                {
+                    "LEMMA": "year",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": "old",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "and",
+                            "or"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "younger",
+                            "older"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "younger",
+                            "older"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "than"
+                },
+                {
+                    "IS_DIGIT": true
+                },
+                {
+                    "LEMMA": "year",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": "old",
+                    "OP": "?"
+                }
+            ]
+        ]
+    },
+    "STAGE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": "stage",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "i",
+                            "ia",
+                            "ib",
+                            "ic",
+                            "ie",
+                            "ii",
+                            "iii",
+                            "iv",
+                            "ia",
+                            "ib",
+                            "ic",
+                            "iia",
+                            "iib",
+                            "iic",
+                            "iid",
+                            "iie",
+                            "iva"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "-",
+                            "or",
+                            "to",
+                            "and"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "i",
+                            "ii",
+                            "iii",
+                            "iv",
+                            "ia",
+                            "ib",
+                            "ic",
+                            "iia",
+                            "iib",
+                            "iic",
+                            "iid",
+                            "iie",
+                            "iva"
+                        ]
+                    },
+                    "OP": "?"
+                }
+            ]
+        ]
+    },
+    "RANGE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LIKE_NUM": true
+                },
+                {
+                    "LOWER": "up",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": "to"
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ],
+            [
+                {
+                    "LOWER": "between"
+                },
+                {
+                    "LIKE_NUM": true
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "kg",
+                            "m^2"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LOWER": "and"
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ]
+        ]
+    },
+    "GT": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "greater",
+                            "more",
+                            "older"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "than"
+                }
+            ]
+        ]
+    },
+    "LT": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "less",
+                            "younger"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "than"
+                }
+            ]
+        ]
+    },
+    "GTE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "or",
+                            "and"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "greater",
+                            "more",
+                            "older"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "minimum",
+                            "at"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "of",
+                            "least"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "LTE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "or",
+                            "and"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "less",
+                            "younger"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "maximum",
+                            "at"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "of",
+                            "most"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "COMP": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "less",
+                            "lower",
+                            "greater",
+                            "older",
+                            "younger"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "than"
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "or",
+                            "and"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "less",
+                            "lower",
+                            "greater",
+                            "older",
+                            "younger"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "up",
+                            "from"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": "to"
+                }
+            ],
+            [
+                {
+                    "LOWER": "between"
+                },
+                {
+                    "LIKE_NUM": true
+                },
+                {
+                    "LOWER": "and"
+                }
+            ]
+        ]
+    },
+    "SCI_NOT": {
+        "MERGE": true,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": "x",
+                    "OP": "?"
+                },
+                {
+                    "TEXT": "10"
+                },
+                {
+                    "TEXT": "^",
+                    "OP": "?"
+                },
+                {
+                    "IS_DIGIT": true
+                }
+            ],
+            [
+                {
+                    "IS_DIGIT": true
+                },
+                {
+                    "LOWER": "e"
+                },
+                {
+                    "TEXT": "+",
+                    "OP": "?"
+                },
+                {
+                    "IS_DIGIT": true
+                }
+            ]
+        ]
+    },
+    "DECIMAL": {
+        "MERGE": true,
+        "PATTERNS": [
+            [
+                {
+                    "LIKE_NUM": true
+                },
+                {
+                    "ORTH": {
+                        "IN": [
+                            ".",
+                            ","
+                        ]
+                    },
+                    "SPACY": false
+                },
+                {
+                    "IS_DIGIT": true
+                }
+            ],
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "IS_DIGIT": true
+                }
+            ]
+        ]
+    },
+    "UNITS": {
+        "MERGE": true,
+        "PATTERNS": [
+            [
+                {
+                    "TEXT": {
+                        "REGEX": "^(\\d+)?(mg|mgc|g|kg|ml|l|m2|m^2|hr|liter|gram|L|mL|KG|ml|mG|kG|kilogram|lb|pounds|lbs|kilos|Kg|dl|min|hr|1.73)$"
+                    }
+                },
+                {
+                    "TEXT": "/"
+                },
+                {
+                    "TEXT": {
+                        "REGEX": "^(\\d+)?(mg|mgc|g|kg|ml|l|m2|m^2|hr|liter|gram|L|mL|KG|ml|mG|kG|kilogram|lb|pounds|lbs|kilos|Kg|dl|min|hr|1.73)$"
+                    }
+                },
+                {
+                    "TEXT": "/",
+                    "OP": "?"
+                },
+                {
+                    "TEXT": {
+                        "REGEX": "^(\\d+)?(mg|mgc|g|kg|ml|l|m2|m^2|hr|liter|gram|L|mL|KG|ml|mG|kG|kilogram|lb|pounds|lbs|kilos|Kg|dl|min|hr|1.73)$"
+                    },
+                    "OP": "?"
+                }
+            ],
+            [
+                {
+                    "_": {
+                        "SCI_NOT": true
+                    }
+                },
+                {
+                    "TEXT": "/"
+                },
+                {
+                    "TEXT": {
+                        "REGEX": "^(\\d+)?(mg|mgc|g|kg|ml|l|m2|m^2|hr|liter|gram|L|mL|KG|ml|mG|kG|kilogram|lb|pounds|lbs|kilos|Kg|dl|min|hr|1.73)$"
+                    }
+                }
+            ]
+        ]
+    },
+    "LAB": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "wbc",
+                            "pc",
+                            "platelet",
+                            "platelets",
+                            "ecog",
+                            "creatinine",
+                            "crcl",
+                            "cr",
+                            "egfr",
+                            "anc",
+                            "ejection"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "count",
+                            "fraction"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LIKE_NUM": true,
+                    "OP": "?"
+                }
+            ]
+        ]
+    },
+    "SIZE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LIKE_NUM": true
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "kg",
+                            "bmi",
+                            "m^2",
+                            "bsa"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "kg",
+                            "bmi",
+                            "m^2",
+                            "bsa"
+                        ]
+                    }
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "kg",
+                            "bmi"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "or",
+                            "at"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "less",
+                            "least",
+                            "lower",
+                            "greater",
+                            "older",
+                            "younger"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ]
+        ]
+    },
+    "FACT": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "radiation",
+                            "chemotherapy",
+                            "leukemia",
+                            "neurotoxicity",
+                            "edema",
+                            "neurotoxicity",
+                            "disease",
+                            "chf",
+                            "neuropathy",
+                            "lvef",
+                            "eiaed",
+                            "pdgfra",
+                            "pdgfrb",
+                            "prognosis",
+                            "adult",
+                            "adults",
+                            "child",
+                            "children",
+                            "pediatric"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "renal",
+                            "heart",
+                            "east"
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "function",
+                            "failure",
+                            "asian"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "FACT_MODIFIER": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "previous",
+                            "previously",
+                            "never",
+                            "preexisting",
+                            "never",
+                            "not",
+                            "prior",
+                            "positive",
+                            "persistent",
+                            "advanced",
+                            "early",
+                            "good",
+                            "intermediate",
+                            "no",
+                            "local",
+                            "normal",
+                            "standard",
+                            "poor",
+                            "excellent",
+                            "without",
+                            "with",
+                            "depends",
+                            "baseline",
+                            "relapse",
+                            "exposure",
+                            "dysfunction",
+                            "abberation",
+                            "residual"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "TIMING_LIST": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LIKE_NUM": true
+                },
+                {
+                    "TEXT": "-",
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": "cycle",
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "and",
+                            "or",
+                            ","
+                        ]
+                    }
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "less",
+                            "greater",
+                            "fewer",
+                            "longer"
+                        ]
+                    },
+                    "OP": "?"
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "or"
+                        ]
+                    }
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ]
+        ]
+    },
+    "TIMING_UNIT": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "week",
+                            "day",
+                            "year",
+                            "month",
+                            "dose",
+                            "cycle"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "FREQUENCY": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "TEXT": "-"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "week",
+                            "year",
+                            "day",
+                            "month"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "cycle"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "TEXT": "-"
+                },
+                {
+                    "LOWER": {"IN": ["to", "or"]}
+                },
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "TEXT": "-"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "week",
+                            "year",
+                            "day",
+                            "month"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "cycle"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "DURATION": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {"LOWER":{"IN": ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]}},
+                {"LOWER":{"IN": ["week", "year", "day", "month"]}},
+                {"LOWER":{"IN": ["course", "of"]}},
+                {"LOWER":{"IN": ["treatment"]}}
+            ],
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "TEXT": "-"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "to",
+                            "or"
+                        ]
+                    }
+                },
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "TEXT": "-"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "week",
+                            "year",
+                            "day",
+                            "month"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "course"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": false
+                },
+                {
+                    "TEXT": "-"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "week",
+                            "year",
+                            "day",
+                            "month"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "course"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "REPEATS": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": "least",
+                    "OP": "?"
+                },
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": true
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "to",
+                            "or"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "greater"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "cycle",
+                            "course",
+                            "dose"
+                        ]
+                    }
+                }
+            ],
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": true
+                },
+                {
+                    "LOWER": {"IN": ["to", "or"]}
+                },
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": true
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "to",
+                            "or"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "more",
+                            "greater"
+                        ]
+                    },
+                    "OP": "?"
+                },
+                {
+                    "LEMMA": {
+                        "IN": [
+                            "cycle",
+                            "course",
+                            "dose"
+                        ]
+                    }
+                }
+            ]
+        ]
+    },
+    "TIMING_RANGE": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LIKE_NUM": true,
+                    "SPACY": true
+                },
+                {
+                    "LOWER": {
+                        "IN": [
+                            "to",
+                            "-"
+                        ]
+                    }
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ],
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "to"
+                        ]
+                    }
+                },
+                {
+                    "LIKE_NUM": true
+                }
+            ]
+        ]
+    },
+    "STOPPING_CONDITION": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "until",
+                            "past"
+                        ]
+                    }
+                },
+                {
+                    "LIKE_NUM": false
+                }
+            ]
+        ]
+    },
+    "MULTI_CONDITION": {
+        "MERGE": false,
+        "PATTERNS": [
+            [
+                {
+                    "LOWER": {
+                        "IN": [
+                            "or",
+                            "and"
+                        ]
+                    }
+                }
+            ]
+        ]
+    }
+}
