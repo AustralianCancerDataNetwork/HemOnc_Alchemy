@@ -20,4 +20,5 @@ An overview ERD can be found [here](notebooks/db_fig.pdf) for reference and ease
 
 ### Examples
 
-Some key example queries can be found [here](notebooks/03_example_usage.ipynb)
+Some key example queries can be found [here](notebooks/03_example_usage.ipynb) - see reference [here](notebooks/OHDSI_2024.pdf) for 
+descriptions.
