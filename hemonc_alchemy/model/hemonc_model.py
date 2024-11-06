@@ -1,5 +1,6 @@
 from datetime import datetime, date
 from typing import Optional, List
+from itertools import chain
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from .hemonc_enums import DrugClassType, ComponentRole, TimingUnit, Intent, Phase, \
@@ -10,6 +11,7 @@ from .hemonc_enums import DrugClassType, ComponentRole, TimingUnit, Intent, Phas
 from omop_alchemy.db import Base
 from omop_alchemy.model.vocabulary import Concept, Concept_Relationship
 
+from sqlalchemy.ext.hybrid import hybrid_method, hybrid_property
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 
 ### N-M Association Tables ###
@@ -96,7 +98,6 @@ class Hemonc_Study(Base):
     date_added: so.Mapped[date]  = so.mapped_column(sa.Date)
     date_modified: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
 
-    condition: so.Mapped['Hemonc_Condition'] = so.relationship(foreign_keys=[condition_code])
     studies: so.Mapped[List['Hemonc_Variant']] = so.relationship(secondary=variant_study_map, back_populates='studied_in')
 
     def condition_filter(self, other):
@@ -118,12 +119,78 @@ class Hemonc_Regimen(Base):
     regimen_concept_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('concept.concept_id'), nullable=True)
     regimen_name: so.Mapped[str] = so.mapped_column(sa.String(200))
     regimen_concept: so.Mapped['Concept'] = so.relationship(foreign_keys=[regimen_concept_id])
+
     modalities: so.Mapped[List['Hemonc_Modality']] = so.relationship(secondary=regimen_to_modality_map,  back_populates='regimens')
     variants: so.Mapped[List['Hemonc_Variant']] = so.relationship(back_populates='variant_of')
     studied_in: AssociationProxy[List["Hemonc_Study"]] = association_proxy("variants", "studied_in")
 
+    component_roles: so.Mapped[List['Hemonc_Component_Role']] = so.relationship(back_populates='regimen')
+    components: AssociationProxy[List["Hemonc_Component"]] = association_proxy("component_roles", "component")
+    component_classes: AssociationProxy[List["Hemonc_Component_Class"]] = association_proxy("component_roles", "component_class")
+
+    @property
+    def concept_ids(self):
+        return list(set([h.concept_id for h in self.component_roles]))
+    
+    @property
+    def supportive_concept_ids(self):
+        return list(set([h.concept_id for h in self.component_roles if h.relationship_id in ['Has steroid tx', 'Has supportive med']]))
+
+    @property
+    def satc_concept_ids(self):
+        # note the difference between filtering on relationship_id directly vs. filtering on those that appear as 
+        # supportive or steroid anywhere in this regimen - this is to stop for e.g. prednisone appearing due to 'has immunosuppressor' 
+        # relationship where is is actually there as a steroid. 
+        return list(set([h.concept_id for h in self.component_roles if h.concept_id not in self.supportive_concept_ids]))
+        
+    @property
+    def condition_ids(self):
+        return list(set(chain.from_iterable([[condition.condition_concept_id for condition in study.condition] for study in self.studied_in])))
+    
+    @property
+    def studied_in(self):
+        return list(set(chain.from_iterable([v.studied_in for v in self.variants])))
+
+    @property
+    def studied_conditions(self):
+        return list(set(chain.from_iterable([s.condition for s in self.studied_in])))
+
+    @hybrid_method
     def condition_filter(self, other):
-        return any([v.condition_filter(other) for v in self.variants])
+        """
+            for most use-cases, the better option is:
+            
+            with so.Session(engine) as session:
+                regimens = session.query(
+                    Hemonc_Regimen
+                ).all()
+
+                filtered_regimens = [r for r in regimens if r.condition_filter('C25')]
+
+        """
+        return any([other in condition.condition_string_filter for condition in self.studied_conditions])
+    
+    @condition_filter.expression
+    def condition_filter(cls, other):
+        """
+            this works and is convenient for filtering, but is crazy slow, so should only be used very minimally, as it runs the joins on a per-regimen level
+
+            usage:
+                with so.Session(engine) as session:
+                    filtered_regimens = session.query(
+                        Hemonc_Regimen
+                    ).filter(Hemonc_Regimen.condition_filter('C25%')).all()
+        """
+        subquery = (
+            sa.select(sa.literal(1))
+            .join(Hemonc_Study, Hemonc_Variant.studied_in)
+            .join(Hemonc_Condition, Hemonc_Study.condition)
+            .join(Condition_Map, Condition_Map.condition_concept_id==Hemonc_Condition.condition_concept_id)
+            .where(Hemonc_Variant.regimen_cui == cls.regimen_cui)
+            .where(Condition_Map.standard_concept_code.like(other))
+            .limit(1)
+        )
+        return subquery.scalar_subquery() == 1
 
 
 class Hemonc_Variant(Base):
@@ -134,6 +201,16 @@ class Hemonc_Variant(Base):
     variant_of: so.Mapped['Hemonc_Regimen'] = so.relationship(foreign_keys=[regimen_cui])
     studied_in: so.Mapped[List['Hemonc_Study']] = so.relationship(secondary=variant_study_map, back_populates='studies')
     has_parts: so.Mapped[List['Hemonc_Regimen_Part']] = so.relationship(back_populates='part_of', lazy='selectin')
+    
+    component_sigs: AssociationProxy[List["Hemonc_Cycle_Sig"]] = association_proxy("has_parts", "component_sigs")
+
+    @property
+    def IV_agents(self):
+        return list(set(chain.from_iterable([[cs.component_id for cs in part.component_sigs if cs.route == 'IV'] for part in self.has_parts])))
+
+    @property
+    def PO_agents(self):
+        return list(set(chain.from_iterable([[cs.component_id for cs in part.component_sigs if cs.route == 'PO'] for part in self.has_parts])))
 
     def condition_filter(self, other):
         return any([s.condition_filter(other) for s in self.studied_in])
@@ -159,6 +236,9 @@ class Hemonc_Regimen_Part(Base):
     part_of: so.Mapped['Hemonc_Variant'] = so.relationship(foreign_keys=[variant_cui])
     cycle_sig: so.Mapped['Hemonc_Cycle_Sig'] = so.relationship(foreign_keys=[cycle_sig_id])    
 
+    component_sigs: so.Mapped[List['Hemonc_Sig']] = so.relationship(back_populates='regimen_part')
+
+
 # TODO: consider re-working a 1:n map with timing for cycles / weeks etc?
 # timing: so.Mapped[List['Part_Timing']] = so.relationship(back_populates="timing_of", lazy="selectin")
 
@@ -166,9 +246,15 @@ class Hemonc_Regimen_Part(Base):
 class Hemonc_Sig(Base):
     __tablename__ = 'hemonc_sig'
     sig_id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'), primary_key=True)
-    variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
+    # regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'), primary_key=True)
+    # variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
+    regimen_part_id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    variant_cui: so.Mapped[int] = so.mapped_column(primary_key=True)
     component_code: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('hemonc_component.component_code'), nullable=True)
+
+    __table_args__ = (sa.ForeignKeyConstraint([regimen_part_id, variant_cui],
+                                              [Hemonc_Regimen_Part.regimen_part_id, Hemonc_Regimen_Part.variant_cui])
+                                           ,{})
     component_role: so.Mapped[int] = so.mapped_column(sa.Enum(ComponentRole))
     component_name: so.Mapped[str] = so.mapped_column(sa.String(50))
     step_number: so.Mapped[str] = so.mapped_column(sa.String(10))
@@ -189,6 +275,13 @@ class Hemonc_Sig(Base):
     sequence: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
     seq_rel: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
     seq_rel_what: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    
+    regimen_part: so.Mapped['Hemonc_Regimen_Part'] = so.relationship(foreign_keys=[regimen_part_id, variant_cui])
+    component: so.Mapped['Hemonc_Component'] = so.relationship(foreign_keys=[component_code])
+
+    component_id: AssociationProxy[int] = association_proxy("component", "component_concept_id")
+
+
 
 class Sig_Days(Base):
     __tablename__ = 'sig_days'
@@ -222,8 +315,6 @@ class Hemonc_Component(Base):
                                                                                    back_populates='components')
     component_concept_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('concept.concept_id'), nullable=True)
 
-#    component_class: so.Mapped[str] = so.mapped_column(sa.ForeignKey('hemonc_component_class.component_class_code'))
-#    component_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey('concept.concept_id', nullable=True))
 
 class Hemonc_Component_Class(Base):
     __tablename__ = 'hemonc_component_class'
@@ -243,6 +334,21 @@ class Hemonc_Component_Role(Base):
     component_class_code: so.Mapped[Optional[str]] = so.mapped_column(sa.ForeignKey('hemonc_component_class.component_class_code'), nullable=True) 
     relationship_id: so.Mapped[str] = so.mapped_column(sa.String(50)) 
 
+    regimen: so.Mapped['Hemonc_Regimen'] = so.relationship(foreign_keys=[regimen_cui])
+    component: so.Mapped['Hemonc_Component'] = so.relationship(foreign_keys=[component_code])
+    component_class: so.Mapped['Hemonc_Component_Class'] = so.relationship(foreign_keys=[component_class_code])
+
+    component_name: AssociationProxy[str] = association_proxy("component", "component_name")
+    component_class_name: AssociationProxy[str] = association_proxy("component_class", "component_class_name")
+
+    @property
+    def concept_id(self):
+        if self.component:
+            return self.component.component_concept_id
+        elif self.component_class:
+            return self.component_class.component_class_concept_id
+
+    
 class Hemonc_Modality(Base):
     __tablename__ = 'hemonc_modality'
     modality_code: so.Mapped[str] = so.mapped_column(sa.String(100), primary_key=True)
@@ -252,15 +358,81 @@ class Hemonc_Modality(Base):
     modality_concept_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey('concept.concept_id'), nullable=True)
     modality_concept: so.Mapped['Concept'] = so.relationship(foreign_keys=[modality_concept_id])    
 
+
+hemonc = so.aliased(Concept, name='hemonc')
+standard = so.aliased(Concept, name='standard')
+
+condition_map_filter = (
+    sa.select(
+        hemonc.concept_id.label('condition_concept_id'),
+        hemonc.concept_code.label('condition_concept_code'),
+        hemonc.concept_name.label('condition_concept_name'),
+        Concept_Relationship.relationship_id,
+        standard.concept_id.label('standard_concept_id'),
+        standard.concept_code.label('standard_concept_code'),
+        standard.concept_name.label('standard_concept_name'),
+        standard.vocabulary_id.label('standard_vocabulary_id'),
+
+    )
+    .join(Concept_Relationship, hemonc.concept_id==Concept_Relationship.concept_id_1, isouter=True)
+    .join(standard, standard.concept_id==Concept_Relationship.concept_id_2, isouter=True)
+    .filter(
+        sa.and_(
+            hemonc.vocabulary_id=='HemOnc',
+            hemonc.concept_class_id=='Condition',
+            sa.or_(
+                Concept_Relationship.relationship_id=='Maps to',
+                Concept_Relationship.relationship_id==None
+            )
+        )
+    )
+    .subquery()
+)
+
+class Condition_Map(Base):
+    __table__ = condition_map_filter
+    condition_concept_id = condition_map_filter.c.condition_concept_id
+    condition_concept_code = condition_map_filter.c.condition_concept_code
+    condition_concept_name = condition_map_filter.c.condition_concept_name
+    standard_concept_id = condition_map_filter.c.standard_concept_id
+    standard_concept_code = condition_map_filter.c.standard_concept_code
+    standard_concept_name = condition_map_filter.c.standard_concept_name
+
 class Hemonc_Condition(Base):
     __tablename__ = 'hemonc_condition'
     condition_code: so.Mapped[str] = so.mapped_column(sa.String(100), primary_key=True)
     condition_name: so.Mapped[str] = so.mapped_column(sa.String(100))
-    condition_concept_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey('concept.concept_id'), nullable=True)
-    condition_concept: so.Mapped['Concept'] = so.relationship(foreign_keys=[condition_concept_id])   
-    condition_concept_code: AssociationProxy[str] = association_proxy("condition_concept", "concept_code") 
-    condition_concept_name: AssociationProxy[str] = association_proxy("condition_concept", "concept_name") 
+    condition_concept_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey('Condition_Map.condition_concept_id'), nullable=True)
 
+    @property
+    def standard_condition_codes(self):
+        return 
+
+# this has to be added once both dependencies created - the subquery relationship 
+# pushes addition of Hemonc_Condition too late in the registry population otherwise
+
+Hemonc_Study.condition = so.relationship(
+    Hemonc_Condition,
+    primaryjoin=Hemonc_Study.condition_code == so.foreign(Hemonc_Condition.condition_code)
+)
+
+Hemonc_Condition.condition_concept = so.relationship(
+    Condition_Map,
+    primaryjoin=Hemonc_Condition.condition_concept_id == so.foreign(Condition_Map.condition_concept_id)
+)
+
+def add_condition_string_filter_property():
+    @property
+    def condition_string_filter(self):
+        return (
+            ','.join([cm.standard_concept_code for cm in self.condition_concept])
+        )
+    
+    Hemonc_Condition.condition_string_filter = condition_string_filter
+
+add_condition_string_filter_property()
+
+# end of section for post-hoc property creation
 class Hemonc_Context(Base):
     __tablename__ = 'hemonc_context'
     context_code: so.Mapped[str] = so.mapped_column(sa.String(200), primary_key=True)
