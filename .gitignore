@@ -163,5 +163,14 @@ cython_debug/
 
 oa_system_config.yaml
 data/
-Tables/
+Tables*/
 Tables.zip
+notebooks/*.csv
+notebooks/9*.ipynb
+*.bundle
+*.xlsx
+*.docx
+*.DS_Store
+OHDSI_Vocabs/
+*db_fig
+*regimen_complexity.png
