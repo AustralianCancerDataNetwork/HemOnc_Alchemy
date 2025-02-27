@@ -144,6 +144,10 @@ class Hemonc_Regimen(Base):
         return list(set([h.concept_id for h in self.component_roles if h.concept_id not in self.supportive_concept_ids]))
         
     @property
+    def satc_strings(self):
+        return list(set([h.component_name for h in self.component_roles if h.concept_id not in self.supportive_concept_ids]))
+        
+    @property
     def condition_ids(self):
         return list(set(chain.from_iterable([[condition.condition_concept_id for condition in study.condition] for study in self.studied_in])))
     
