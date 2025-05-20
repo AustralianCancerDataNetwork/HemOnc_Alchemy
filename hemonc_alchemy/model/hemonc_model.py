@@ -9,7 +9,6 @@ from .hemonc_enums import DrugClassType, ComponentRole, TimingUnit, Intent, Phas
 
 from omop_alchemy.db import Base
 from omop_alchemy.model.vocabulary import Concept, Concept_Relationship
-
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
 
 ### N-M Association Tables ###
@@ -24,8 +23,10 @@ as well as the 'studies' relationship (list) for each study object
 variant_study_map = sa.Table(
     "variant_study_map",
     Base.metadata,
-    sa.Column("study_code", sa.ForeignKey('hemonc_study.study_code'), primary_key=True),
-    sa.Column("variant_cui", sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
+    sa.Column("study_cui", primary_key=True),
+    sa.Column("variant_cui", primary_key=True),
+    sa.ForeignKeyConstraint(['variant_cui'], ['hemonc_variant.variant_cui']),
+    sa.ForeignKeyConstraint(['study_cui'], ['hemonc_study.study_cui'])
 )
 
 """
@@ -60,11 +61,11 @@ class Hemonc_Ref(Base):
     reference: so.Mapped[str] = so.mapped_column(sa.String(100), primary_key=True)    
     condition_code: so.Mapped[str] = so.mapped_column(sa.ForeignKey('hemonc_condition.condition_code'), primary_key=True)
     pmid: so.Mapped[str] = so.mapped_column(sa.String(100), primary_key=True)  
-    study: so.Mapped[str] = so.mapped_column(sa.ForeignKey('hemonc_study.study_code'))
+    study: so.Mapped[str] = so.mapped_column(sa.ForeignKey('hemonc_study.study_cui'), nullable=True)
     title: so.Mapped[str] = so.mapped_column(sa.String(600))  
     pmcid: so.Mapped[str] = so.mapped_column(sa.String(100))  
     doi: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)  
-    url: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)  
+    url: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)  
     journal: so.Mapped[str] = so.mapped_column(sa.String(50))  
     biblio: so.Mapped[str] = so.mapped_column(sa.String(700))  
     pub_date: so.Mapped[date] = so.mapped_column(sa.Date)
@@ -75,13 +76,14 @@ class Hemonc_Ref(Base):
 class Hemonc_Study(Base):
 
     __tablename__ = 'hemonc_study'
-    study_code: so.Mapped[str] = so.mapped_column(sa.String(100), primary_key=True)    
-    trial_id: so.Mapped[str] = so.mapped_column(sa.String(100), primary_key=True)
-    condition_code: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_condition.condition_code'), primary_key=True)
+    study_cui: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    study_code: so.Mapped[str] = so.mapped_column(sa.String(100))    
+    trial_id: so.Mapped[str] = so.mapped_column(sa.String(100), nullable=True)
+    condition_code: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_condition.condition_code'))
     registry: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
     enrollment_from: so.Mapped[Optional[date]] = so.mapped_column(sa.Date, nullable=True)
     enrollment_to: so.Mapped[Optional[date]] = so.mapped_column(sa.Date, nullable=True)
-    phase: so.Mapped[str] = so.mapped_column(sa.String(100))
+    phase: so.Mapped[str] = so.mapped_column(sa.String(100), nullable=True)
     study_design: so.Mapped[int] = so.mapped_column(sa.Enum(StudyDesign))
     study_design_imputed: so.Mapped[bool] = so.mapped_column(sa.Boolean)
     sact: so.Mapped[Optional[bool]] = so.mapped_column(sa.Boolean, nullable=True)
@@ -90,8 +92,8 @@ class Hemonc_Study(Base):
     fda_unreg_study: so.Mapped[bool] = so.mapped_column(sa.Boolean)
     start: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
     end: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
-    study_group: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
-    sponsor: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
+    study_group: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
+    sponsor: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     sponsor_type: so.Mapped[Optional[int]] = so.mapped_column(sa.Enum(SponsorType), nullable=True)
     date_added: so.Mapped[date]  = so.mapped_column(sa.Date)
     date_modified: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
@@ -140,7 +142,7 @@ class Hemonc_Variant(Base):
     
 class Part_Phase(Base):
     __tablename__  = "part_phase"
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'), primary_key=True)
+    regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'), primary_key=True)
     variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
     phase: so.Mapped[int] = so.mapped_column(sa.Enum(Phase), primary_key=True)
 
@@ -149,15 +151,15 @@ class Hemonc_Regimen_Part(Base):
     If a regimen contains only one regimen part, the regimen part covering the whole regimen is still defined. 
     """
     __tablename__ = 'hemonc_regimen_part'
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.Integer(), primary_key=True)
-    variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
+    regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.Integer())
+    variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'))
     timing_unit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    timing: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    timing: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     portion: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
-    
-    cycle_sig_id: so.Mapped[Optional[str]] = so.mapped_column(sa.ForeignKey('hemonc_cycle_sig.cycle_sig_id'), nullable=True)
+    cycle_sig_cui: so.Mapped[Optional[str]] = so.mapped_column(sa.ForeignKey('hemonc_cycle_sig.cycle_sig_cui'), nullable=True)
     part_of: so.Mapped['Hemonc_Variant'] = so.relationship(foreign_keys=[variant_cui])
-    cycle_sig: so.Mapped['Hemonc_Cycle_Sig'] = so.relationship(foreign_keys=[cycle_sig_id])    
+    cycle_sig: so.Mapped['Hemonc_Cycle_Sig'] = so.relationship(foreign_keys=[cycle_sig_cui])    
 
 # TODO: consider re-working a 1:n map with timing for cycles / weeks etc?
 # timing: so.Mapped[List['Part_Timing']] = so.relationship(back_populates="timing_of", lazy="selectin")
@@ -165,54 +167,56 @@ class Hemonc_Regimen_Part(Base):
 
 class Hemonc_Sig(Base):
     __tablename__ = 'hemonc_sig'
-    sig_id: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'), primary_key=True)
-    variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
+    sig_cui: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    sig_id: so.Mapped[int] = so.mapped_column(sa.Integer)
+    regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'))
+    variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'))
     component_code: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('hemonc_component.component_code'), nullable=True)
     component_role: so.Mapped[int] = so.mapped_column(sa.Enum(ComponentRole))
     component_name: so.Mapped[str] = so.mapped_column(sa.String(50))
     step_number: so.Mapped[str] = so.mapped_column(sa.String(10))
-    component_class: so.Mapped[str] = so.mapped_column(sa.String(20))
+    component_class: so.Mapped[str] = so.mapped_column(sa.String(200))
     tail: so.Mapped[Optional[str]] = so.mapped_column(sa.String(250))
     route: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20))
     # put the additional dosing details here
-    doseMinNum: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    doseMaxNum: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    doseUnit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    doseCapNum: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    doseCapUnit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    durationMinNum: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    durationMaxNum: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    durationUnit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    doseminnum: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    dosemaxnum: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    doseunit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    dosecapnum: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    dosecapunit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    durationminnum: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    durationmaxnum: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    durationunit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
     frequency: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    inParens: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
-    sequence: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    seq_rel: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    seq_rel_what: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    inparens: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
+    sequence: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
+    seq_rel: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
+    seq_rel_what: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
 
 class Sig_Days(Base):
     __tablename__ = 'sig_days'
-    sig_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_sig.sig_id'), primary_key=True)
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'), primary_key=True)
+    sig_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_sig.sig_cui'), primary_key=True)
+    regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'), primary_key=True)
     variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
-    day: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    day: so.Mapped[int] = so.mapped_column(sa.String(5), primary_key=True)
 
 class Hemonc_Cycle_Sig(Base):
     __tablename__ = 'hemonc_cycle_sig'
-    cycle_sig_id: so.Mapped[str] = so.mapped_column(sa.String(250), primary_key=True)
-    cycle_len_min: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True, primary_key=True)
-    cycle_len_max: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True, primary_key=True)
-    cycle_len_units: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True, primary_key=True)
-    duration_min: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    duration_max: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    cycle_sig_cui: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
+    cycle_sig_id: so.Mapped[str] = so.mapped_column(sa.String(250), nullable=True)
+    cycle_len_min: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    cycle_len_max: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    cycle_len_units: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
+    duration_min: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    duration_max: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
     duration_units: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    frequency_min: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    frequency_max: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    frequency_min: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    frequency_max: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
     frequency_units: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    repeats_min: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    repeats_max: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    repeats_min: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
+    repeats_max: so.Mapped[Optional[int]] = so.mapped_column(sa.String(20), nullable=True)
     repeats_units: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
-    residual: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
+    residual: so.Mapped[Optional[str]] = so.mapped_column(sa.String(2000), nullable=True)
 
 class Hemonc_Component(Base):
     __tablename__ = 'hemonc_component'
