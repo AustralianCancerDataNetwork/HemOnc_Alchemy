@@ -69,9 +69,10 @@ class Hemonc_Ref(Base):
     journal: so.Mapped[str] = so.mapped_column(sa.String(50))  
     biblio: so.Mapped[str] = so.mapped_column(sa.String(700))  
     pub_date: so.Mapped[date] = so.mapped_column(sa.Date)
-    order: so.Mapped[int] = so.mapped_column(sa.Integer)
-    update: so.Mapped[int] = so.mapped_column(sa.Integer)
+    # order: so.Mapped[int] = so.mapped_column(sa.Integer)
+    # update: so.Mapped[int] = so.mapped_column(sa.Integer)
     ref_type: so.Mapped[str] = so.mapped_column(sa.String(50))  
+    biomarker: so.Mapped[str] = so.mapped_column(sa.String(50), primary_key=True)  
 
 class Hemonc_Study(Base):
 
@@ -88,8 +89,8 @@ class Hemonc_Study(Base):
     study_design_imputed: so.Mapped[bool] = so.mapped_column(sa.Boolean)
     sact: so.Mapped[Optional[bool]] = so.mapped_column(sa.Boolean, nullable=True)
     protocol: so.Mapped[bool] = so.mapped_column(sa.Boolean)
-    fda_reg_study: so.Mapped[bool] = so.mapped_column(sa.Boolean)
-    fda_unreg_study: so.Mapped[bool] = so.mapped_column(sa.Boolean)
+    # fda_reg_study: so.Mapped[bool] = so.mapped_column(sa.Boolean)
+    # fda_unreg_study: so.Mapped[bool] = so.mapped_column(sa.Boolean)
     start: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
     end: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
     study_group: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
@@ -157,9 +158,10 @@ class Hemonc_Regimen_Part(Base):
     timing_unit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
     timing: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     portion: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
-    cycle_sig_cui: so.Mapped[Optional[str]] = so.mapped_column(sa.ForeignKey('hemonc_cycle_sig.cycle_sig_cui'), nullable=True)
+    cycle_sig_cui: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('hemonc_cycle_sig.cycle_sig_cui'), nullable=True)
     part_of: so.Mapped['Hemonc_Variant'] = so.relationship(foreign_keys=[variant_cui])
     cycle_sig: so.Mapped['Hemonc_Cycle_Sig'] = so.relationship(foreign_keys=[cycle_sig_cui])    
+
 
 # TODO: consider re-working a 1:n map with timing for cycles / weeks etc?
 # timing: so.Mapped[List['Part_Timing']] = so.relationship(back_populates="timing_of", lazy="selectin")
@@ -199,6 +201,7 @@ class Sig_Days(Base):
     regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'), primary_key=True)
     variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
     day: so.Mapped[int] = so.mapped_column(sa.String(5), primary_key=True)
+
 
 class Hemonc_Cycle_Sig(Base):
     __tablename__ = 'hemonc_cycle_sig'
