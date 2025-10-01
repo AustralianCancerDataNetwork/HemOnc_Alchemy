@@ -96,7 +96,7 @@ class Hemonc_Study(Base):
     study_group: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     sponsor: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     sponsor_type: so.Mapped[Optional[int]] = so.mapped_column(sa.Enum(SponsorType), nullable=True)
-    date_added: so.Mapped[date]  = so.mapped_column(sa.Date, nullable=True)
+    date_added: so.Mapped[date]  = so.mapped_column(sa.Date)
     date_modified: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
 
     condition: so.Mapped['Hemonc_Condition'] = so.relationship(foreign_keys=[condition_code])
