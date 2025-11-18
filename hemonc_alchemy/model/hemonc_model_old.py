@@ -96,7 +96,7 @@ class Hemonc_Study(Base):
     study_group: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     sponsor: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
     sponsor_type: so.Mapped[Optional[int]] = so.mapped_column(sa.Enum(SponsorType), nullable=True)
-    date_added: so.Mapped[date]  = so.mapped_column(sa.Date)
+    date_added: so.Mapped[date]  = so.mapped_column(sa.Date, nullable=True)
     date_modified: so.Mapped[Optional[date]]  = so.mapped_column(sa.Date, nullable=True)
 
     condition: so.Mapped['Hemonc_Condition'] = so.relationship(foreign_keys=[condition_code])
@@ -153,7 +153,7 @@ class Hemonc_Regimen_Part(Base):
     """
     __tablename__ = 'hemonc_regimen_part'
     regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.Integer(), primary_key=True)
+    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.Integer())
     variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'))
     timing_unit: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20), nullable=True)
     timing: so.Mapped[Optional[str]] = so.mapped_column(sa.String(500), nullable=True)
@@ -172,13 +172,12 @@ class Hemonc_Sig(Base):
     sig_cui: so.Mapped[int] = so.mapped_column(sa.Integer, primary_key=True)
     sig_id: so.Mapped[int] = so.mapped_column(sa.Integer)
     regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'))
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'))
     variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'))
     component_code: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('hemonc_component.component_code'), nullable=True)
     component_role: so.Mapped[int] = so.mapped_column(sa.Enum(ComponentRole))
     component_name: so.Mapped[str] = so.mapped_column(sa.String(50))
     step_number: so.Mapped[str] = so.mapped_column(sa.String(10))
-    component_class: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
+    component_class: so.Mapped[str] = so.mapped_column(sa.String(200))
     tail: so.Mapped[Optional[str]] = so.mapped_column(sa.String(250))
     route: so.Mapped[Optional[str]] = so.mapped_column(sa.String(20))
     # put the additional dosing details here
@@ -197,12 +196,9 @@ class Hemonc_Sig(Base):
     seq_rel_what: so.Mapped[Optional[str]] = so.mapped_column(sa.String(200), nullable=True)
 
 class Sig_Days(Base):
-    # todo we don't need this many primary keys but they keep shifting in the source files...
     __tablename__ = 'sig_days'
     sig_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_sig.sig_cui'), primary_key=True)
-    sig_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_sig.sig_id'), primary_key=True)
-    regimen_part_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_id'), primary_key=True)
-    regimen_part_cui: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'), nullable=True)
+    regimen_part_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_regimen_part.regimen_part_cui'), primary_key=True)
     variant_cui: so.Mapped[int] = so.mapped_column(sa.ForeignKey('hemonc_variant.variant_cui'), primary_key=True)
     day: so.Mapped[int] = so.mapped_column(sa.String(5), primary_key=True)
 
