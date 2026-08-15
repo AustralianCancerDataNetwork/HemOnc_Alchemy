@@ -1,29 +1,105 @@
-[tool.poetry]
+[project]
 name = "hemonc-alchemy"
-version = "0.1.0"
-description = ""
-authors = ["Georgie Kennedy <georgina.kennedy@unsw.edu.au>"]
+dynamic = ["version"]
+description = "SQLAlchemy-based models, regeneration tooling, and utilities for the HemOnc.org oncology terminology"
 readme = "README.md"
-license = "CC-BY-NC-SA-4.0"
+requires-python = ">=3.12"
+authors = [
+  { name = "Georgie Kennedy", email = "georgina.kennedy@unsw.edu.au" }
+]
+license = { text = "CC-BY-NC-SA-4.0" }
 
-[tool.poetry.dependencies]
-python = "^3.11"
-numpy = "^1.23.2"
-pandas = "^2.2.1"
-SQLAlchemy = "^2.0.28"
-duckdb = "^0.10.1"
-omop-alchemy = {git = "https://github.com/AustralianCancerDataNetwork/OMOP_Alchemy"}
-psycopg2-binary = "^2.9.9"
+keywords = [
+  "HemOnc",
+  "oncology",
+  "clinical-data",
+  "health-informatics",
+  "sqlalchemy",
+  "ETL",
+  "real-world-evidence"
+]
 
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.29.3"
-medspacy = "^1.2.0"
-fastlite = "^0.0.1"
-graphviz = "^0.20.3"
-rdata = "^0.11.2"
-pyreadr = "^0.5.0"
-plotly = "^5.22.0"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Healthcare Industry",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+]
+
+# Runtime only: model, toolbox, and loading. No LinkML, no openpyxl, no
+# dictionary-parsing tooling here — that's the `author` extra. See
+# _design/hemonc-alchemy-spec.md TS-2/TS-1.
+#
+# Deliberately NOT a dependency: omop-alchemy. hemonc-alchemy shares
+# infrastructure with omop-alchemy (oa-configurator, orm-loader) but not its
+# ORM models — see TS-5. A consumer that wants both (e.g. SCOOP) depends on
+# each directly.
+dependencies = [
+  "sqlalchemy>=2.0.45",
+  "pandas>=2.0",
+  "oa-configurator>=1.1.0,<2.0.0",
+  "orm-loader>=1.0.0,<2.0.0",
+  "typer>=0.12",
+  "rich>=13.0",
+]
+
+[project.optional-dependencies]
+postgres = [
+  "psycopg[binary]>=3.2",
+]
+
+# Author-facing only: the compiler (dictionary parsing, LinkML schema
+# authoring/generation). A consumer installing hemonc-alchemy for its models
+# does not need any of this. See US-23.
+author = [
+  "linkml>=1.9.6",
+  "linkml-runtime>=1.9.5",
+  "openpyxl>=3.1.5",
+  "pyyaml>=6.0",
+]
+
+dev = [
+  "oa-configurator[dev,postgres]>=1.1.0,<2.0.0",
+  "hemonc-alchemy[author,postgres]",
+  "ipython>=8.0",
+  "pytest>=8.0",
+  "pytest-cov>=4.0",
+  "ruff>=0.4",
+  "mypy>=1.8",
+  "mkdocs-material>=9.7.1",
+  "mkdocstrings-python>=2.0.1",
+  "mkdocs>=1.6.1",
+  "mkdocs-mermaid2-plugin",
+]
+
+[project.urls]
+Homepage = "https://github.com/AustralianCancerDataNetwork/HemOnc_Alchemy"
+Repository = "https://github.com/AustralianCancerDataNetwork/HemOnc_Alchemy"
+Issues = "https://github.com/AustralianCancerDataNetwork/HemOnc_Alchemy/issues"
+
+[project.scripts]
+hemonc-alchemy = "hemonc_alchemy.cli:main"
+
+[project.entry-points."omop.config"]
+hemonc_alchemy = "hemonc_alchemy.config:HemOncAlchemyConfig"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+raw-options = { tag_regex = '^v?(?P<version>[0-9]+\.[0-9]+\.[0-9]+)$' }
+
+[tool.hatch.build.targets.wheel]
+packages = ["hemonc_alchemy"]
+
+[tool.uv]
+cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
+
+[tool.pytest.ini_options]
+markers = [
+  "postgres: requires a running docker-compose Postgres instance",
+]

@@ -1,24 +1,39 @@
-# HemOnc Alchemy
+# hemonc-alchemy
 
-Purpose: to provide an interface to the HemOnc data model that is compatible with [OMOP Alchemy interface](https://github.com/AustralianCancerDataNetwork/OMOP_Alchemy)
+SQLAlchemy-based models, regeneration tooling, and utilities for the HemOnc.org oncology terminology.
 
-### Notes
+Sibling to [omop-alchemy](https://github.com/AustralianCancerDataNetwork/OMOP_Alchemy) — shares its infrastructure (`oa-configurator`, `orm-loader`) and packaging conventions, but not its ORM models. Unlike OMOP CDM, HemOnc's schema is dictionary-driven and evolves release to release, so this repo also ships an author-facing compiler that regenerates the model from HemOnc's data dictionary — see `_design/hemonc-alchemy-spec.md` for the full rationale.
 
-To create your own sqlite version of the data model, you will need to access the source hemonc tables and run the import steps available in the [import source notebook](notebooks/01_import_hemonc_source.ipynb) 
+**Status: ground-up rewrite in progress, on the `refactor` branch.** This replaces the previous `HemOnc_Alchemy` codebase (hand-typed model, notebook-driven ETL, no tests) rather than extending it. See `_design/migration-status.md` for exactly what's ported, what's a placeholder, and what's next.
 
-Else, to request a demo version of the sqlite reference database, please reach out to the authors.
+## Layout
 
-### Quickstart
+```
+hemonc_alchemy/
+├── model/       # runtime: entities (generated), relationships, schedule handling
+├── toolbox/     # cross-entity enrichment: fuzzy linking, clinical classification
+├── schema/      # the canonical LinkML schema (not yet authored)
+├── compiler/    # author-facing only — regenerates model/ and schema/ from the
+│                # HemOnc data dictionary. Not installed by default.
+├── loaders/     # CSV/vocabulary loading, built on orm-loader
+└── cli.py       # `hemonc-alchemy regen|validate|diff|audit`
+```
 
-Copy the file `.env_sample` (as `.env`) to set the environment variable for the directory where your db connection config file will live. 
+## Installing
 
-Copy the file `oa_system_config_sample.yaml` in the same way, updating the absolute path for your reference database.
+```bash
+uv sync                 # runtime only
+uv sync --extra dev     # runtime + compiler (author) + test/lint/docs tooling
+```
 
-### ERD
+## Reference material
 
-An overview ERD can be found [here](notebooks/db_fig.pdf) for reference and ease of use
+`reference/` holds material salvaged from the pre-rewrite codebase that didn't make sense to delete outright: the spaCy sig-parsing patterns (`reference/nlp/`), the old example/demo notebooks (`reference/notebooks/`), and hard-won domain notes extracted from the old model's code comments (`reference/domain-notes.md`). None of it is wired into the current package.
 
-### Examples
+## Configuration
 
-Some key example queries can be found [here](notebooks/03_example_usage.ipynb) - see reference [here](notebooks/OHDSI_2024.pdf) for 
-descriptions.
+hemonc-alchemy uses [oa-configurator](https://pypi.org/project/oa-configurator/) the same way omop-alchemy does. Once you have a stack config set up:
+
+```bash
+omop-config configure hemonc_alchemy
+```
