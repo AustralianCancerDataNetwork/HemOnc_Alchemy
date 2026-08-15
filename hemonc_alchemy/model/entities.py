@@ -1,68 +1,88 @@
-from .base import EntityBase, Base
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Optional
+
+import sqlalchemy as sa
+from sqlalchemy import (
+    BigInteger,
+    Boolean,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    ForeignKeyConstraint,
+    String,
+    Text,
+)
+from sqlalchemy.orm import Mapped, foreign, mapped_column
+from sqlalchemy.orm import relationship as sa_relationship
+
+from .base import Base, EntityBase
 
 
 from .enums import (
     Authors_RoleEnum,
     Authors_Site_typeEnum,
-    Conditions_Condition_typeEnum,
-    Conditions_SectionEnum,
+    Canonicaltriples_Class_1Enum,
     Conditions_Age_focusEnum,
-    Conditions_Map_type_ncitEnum,
-    Conditions_Map_type_oncotreeEnum,
-    Conditions_Map_type_icd9cmEnum,
+    Conditions_Condition_typeEnum,
     Conditions_Map_type_icd10cmEnum,
+    Conditions_Map_type_icd9cmEnum,
     Conditions_Map_type_icdo3Enum,
     Conditions_Map_type_icdo3_morphEnum,
-    Drugs_Class_typeEnum,
-    Indications_RegulatorEnum,
-    Indications_NoteEnum,
-    Indications_SexEnum,
-    Indications_Age_unitEnum,
-    Indications_Biomarker_findingEnum,
-    Indications_Biomarker_typeEnum,
-    Indications_Biomarker2_findingEnum,
-    Indications_Biomarker2_typeEnum,
-    Indications_Biomarker3_findingEnum,
-    Indications_Biomarker3_typeEnum,
-    Indications_Biomarker4_findingEnum,
-    Indications_Biomarker4_typeEnum,
-    Indications_Biomarker2Enum,
-    Indications_Biomarker4Enum,
-    Persons_Hyphen_typeEnum,
-    Persons_GenderEnum,
-    Persons_Vital_statusEnum,
-    Refs_Ref_typeEnum,
-    Sigs_PhaseEnum,
-    Sigs_Component_roleEnum,
-    Sigs_Cycle_length_unitEnum,
-    Sigs_Step_numberEnum,
-    Sigs_Class_fieldEnum,
-    Sigs_DoseunitEnum,
-    Sigs_DosecapunitEnum,
-    Sigs_TargetlevelunitEnum,
-    Sigs_TargetleveltypeEnum,
-    Sigs_RouteEnum,
-    Sigs_DurationunitEnum,
-    Sigs_FrequencyEnum,
-    Studies_RegistryEnum,
-    Studies_Study_designEnum,
-    Studies_Sponsor_typeEnum,
-    StudyResults_Endpoint_classEnum,
-    StudyResults_Endpoint_typeEnum,
-    StudyResults_Arm_typeEnum,
-    StudyResults_MetricunitEnum,
-    StudyResults_StatisticEnum,
-    Canonicaltriples_Class_1Enum,
-    HemoncClasses_Omopdomain_idEnum,
-    HemoncClasses_Omopstandard_conceptEnum,
-    HemoncClasses_Class_typeEnum,
+    Conditions_Map_type_ncitEnum,
+    Conditions_Map_type_oncotreeEnum,
+    Conditions_SectionEnum,
     Contexttable_IntentEnum,
     Contexttable_PhaseEnum,
     Contexttable_Risk_stratificationEnum,
     Contexttable_Therapy_typeEnum,
+    Drugs_Class_typeEnum,
     Exclusions_Rev1Enum,
-    Inclusions_Ref_typeEnum,
+    HemoncClasses_Class_typeEnum,
+    HemoncClasses_Omopdomain_idEnum,
+    HemoncClasses_Omopstandard_conceptEnum,
     Inclusions_ReasonEnum,
+    Inclusions_Ref_typeEnum,
+    Indications_Age_unitEnum,
+    Indications_Biomarker2Enum,
+    Indications_Biomarker2_findingEnum,
+    Indications_Biomarker2_typeEnum,
+    Indications_Biomarker3_findingEnum,
+    Indications_Biomarker3_typeEnum,
+    Indications_Biomarker4Enum,
+    Indications_Biomarker4_findingEnum,
+    Indications_Biomarker4_typeEnum,
+    Indications_Biomarker_findingEnum,
+    Indications_Biomarker_typeEnum,
+    Indications_NoteEnum,
+    Indications_RegulatorEnum,
+    Indications_SexEnum,
+    Persons_GenderEnum,
+    Persons_Hyphen_typeEnum,
+    Persons_Vital_statusEnum,
+    Refs_Ref_typeEnum,
+    Sigs_Class_fieldEnum,
+    Sigs_Component_roleEnum,
+    Sigs_Cycle_length_unitEnum,
+    Sigs_DosecapunitEnum,
+    Sigs_DoseunitEnum,
+    Sigs_DurationunitEnum,
+    Sigs_FrequencyEnum,
+    Sigs_PhaseEnum,
+    Sigs_RouteEnum,
+    Sigs_Step_numberEnum,
+    Sigs_TargetleveltypeEnum,
+    Sigs_TargetlevelunitEnum,
+    Studies_RegistryEnum,
+    Studies_Sponsor_typeEnum,
+    Studies_Study_designEnum,
+    StudyResults_Arm_typeEnum,
+    StudyResults_Endpoint_classEnum,
+    StudyResults_Endpoint_typeEnum,
+    StudyResults_MetricunitEnum,
+    StudyResults_StatisticEnum,
     Units_Unit_typeEnum,
     Variantblob_BlockEnum,
     Variantblob_Chunk_typeEnum,
@@ -121,21 +141,21 @@ class Authors(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    pmid_exclusions_obj: Mapped[Optional['Exclusions']] = relationship(
+    pmid_exclusions_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
         primaryjoin="Authors.pmid == foreign(Exclusions.pmid)",
         lazy='selectin',
         viewonly=True,
     )
 
-    pmid_inclusions_obj: Mapped[Optional['Inclusions']] = relationship(
+    pmid_inclusions_obj: Mapped[Optional['Inclusions']] = sa_relationship(
         'Inclusions',
         primaryjoin="Authors.pmid == foreign(Inclusions.pmid)",
         lazy='selectin',
         viewonly=True,
     )
 
-    person_cui_obj: Mapped[Optional['Persons']] = relationship(
+    person_cui_obj: Mapped[Optional['Persons']] = sa_relationship(
         'Persons',
         primaryjoin="Authors.person_cui == foreign(Persons.person_cui)",
         lazy='selectin',
@@ -192,12 +212,12 @@ class Conditions(EntityBase, Base):
         ['map_icdo3_morph', 'map_icdo3_morph'],
         ['map_oncotree', 'map_oncotree'],
     ]
-    map_icd10cm_items: Mapped[list['conditions_Map_icd10cmMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    map_icd9cm_items: Mapped[list['conditions_Map_icd9cmMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    map_icdo3_items: Mapped[list['conditions_Map_icdo3Map']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    map_icdo3_morph_items: Mapped[list['conditions_Map_icdo3_morphMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    map_oncotree_items: Mapped[list['conditions_Map_oncotreeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    map_type_icdo3_morph_items: Mapped[list['conditions_Map_type_icdo3_morphMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_icd10cm_items: Mapped[list['conditions_Map_icd10cmMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_icd9cm_items: Mapped[list['conditions_Map_icd9cmMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_icdo3_items: Mapped[list['conditions_Map_icdo3Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_icdo3_morph_items: Mapped[list['conditions_Map_icdo3_morphMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_oncotree_items: Mapped[list['conditions_Map_oncotreeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_type_icdo3_morph_items: Mapped[list['conditions_Map_type_icdo3_morphMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class conditions_Map_icd10cmMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icd10cm'
@@ -205,7 +225,7 @@ class conditions_Map_icd10cmMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
     map_icd10cm: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Conditions'] = relationship(back_populates='map_icd10cm_items')
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icd10cm_items')
 
 class conditions_Map_icd9cmMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icd9cm'
@@ -213,7 +233,7 @@ class conditions_Map_icd9cmMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
     map_icd9cm: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Conditions'] = relationship(back_populates='map_icd9cm_items')
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icd9cm_items')
 
 class conditions_Map_icdo3Map(EntityBase, Base):
     __tablename__ = 'conditions_map_icdo3'
@@ -221,7 +241,7 @@ class conditions_Map_icdo3Map(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
     map_icdo3: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Conditions'] = relationship(back_populates='map_icdo3_items')
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icdo3_items')
 
 class conditions_Map_icdo3_morphMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icdo3_morph'
@@ -229,7 +249,7 @@ class conditions_Map_icdo3_morphMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
     map_icdo3_morph: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Conditions'] = relationship(back_populates='map_icdo3_morph_items')
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icdo3_morph_items')
 
 class conditions_Map_oncotreeMap(EntityBase, Base):
     __tablename__ = 'conditions_map_oncotree'
@@ -237,7 +257,7 @@ class conditions_Map_oncotreeMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
     map_oncotree: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Conditions'] = relationship(back_populates='map_oncotree_items')
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_oncotree_items')
 
 class conditions_Map_type_icdo3_morphMap(EntityBase, Base):
     __tablename__ = 'conditions_map_type_icdo3_morph'
@@ -245,7 +265,7 @@ class conditions_Map_type_icdo3_morphMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
     map_type_icdo3_morph: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Conditions'] = relationship(back_populates='map_type_icdo3_morph_items')
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_type_icdo3_morph_items')
 
 class Drugs(EntityBase, Base):
     __tablename__ = 'drugs'
@@ -284,11 +304,11 @@ class Drugs(EntityBase, Base):
         ['canmed_minor_class', 'canmed_minor_class_cui'],
         ['canmed_minor_class_cui', 'canmed_minor_class_cui'],
     ]
-    atc_items: Mapped[list['drugs_AtcMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    canmed_major_class_items: Mapped[list['drugs_Canmed_major_classMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    canmed_major_class_cui_items: Mapped[list['drugs_Canmed_major_class_cuiMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    canmed_minor_class_items: Mapped[list['drugs_Canmed_minor_classMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    canmed_minor_class_cui_items: Mapped[list['drugs_Canmed_minor_class_cuiMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    atc_items: Mapped[list['drugs_AtcMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    canmed_major_class_items: Mapped[list['drugs_Canmed_major_classMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    canmed_major_class_cui_items: Mapped[list['drugs_Canmed_major_class_cuiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    canmed_minor_class_items: Mapped[list['drugs_Canmed_minor_classMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    canmed_minor_class_cui_items: Mapped[list['drugs_Canmed_minor_class_cuiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class drugs_AtcMap(EntityBase, Base):
     __tablename__ = 'drugs_atc'
@@ -296,7 +316,7 @@ class drugs_AtcMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
     atc: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Drugs'] = relationship(back_populates='atc_items')
+    parent: Mapped['Drugs'] = sa_relationship(back_populates='atc_items')
 
 class drugs_Canmed_major_classMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_major_class'
@@ -304,7 +324,7 @@ class drugs_Canmed_major_classMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
     canmed_major_class: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Drugs'] = relationship(back_populates='canmed_major_class_items')
+    parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_major_class_items')
 
 class drugs_Canmed_major_class_cuiMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_major_class_cui'
@@ -312,7 +332,7 @@ class drugs_Canmed_major_class_cuiMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
     canmed_major_class_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Drugs'] = relationship(back_populates='canmed_major_class_cui_items')
+    parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_major_class_cui_items')
 
 class drugs_Canmed_minor_classMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_minor_class'
@@ -320,7 +340,7 @@ class drugs_Canmed_minor_classMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
     canmed_minor_class: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Drugs'] = relationship(back_populates='canmed_minor_class_items')
+    parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_minor_class_items')
 
 class drugs_Canmed_minor_class_cuiMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_minor_class_cui'
@@ -328,7 +348,7 @@ class drugs_Canmed_minor_class_cuiMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
     canmed_minor_class_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Drugs'] = relationship(back_populates='canmed_minor_class_cui_items')
+    parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_minor_class_cui_items')
 
 class Indications(EntityBase, Base):
     __tablename__ = 'indications'
@@ -392,31 +412,31 @@ class Indications(EntityBase, Base):
         ['regimen_cui', 'regimen_cui'],
         ['with_field', 'with_field'],
     ]
-    biomarker_items: Mapped[list['indications_BiomarkerMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker2_items: Mapped[list['indications_Biomarker2Map']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker2_finding_items: Mapped[list['indications_Biomarker2_findingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker2_type_items: Mapped[list['indications_Biomarker2_typeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker3_items: Mapped[list['indications_Biomarker3Map']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker3_finding_items: Mapped[list['indications_Biomarker3_findingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker3_type_items: Mapped[list['indications_Biomarker3_typeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker4_items: Mapped[list['indications_Biomarker4Map']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker4_finding_items: Mapped[list['indications_Biomarker4_findingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker4_type_items: Mapped[list['indications_Biomarker4_typeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker_finding_items: Mapped[list['indications_Biomarker_findingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker_type_items: Mapped[list['indications_Biomarker_typeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    context_items: Mapped[list['indications_ContextMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    demographics_items: Mapped[list['indications_DemographicsMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    ineligibility_items: Mapped[list['indications_IneligibilityMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    prior_therapy_items: Mapped[list['indications_Prior_therapyMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    prior_therapy_negation_items: Mapped[list['indications_Prior_therapy_negationMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    prior_therapy_setting_items: Mapped[list['indications_Prior_therapy_settingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    regimen_items: Mapped[list['indications_RegimenMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    regimen_cui_items: Mapped[list['indications_Regimen_cuiMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    response_contingency_items: Mapped[list['indications_Response_contingencyMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    risk_stratification_items: Mapped[list['indications_Risk_stratificationMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    stage_or_status_items: Mapped[list['indications_Stage_or_statusMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    with_field_items: Mapped[list['indications_With_fieldMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = relationship(
+    biomarker_items: Mapped[list['indications_BiomarkerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker2_items: Mapped[list['indications_Biomarker2Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker2_finding_items: Mapped[list['indications_Biomarker2_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker2_type_items: Mapped[list['indications_Biomarker2_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker3_items: Mapped[list['indications_Biomarker3Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker3_finding_items: Mapped[list['indications_Biomarker3_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker3_type_items: Mapped[list['indications_Biomarker3_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker4_items: Mapped[list['indications_Biomarker4Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker4_finding_items: Mapped[list['indications_Biomarker4_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker4_type_items: Mapped[list['indications_Biomarker4_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker_finding_items: Mapped[list['indications_Biomarker_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    biomarker_type_items: Mapped[list['indications_Biomarker_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    context_items: Mapped[list['indications_ContextMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    demographics_items: Mapped[list['indications_DemographicsMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    ineligibility_items: Mapped[list['indications_IneligibilityMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    prior_therapy_items: Mapped[list['indications_Prior_therapyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    prior_therapy_negation_items: Mapped[list['indications_Prior_therapy_negationMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    prior_therapy_setting_items: Mapped[list['indications_Prior_therapy_settingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    regimen_items: Mapped[list['indications_RegimenMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    regimen_cui_items: Mapped[list['indications_Regimen_cuiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    response_contingency_items: Mapped[list['indications_Response_contingencyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    risk_stratification_items: Mapped[list['indications_Risk_stratificationMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    stage_or_status_items: Mapped[list['indications_Stage_or_statusMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    with_field_items: Mapped[list['indications_With_fieldMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Indications.condition == foreign(Conditions.condition)",
         lazy='selectin',
@@ -430,7 +450,7 @@ class indications_BiomarkerMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_items')
 
 class indications_Biomarker2Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker2'
@@ -438,7 +458,7 @@ class indications_Biomarker2Map(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker2: Mapped[Optional[Indications_Biomarker2Enum]] = mapped_column(Enum(Indications_Biomarker2Enum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker2_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker2_items')
 
 class indications_Biomarker2_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker2_finding'
@@ -446,7 +466,7 @@ class indications_Biomarker2_findingMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker2_finding: Mapped[Optional[Indications_Biomarker2_findingEnum]] = mapped_column(Enum(Indications_Biomarker2_findingEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker2_finding_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker2_finding_items')
 
 class indications_Biomarker2_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker2_type'
@@ -454,7 +474,7 @@ class indications_Biomarker2_typeMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker2_type: Mapped[Optional[Indications_Biomarker2_typeEnum]] = mapped_column(Enum(Indications_Biomarker2_typeEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker2_type_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker2_type_items')
 
 class indications_Biomarker3Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker3'
@@ -462,7 +482,7 @@ class indications_Biomarker3Map(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker3: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker3_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_items')
 
 class indications_Biomarker3_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker3_finding'
@@ -470,7 +490,7 @@ class indications_Biomarker3_findingMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker3_finding: Mapped[Optional[Indications_Biomarker3_findingEnum]] = mapped_column(Enum(Indications_Biomarker3_findingEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker3_finding_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_finding_items')
 
 class indications_Biomarker3_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker3_type'
@@ -478,7 +498,7 @@ class indications_Biomarker3_typeMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker3_type: Mapped[Optional[Indications_Biomarker3_typeEnum]] = mapped_column(Enum(Indications_Biomarker3_typeEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker3_type_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_type_items')
 
 class indications_Biomarker4Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker4'
@@ -486,7 +506,7 @@ class indications_Biomarker4Map(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker4: Mapped[Optional[Indications_Biomarker4Enum]] = mapped_column(Enum(Indications_Biomarker4Enum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker4_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_items')
 
 class indications_Biomarker4_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker4_finding'
@@ -494,7 +514,7 @@ class indications_Biomarker4_findingMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker4_finding: Mapped[Optional[Indications_Biomarker4_findingEnum]] = mapped_column(Enum(Indications_Biomarker4_findingEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker4_finding_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_finding_items')
 
 class indications_Biomarker4_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker4_type'
@@ -502,7 +522,7 @@ class indications_Biomarker4_typeMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker4_type: Mapped[Optional[Indications_Biomarker4_typeEnum]] = mapped_column(Enum(Indications_Biomarker4_typeEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker4_type_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_type_items')
 
 class indications_Biomarker_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker_finding'
@@ -510,7 +530,7 @@ class indications_Biomarker_findingMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker_finding_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_finding_items')
 
 class indications_Biomarker_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker_type'
@@ -518,7 +538,7 @@ class indications_Biomarker_typeMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     biomarker_type: Mapped[Optional[Indications_Biomarker_typeEnum]] = mapped_column(Enum(Indications_Biomarker_typeEnum), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='biomarker_type_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_type_items')
 
 class indications_ContextMap(EntityBase, Base):
     __tablename__ = 'indications_context'
@@ -526,7 +546,7 @@ class indications_ContextMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     context: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='context_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='context_items')
 
 class indications_DemographicsMap(EntityBase, Base):
     __tablename__ = 'indications_demographics'
@@ -534,7 +554,7 @@ class indications_DemographicsMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     demographics: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='demographics_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='demographics_items')
 
 class indications_IneligibilityMap(EntityBase, Base):
     __tablename__ = 'indications_ineligibility'
@@ -542,7 +562,7 @@ class indications_IneligibilityMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     ineligibility: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='ineligibility_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='ineligibility_items')
 
 class indications_Prior_therapyMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy'
@@ -550,7 +570,7 @@ class indications_Prior_therapyMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     prior_therapy: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='prior_therapy_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_items')
 
 class indications_Prior_therapy_negationMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy_negation'
@@ -558,7 +578,7 @@ class indications_Prior_therapy_negationMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     prior_therapy_negation: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='prior_therapy_negation_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_negation_items')
 
 class indications_Prior_therapy_settingMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy_setting'
@@ -566,7 +586,7 @@ class indications_Prior_therapy_settingMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     prior_therapy_setting: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='prior_therapy_setting_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_setting_items')
 
 class indications_RegimenMap(EntityBase, Base):
     __tablename__ = 'indications_regimen'
@@ -574,7 +594,7 @@ class indications_RegimenMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     regimen: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='regimen_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='regimen_items')
 
 class indications_Regimen_cuiMap(EntityBase, Base):
     __tablename__ = 'indications_regimen_cui'
@@ -582,7 +602,7 @@ class indications_Regimen_cuiMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     regimen_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='regimen_cui_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='regimen_cui_items')
 
 class indications_Response_contingencyMap(EntityBase, Base):
     __tablename__ = 'indications_response_contingency'
@@ -590,7 +610,7 @@ class indications_Response_contingencyMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     response_contingency: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='response_contingency_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='response_contingency_items')
 
 class indications_Risk_stratificationMap(EntityBase, Base):
     __tablename__ = 'indications_risk_stratification'
@@ -598,7 +618,7 @@ class indications_Risk_stratificationMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     risk_stratification: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='risk_stratification_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='risk_stratification_items')
 
 class indications_Stage_or_statusMap(EntityBase, Base):
     __tablename__ = 'indications_stage_or_status'
@@ -606,7 +626,7 @@ class indications_Stage_or_statusMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     stage_or_status: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='stage_or_status_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='stage_or_status_items')
 
 class indications_With_fieldMap(EntityBase, Base):
     __tablename__ = 'indications_with_field'
@@ -614,7 +634,7 @@ class indications_With_fieldMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
     with_field: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Indications'] = relationship(back_populates='with_field_items')
+    parent: Mapped['Indications'] = sa_relationship(back_populates='with_field_items')
 
 class Persons(EntityBase, Base):
     __tablename__ = 'persons'
@@ -664,14 +684,14 @@ class Persons(EntityBase, Base):
         ['study_groups', 'study_groups'],
         ['study_sponsors', 'study_sponsors'],
     ]
-    condition_types_items: Mapped[list['persons_Condition_typesMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    conditions_items: Mapped[list['persons_ConditionsMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    country_items: Mapped[list['persons_CountryMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    location_items: Mapped[list['persons_LocationMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    orcid_items: Mapped[list['persons_OrcidMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    site_items: Mapped[list['persons_SiteMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    study_groups_items: Mapped[list['persons_Study_groupsMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    study_sponsors_items: Mapped[list['persons_Study_sponsorsMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    condition_types_items: Mapped[list['persons_Condition_typesMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    conditions_items: Mapped[list['persons_ConditionsMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    country_items: Mapped[list['persons_CountryMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    location_items: Mapped[list['persons_LocationMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    orcid_items: Mapped[list['persons_OrcidMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    site_items: Mapped[list['persons_SiteMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    study_groups_items: Mapped[list['persons_Study_groupsMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    study_sponsors_items: Mapped[list['persons_Study_sponsorsMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class persons_Condition_typesMap(EntityBase, Base):
     __tablename__ = 'persons_condition_types'
@@ -679,7 +699,7 @@ class persons_Condition_typesMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     condition_types: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='condition_types_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='condition_types_items')
 
 class persons_ConditionsMap(EntityBase, Base):
     __tablename__ = 'persons_conditions'
@@ -687,7 +707,7 @@ class persons_ConditionsMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     conditions: Mapped[str] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='conditions_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='conditions_items')
 
 class persons_CountryMap(EntityBase, Base):
     __tablename__ = 'persons_country'
@@ -695,7 +715,7 @@ class persons_CountryMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     country: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='country_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='country_items')
 
 class persons_LocationMap(EntityBase, Base):
     __tablename__ = 'persons_location'
@@ -703,7 +723,7 @@ class persons_LocationMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     location: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='location_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='location_items')
 
 class persons_OrcidMap(EntityBase, Base):
     __tablename__ = 'persons_orcid'
@@ -711,7 +731,7 @@ class persons_OrcidMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     orcid: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='orcid_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='orcid_items')
 
 class persons_SiteMap(EntityBase, Base):
     __tablename__ = 'persons_site'
@@ -719,7 +739,7 @@ class persons_SiteMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     site: Mapped[str] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='site_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='site_items')
 
 class persons_Study_groupsMap(EntityBase, Base):
     __tablename__ = 'persons_study_groups'
@@ -727,7 +747,7 @@ class persons_Study_groupsMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     study_groups: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='study_groups_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='study_groups_items')
 
 class persons_Study_sponsorsMap(EntityBase, Base):
     __tablename__ = 'persons_study_sponsors'
@@ -735,7 +755,7 @@ class persons_Study_sponsorsMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
     study_sponsors: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Persons'] = relationship(back_populates='study_sponsors_items')
+    parent: Mapped['Persons'] = sa_relationship(back_populates='study_sponsors_items')
 
 class Pointers(EntityBase, Base):
     __tablename__ = 'pointers'
@@ -764,10 +784,10 @@ class Pointers(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    biomarker_items: Mapped[list['pointers_BiomarkerMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    context_items: Mapped[list['pointers_ContextMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    notes_items: Mapped[list['pointers_NotesMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = relationship(
+    biomarker_items: Mapped[list['pointers_BiomarkerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    context_items: Mapped[list['pointers_ContextMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    notes_items: Mapped[list['pointers_NotesMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Pointers.condition == foreign(Conditions.condition)",
         lazy='selectin',
@@ -781,7 +801,7 @@ class pointers_BiomarkerMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
     biomarker: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Pointers'] = relationship(back_populates='biomarker_items')
+    parent: Mapped['Pointers'] = sa_relationship(back_populates='biomarker_items')
 
 class pointers_ContextMap(EntityBase, Base):
     __tablename__ = 'pointers_context'
@@ -789,7 +809,7 @@ class pointers_ContextMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
     context: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Pointers'] = relationship(back_populates='context_items')
+    parent: Mapped['Pointers'] = sa_relationship(back_populates='context_items')
 
 class pointers_NotesMap(EntityBase, Base):
     __tablename__ = 'pointers_notes'
@@ -797,7 +817,7 @@ class pointers_NotesMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Pointers'] = relationship(back_populates='notes_items')
+    parent: Mapped['Pointers'] = sa_relationship(back_populates='notes_items')
 
 
 
@@ -835,26 +855,26 @@ class Refs(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    biblio_items: Mapped[list['refs_BiblioMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    doi_items: Mapped[list['refs_DoiMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    reference_items: Mapped[list['refs_ReferenceMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    temp_items: Mapped[list['refs_TempMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    title_items: Mapped[list['refs_TitleMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    pmid_exclusions_obj: Mapped[Optional['Exclusions']] = relationship(
+    biblio_items: Mapped[list['refs_BiblioMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    doi_items: Mapped[list['refs_DoiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    reference_items: Mapped[list['refs_ReferenceMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    temp_items: Mapped[list['refs_TempMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    title_items: Mapped[list['refs_TitleMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    pmid_exclusions_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
         primaryjoin="Refs.pmid == foreign(Exclusions.pmid)",
         lazy='selectin',
         viewonly=True,
     )
 
-    pmid_inclusions_obj: Mapped[Optional['Inclusions']] = relationship(
+    pmid_inclusions_obj: Mapped[Optional['Inclusions']] = sa_relationship(
         'Inclusions',
         primaryjoin="Refs.pmid == foreign(Inclusions.pmid)",
         lazy='selectin',
         viewonly=True,
     )
 
-    condition_obj: Mapped[Optional['Conditions']] = relationship(
+    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Refs.condition == foreign(Conditions.condition)",
         lazy='selectin',
@@ -868,7 +888,7 @@ class refs_BiblioMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
     biblio: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Refs'] = relationship(back_populates='biblio_items')
+    parent: Mapped['Refs'] = sa_relationship(back_populates='biblio_items')
 
 class refs_DoiMap(EntityBase, Base):
     __tablename__ = 'refs_doi'
@@ -876,7 +896,7 @@ class refs_DoiMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
     doi: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Refs'] = relationship(back_populates='doi_items')
+    parent: Mapped['Refs'] = sa_relationship(back_populates='doi_items')
 
 class refs_ReferenceMap(EntityBase, Base):
     __tablename__ = 'refs_reference'
@@ -884,7 +904,7 @@ class refs_ReferenceMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
     reference: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Refs'] = relationship(back_populates='reference_items')
+    parent: Mapped['Refs'] = sa_relationship(back_populates='reference_items')
 
 class refs_TempMap(EntityBase, Base):
     __tablename__ = 'refs_temp'
@@ -892,7 +912,7 @@ class refs_TempMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
     temp: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Refs'] = relationship(back_populates='temp_items')
+    parent: Mapped['Refs'] = sa_relationship(back_populates='temp_items')
 
 class refs_TitleMap(EntityBase, Base):
     __tablename__ = 'refs_title'
@@ -900,7 +920,7 @@ class refs_TitleMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
     title: Mapped[str] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Refs'] = relationship(back_populates='title_items')
+    parent: Mapped['Refs'] = sa_relationship(back_populates='title_items')
 
 class Sigs(EntityBase, Base):
     __tablename__ = 'sigs'
@@ -983,11 +1003,11 @@ class Sigs(EntityBase, Base):
         ['seqrel', 'seqrel'],
         ['seqrelwhenunit', 'seqrelwhenunit'],
     ]
-    cyclesigs_note_items: Mapped[list['sigs_Cyclesigs_noteMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    seqrel_items: Mapped[list['sigs_SeqrelMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    seqrelwhen_items: Mapped[list['sigs_SeqrelwhenMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    seqrelwhenunit_items: Mapped[list['sigs_SeqrelwhenunitMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    timing_items: Mapped[list['sigs_TimingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    cyclesigs_note_items: Mapped[list['sigs_Cyclesigs_noteMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    seqrel_items: Mapped[list['sigs_SeqrelMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    seqrelwhen_items: Mapped[list['sigs_SeqrelwhenMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    seqrelwhenunit_items: Mapped[list['sigs_SeqrelwhenunitMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    timing_items: Mapped[list['sigs_TimingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class sigs_Cyclesigs_noteMap(EntityBase, Base):
     __tablename__ = 'sigs_cyclesigs_note'
@@ -995,7 +1015,7 @@ class sigs_Cyclesigs_noteMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
     cyclesigs_note: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Sigs'] = relationship(back_populates='cyclesigs_note_items')
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='cyclesigs_note_items')
 
 class sigs_SeqrelMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrel'
@@ -1003,7 +1023,7 @@ class sigs_SeqrelMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
     seqrel: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Sigs'] = relationship(back_populates='seqrel_items')
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrel_items')
 
 class sigs_SeqrelwhenMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrelwhen'
@@ -1011,7 +1031,7 @@ class sigs_SeqrelwhenMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
     seqrelwhen: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Sigs'] = relationship(back_populates='seqrelwhen_items')
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrelwhen_items')
 
 class sigs_SeqrelwhenunitMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrelwhenunit'
@@ -1019,7 +1039,7 @@ class sigs_SeqrelwhenunitMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
     seqrelwhenunit: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Sigs'] = relationship(back_populates='seqrelwhenunit_items')
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrelwhenunit_items')
 
 class sigs_TimingMap(EntityBase, Base):
     __tablename__ = 'sigs_timing'
@@ -1027,7 +1047,7 @@ class sigs_TimingMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
     timing: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Sigs'] = relationship(back_populates='timing_items')
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='timing_items')
 
 class Studies(EntityBase, Base):
     __tablename__ = 'studies'
@@ -1074,16 +1094,16 @@ class Studies(EntityBase, Base):
     normalisation_groups = [
         ['study_group', 'study_group'],
     ]
-    sponsor_items: Mapped[list['studies_SponsorMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    study_group_items: Mapped[list['studies_Study_groupMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = relationship(
+    sponsor_items: Mapped[list['studies_SponsorMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    study_group_items: Mapped[list['studies_Study_groupMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Studies.condition == foreign(Conditions.condition)",
         lazy='selectin',
         viewonly=True,
     )
 
-    condition_cui_obj: Mapped[Optional['Conditions']] = relationship(
+    condition_cui_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Studies.condition_cui == foreign(Conditions.condition_cui)",
         lazy='selectin',
@@ -1097,7 +1117,7 @@ class studies_SponsorMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('studies.id'), primary_key=True)
     sponsor: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Studies'] = relationship(back_populates='sponsor_items')
+    parent: Mapped['Studies'] = sa_relationship(back_populates='sponsor_items')
 
 class studies_Study_groupMap(EntityBase, Base):
     __tablename__ = 'studies_study_group'
@@ -1105,7 +1125,7 @@ class studies_Study_groupMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('studies.id'), primary_key=True)
     study_group: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Studies'] = relationship(back_populates='study_group_items')
+    parent: Mapped['Studies'] = sa_relationship(back_populates='study_group_items')
 
 class StudyEligibility(EntityBase, Base):
     __tablename__ = 'study_eligibility'
@@ -1141,8 +1161,8 @@ class StudyEligibility(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    study_name_items: Mapped[list['study_eligibility_Study_nameMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = relationship(
+    study_name_items: Mapped[list['study_eligibility_Study_nameMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="StudyEligibility.condition == foreign(Conditions.condition)",
         lazy='selectin',
@@ -1156,7 +1176,7 @@ class study_eligibility_Study_nameMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_eligibility.id'), primary_key=True)
     study_name: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['StudyEligibility'] = relationship(back_populates='study_name_items')
+    parent: Mapped['StudyEligibility'] = sa_relationship(back_populates='study_name_items')
 
 class StudyResults(EntityBase, Base):
     __tablename__ = 'study_results'
@@ -1209,18 +1229,18 @@ class StudyResults(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    comparator_code_items: Mapped[list['study_results_Comparator_codeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    efficacy_items: Mapped[list['study_results_EfficacyMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    estci_items: Mapped[list['study_results_EstciMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    toxicity_items: Mapped[list['study_results_ToxicityMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = relationship(
+    comparator_code_items: Mapped[list['study_results_Comparator_codeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    efficacy_items: Mapped[list['study_results_EfficacyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    estci_items: Mapped[list['study_results_EstciMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    toxicity_items: Mapped[list['study_results_ToxicityMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="StudyResults.condition == foreign(Conditions.condition)",
         lazy='selectin',
         viewonly=True,
     )
 
-    condition_cui_obj: Mapped[Optional['Conditions']] = relationship(
+    condition_cui_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="StudyResults.condition_cui == foreign(Conditions.condition_cui)",
         lazy='selectin',
@@ -1234,7 +1254,7 @@ class study_results_Comparator_codeMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
     comparator_code: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['StudyResults'] = relationship(back_populates='comparator_code_items')
+    parent: Mapped['StudyResults'] = sa_relationship(back_populates='comparator_code_items')
 
 class study_results_EfficacyMap(EntityBase, Base):
     __tablename__ = 'study_results_efficacy'
@@ -1242,7 +1262,7 @@ class study_results_EfficacyMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
     efficacy: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['StudyResults'] = relationship(back_populates='efficacy_items')
+    parent: Mapped['StudyResults'] = sa_relationship(back_populates='efficacy_items')
 
 class study_results_EstciMap(EntityBase, Base):
     __tablename__ = 'study_results_estci'
@@ -1250,7 +1270,7 @@ class study_results_EstciMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
     estci: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['StudyResults'] = relationship(back_populates='estci_items')
+    parent: Mapped['StudyResults'] = sa_relationship(back_populates='estci_items')
 
 class study_results_ToxicityMap(EntityBase, Base):
     __tablename__ = 'study_results_toxicity'
@@ -1258,7 +1278,7 @@ class study_results_ToxicityMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
     toxicity: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['StudyResults'] = relationship(back_populates='toxicity_items')
+    parent: Mapped['StudyResults'] = sa_relationship(back_populates='toxicity_items')
 
 class Variants(EntityBase, Base):
     __tablename__ = 'variants'
@@ -1309,9 +1329,9 @@ class Variants(EntityBase, Base):
         ['study', 'study'],
         ['tracer', 'tracer'],
     ]
-    blob_items: Mapped[list['variants_BlobMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    study_items: Mapped[list['variants_StudyMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    tracer_items: Mapped[list['variants_TracerMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    blob_items: Mapped[list['variants_BlobMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    study_items: Mapped[list['variants_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    tracer_items: Mapped[list['variants_TracerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class variants_BlobMap(EntityBase, Base):
     __tablename__ = 'variants_blob'
@@ -1319,7 +1339,7 @@ class variants_BlobMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
     blob: Mapped[str] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Variants'] = relationship(back_populates='blob_items')
+    parent: Mapped['Variants'] = sa_relationship(back_populates='blob_items')
 
 class variants_StudyMap(EntityBase, Base):
     __tablename__ = 'variants_study'
@@ -1327,7 +1347,7 @@ class variants_StudyMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
     study: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Variants'] = relationship(back_populates='study_items')
+    parent: Mapped['Variants'] = sa_relationship(back_populates='study_items')
 
 class variants_TracerMap(EntityBase, Base):
     __tablename__ = 'variants_tracer'
@@ -1335,7 +1355,7 @@ class variants_TracerMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
     tracer: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Variants'] = relationship(back_populates='tracer_items')
+    parent: Mapped['Variants'] = sa_relationship(back_populates='tracer_items')
 
 class VariantEligibility(EntityBase, Base):
     __tablename__ = 'variant_eligibility'
@@ -1368,8 +1388,8 @@ class VariantEligibility(EntityBase, Base):
     normalisation_groups = [
         ['study', 'study'],
     ]
-    study_items: Mapped[list['variant_eligibility_StudyMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    unit_obj: Mapped[Optional['Units']] = relationship(
+    study_items: Mapped[list['variant_eligibility_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    unit_obj: Mapped[Optional['Units']] = sa_relationship(
         'Units',
         primaryjoin="VariantEligibility.unit == foreign(Units.unit)",
         lazy='selectin',
@@ -1383,7 +1403,7 @@ class variant_eligibility_StudyMap(EntityBase, Base):
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variant_eligibility.id'), primary_key=True)
     study: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['VariantEligibility'] = relationship(back_populates='study_items')
+    parent: Mapped['VariantEligibility'] = sa_relationship(back_populates='study_items')
 
 class Canonicaltriples(EntityBase, Base):
     __tablename__ = 'canonicaltriples'
@@ -1409,8 +1429,8 @@ class Canonicaltriples(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    class_1_provenance_items: Mapped[list['canonicaltriples_Class_1_provenanceMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    class_2_provenance_items: Mapped[list['canonicaltriples_Class_2_provenanceMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    class_1_provenance_items: Mapped[list['canonicaltriples_Class_1_provenanceMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    class_2_provenance_items: Mapped[list['canonicaltriples_Class_2_provenanceMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class canonicaltriples_Class_1_provenanceMap(EntityBase, Base):
     __tablename__ = 'canonicaltriples_class_1_provenance'
@@ -1424,7 +1444,7 @@ class canonicaltriples_Class_1_provenanceMap(EntityBase, Base):
     )
     class_1_provenance: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Canonicaltriples'] = relationship(back_populates='class_1_provenance_items')
+    parent: Mapped['Canonicaltriples'] = sa_relationship(back_populates='class_1_provenance_items')
 
 class canonicaltriples_Class_2_provenanceMap(EntityBase, Base):
     __tablename__ = 'canonicaltriples_class_2_provenance'
@@ -1438,7 +1458,7 @@ class canonicaltriples_Class_2_provenanceMap(EntityBase, Base):
     )
     class_2_provenance: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Canonicaltriples'] = relationship(back_populates='class_2_provenance_items')
+    parent: Mapped['Canonicaltriples'] = sa_relationship(back_populates='class_2_provenance_items')
 
 class HemoncClasses(EntityBase, Base):
     __tablename__ = 'hemonc_classes'
@@ -1467,8 +1487,8 @@ class HemoncClasses(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    secondary_home_as_cui_items: Mapped[list['hemonc_classes_Secondary_home_as_cuiMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    secondary_home_as_string_items: Mapped[list['hemonc_classes_Secondary_home_as_stringMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    secondary_home_as_cui_items: Mapped[list['hemonc_classes_Secondary_home_as_cuiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    secondary_home_as_string_items: Mapped[list['hemonc_classes_Secondary_home_as_stringMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class hemonc_classes_Secondary_home_as_cuiMap(EntityBase, Base):
     __tablename__ = 'hemonc_classes_secondary_home_as_cui'
@@ -1480,7 +1500,7 @@ class hemonc_classes_Secondary_home_as_cuiMap(EntityBase, Base):
     )
     secondary_home_as_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['HemoncClasses'] = relationship(back_populates='secondary_home_as_cui_items')
+    parent: Mapped['HemoncClasses'] = sa_relationship(back_populates='secondary_home_as_cui_items')
 
 class hemonc_classes_Secondary_home_as_stringMap(EntityBase, Base):
     __tablename__ = 'hemonc_classes_secondary_home_as_string'
@@ -1492,7 +1512,7 @@ class hemonc_classes_Secondary_home_as_stringMap(EntityBase, Base):
     )
     secondary_home_as_string: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['HemoncClasses'] = relationship(back_populates='secondary_home_as_string_items')
+    parent: Mapped['HemoncClasses'] = sa_relationship(back_populates='secondary_home_as_string_items')
 
 class HemoncRels(EntityBase, Base):
     __tablename__ = 'hemonc_rels'
@@ -1540,24 +1560,24 @@ class Affiliations(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    affiliation_europmc_items: Mapped[list['affiliations_Affiliation_europmcMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    affiliation_hemonc_items: Mapped[list['affiliations_Affiliation_hemoncMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    affiliation_journal_items: Mapped[list['affiliations_Affiliation_journalMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    pmid_exclusions_obj: Mapped[Optional['Exclusions']] = relationship(
+    affiliation_europmc_items: Mapped[list['affiliations_Affiliation_europmcMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    affiliation_hemonc_items: Mapped[list['affiliations_Affiliation_hemoncMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    affiliation_journal_items: Mapped[list['affiliations_Affiliation_journalMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    pmid_exclusions_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
         primaryjoin="Affiliations.pmid == foreign(Exclusions.pmid)",
         lazy='selectin',
         viewonly=True,
     )
 
-    pmid_inclusions_obj: Mapped[Optional['Inclusions']] = relationship(
+    pmid_inclusions_obj: Mapped[Optional['Inclusions']] = sa_relationship(
         'Inclusions',
         primaryjoin="Affiliations.pmid == foreign(Inclusions.pmid)",
         lazy='selectin',
         viewonly=True,
     )
 
-    person_cui_obj: Mapped[Optional['Persons']] = relationship(
+    person_cui_obj: Mapped[Optional['Persons']] = sa_relationship(
         'Persons',
         primaryjoin="Affiliations.person_cui == foreign(Persons.person_cui)",
         lazy='selectin',
@@ -1577,7 +1597,7 @@ class affiliations_Affiliation_europmcMap(EntityBase, Base):
     )
     affiliation_europmc: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Affiliations'] = relationship(back_populates='affiliation_europmc_items')
+    parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_europmc_items')
 
 class affiliations_Affiliation_hemoncMap(EntityBase, Base):
     __tablename__ = 'affiliations_affiliation_hemonc'
@@ -1591,7 +1611,7 @@ class affiliations_Affiliation_hemoncMap(EntityBase, Base):
     )
     affiliation_hemonc: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Affiliations'] = relationship(back_populates='affiliation_hemonc_items')
+    parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_hemonc_items')
 
 class affiliations_Affiliation_journalMap(EntityBase, Base):
     __tablename__ = 'affiliations_affiliation_journal'
@@ -1605,7 +1625,7 @@ class affiliations_Affiliation_journalMap(EntityBase, Base):
     )
     affiliation_journal: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Affiliations'] = relationship(back_populates='affiliation_journal_items')
+    parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_journal_items')
 
 
 
@@ -1638,10 +1658,10 @@ class Contexttable(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    contextpretty_items: Mapped[list['contexttable_ContextprettyMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    phenotype_items: Mapped[list['contexttable_PhenotypeMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    setting_items: Mapped[list['contexttable_SettingMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    stage_or_status_items: Mapped[list['contexttable_Stage_or_statusMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    contextpretty_items: Mapped[list['contexttable_ContextprettyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    phenotype_items: Mapped[list['contexttable_PhenotypeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    setting_items: Mapped[list['contexttable_SettingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    stage_or_status_items: Mapped[list['contexttable_Stage_or_statusMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class contexttable_ContextprettyMap(EntityBase, Base):
     __tablename__ = 'contexttable_contextpretty'
@@ -1653,7 +1673,7 @@ class contexttable_ContextprettyMap(EntityBase, Base):
     )
     contextpretty: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Contexttable'] = relationship(back_populates='contextpretty_items')
+    parent: Mapped['Contexttable'] = sa_relationship(back_populates='contextpretty_items')
 
 class contexttable_PhenotypeMap(EntityBase, Base):
     __tablename__ = 'contexttable_phenotype'
@@ -1665,7 +1685,7 @@ class contexttable_PhenotypeMap(EntityBase, Base):
     )
     phenotype: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Contexttable'] = relationship(back_populates='phenotype_items')
+    parent: Mapped['Contexttable'] = sa_relationship(back_populates='phenotype_items')
 
 class contexttable_SettingMap(EntityBase, Base):
     __tablename__ = 'contexttable_setting'
@@ -1677,7 +1697,7 @@ class contexttable_SettingMap(EntityBase, Base):
     )
     setting: Mapped[str] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Contexttable'] = relationship(back_populates='setting_items')
+    parent: Mapped['Contexttable'] = sa_relationship(back_populates='setting_items')
 
 class contexttable_Stage_or_statusMap(EntityBase, Base):
     __tablename__ = 'contexttable_stage_or_status'
@@ -1689,7 +1709,7 @@ class contexttable_Stage_or_statusMap(EntityBase, Base):
     )
     stage_or_status: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['Contexttable'] = relationship(back_populates='stage_or_status_items')
+    parent: Mapped['Contexttable'] = sa_relationship(back_populates='stage_or_status_items')
 
 class Exclusions(EntityBase, Base):
     __tablename__ = 'exclusions'
@@ -1714,8 +1734,8 @@ class Exclusions(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    title_items: Mapped[list['exclusions_TitleMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    pmid_obj: Mapped[Optional['Inclusions']] = relationship(
+    title_items: Mapped[list['exclusions_TitleMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    pmid_obj: Mapped[Optional['Inclusions']] = sa_relationship(
         'Inclusions',
         primaryjoin="Exclusions.pmid == foreign(Inclusions.pmid)",
         lazy='selectin',
@@ -1733,7 +1753,7 @@ class exclusions_TitleMap(EntityBase, Base):
     )
     title: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Exclusions'] = relationship(back_populates='title_items')
+    parent: Mapped['Exclusions'] = sa_relationship(back_populates='title_items')
 
 
 
@@ -1758,8 +1778,8 @@ class Inclusions(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    reason_note_items: Mapped[list['inclusions_Reason_noteMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    pmid_obj: Mapped[Optional['Exclusions']] = relationship(
+    reason_note_items: Mapped[list['inclusions_Reason_noteMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    pmid_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
         primaryjoin="Inclusions.pmid == foreign(Exclusions.pmid)",
         lazy='selectin',
@@ -1777,7 +1797,7 @@ class inclusions_Reason_noteMap(EntityBase, Base):
     )
     reason_note: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
 
-    parent: Mapped['Inclusions'] = relationship(back_populates='reason_note_items')
+    parent: Mapped['Inclusions'] = sa_relationship(back_populates='reason_note_items')
 
 
 
@@ -1802,7 +1822,7 @@ class SigBranchTypes(EntityBase, Base):
 
     normalisation_groups = [
     ]
-    description_items: Mapped[list['sig_branch_types_DescriptionMap']] = relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    description_items: Mapped[list['sig_branch_types_DescriptionMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class sig_branch_types_DescriptionMap(EntityBase, Base):
     __tablename__ = 'sig_branch_types_description'
@@ -1814,7 +1834,7 @@ class sig_branch_types_DescriptionMap(EntityBase, Base):
     )
     description: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
 
-    parent: Mapped['SigBranchTypes'] = relationship(back_populates='description_items')
+    parent: Mapped['SigBranchTypes'] = sa_relationship(back_populates='description_items')
 
 
 

@@ -99,6 +99,14 @@ packages = ["hemonc_alchemy"]
 [tool.uv]
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
 
+[tool.ruff]
+# entities.py/enums.py are compiler output (compiler/generate.py), reviewed
+# as a diff like any other generated artifact but not hand-styled to the
+# same bar as authored code -- e.g. class-level list literals like
+# `pk_columns = [...]` are intentional class metadata, not accidental
+# mutable defaults.
+extend-exclude = ["hemonc_alchemy/model/entities.py", "hemonc_alchemy/model/enums.py"]
+
 [tool.pytest.ini_options]
 markers = [
   "postgres: requires a running docker-compose Postgres instance",
