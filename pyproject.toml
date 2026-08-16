@@ -68,6 +68,7 @@ dev = [
   "pytest-cov>=4.0",
   "ruff>=0.4",
   "mypy>=1.8",
+  "import-linter>=2.0",
   "mkdocs-material>=9.7.1",
   "mkdocstrings-python>=2.0.1",
   "mkdocs>=1.6.1",

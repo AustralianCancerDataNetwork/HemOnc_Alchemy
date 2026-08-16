@@ -1,0 +1,26 @@
+[importlinter]
+root_package = hemonc_alchemy
+include_external_packages = True
+
+[importlinter:contract:runtime-layers]
+name = compiler is author-facing only; loaders and toolbox build on model, not each other
+type = layers
+layers =
+    hemonc_alchemy.cli
+    hemonc_alchemy.compiler
+    hemonc_alchemy.loaders | hemonc_alchemy.toolbox
+    hemonc_alchemy.model
+
+[importlinter:contract:omop-alchemy-behind-bridge]
+name = omop-alchemy is only reachable through the optional integrations bridge
+type = forbidden
+source_modules =
+    hemonc_alchemy.model
+    hemonc_alchemy.toolbox
+    hemonc_alchemy.loaders
+    hemonc_alchemy.compiler
+    hemonc_alchemy.cli
+    hemonc_alchemy.config
+    hemonc_alchemy.errors
+forbidden_modules =
+    omop_alchemy
