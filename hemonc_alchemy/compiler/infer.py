@@ -123,6 +123,28 @@ def detect_numeric(series: pd.Series) -> str | None:
     """
     Return 'Integer', 'Float', or None.
     Works with numpy, pandas nullable, and pyarrow dtypes.
+
+    A float64 dtype alone doesn't mean the underlying values are
+    fractional: pandas upcasts an otherwise-integer column to float64 the
+    moment it has any missing values, since a native int array can't hold
+    NaN. CONFIRMED against the real HemOnc data to be the root cause of
+    three of the four `_cui` business-key type mismatches found across
+    tables (US-18): `sigs.variant_cui`, `studies.condition_cui`, and
+    `indications.component_cui` are all genuinely integer identifiers,
+    misclassified as Float purely because that particular table's export
+    has some missing values for that column. Real fractional data (a dose
+    amount, a p-value) still has non-integral values among its non-null
+    entries and is still correctly classified as Float.
+
+    NOT fixed here: `variant_eligibility.variant_cui` contains a literal
+    "TBA" placeholder token mixed into an otherwise-numeric identifier
+    column, which prevents even reaching this function as a numeric dtype
+    at all (it loads as `object`/string). Recognising placeholder tokens
+    as null-equivalent needs to be scoped to identifier-shaped columns
+    specifically -- "TBA"/"TBD" are also genuine categorical values
+    elsewhere (e.g. Authors_Site_typeEnum has a real "TBD" member), so a
+    blanket na_values addition at CSV-read time would be wrong. Left as a
+    follow-up requiring a judgment call, not guessed at here.
     """
     dt = str(series.dtype).lower()
 
@@ -130,6 +152,9 @@ def detect_numeric(series: pd.Series) -> str | None:
         return "Integer"
 
     if is_float_dtype(series.dtype) or re.match(r"^float\d+\[", dt):
+        non_null = series.dropna()
+        if len(non_null) > 0 and (non_null % 1 == 0).all():
+            return "Integer"
         return "Float"
 
     return None
@@ -163,25 +188,33 @@ def safe_identifier(name: str) -> str:
 def resolve_source_csv(data_dir: Path, table_name: str) -> tuple[Path | None, list[str]]:
     """Find the real CSV backing `table_name` in `data_dir`, tolerating the
     filename irregularities confirmed in the real HemOnc data export
-    (dots/spaces stripped when normalised, or an extra descriptive suffix).
+    (dots stripped when normalised) -- but never treating a file marked
+    "beta" as a legitimate source, regardless of how well its name
+    otherwise matches.
 
     Returns (path, ambiguous_matches). `path` is None if nothing resolved;
     `ambiguous_matches` is non-empty only when multiple candidates tied and
     the caller should treat this as an error rather than guess.
 
+    `study_eligibility beta.csv` and `study_demographics beta.csv` are
+    excluded by the "beta" filter below on purpose: draft/unvalidated data
+    shouldn't feed schema generation just because its filename happens to
+    match. This means `study_eligibility` correctly has no entity class
+    today -- there is no non-beta source for it -- which is a deliberate
+    exclusion, not a residual gap in the filename-matching logic.
+
     Resolution order (first tier that produces exactly one match wins):
     1. Exact stem match (`table_name.csv`).
-    2. Normalised-stem match (`safe_identifier(stem) == table_name`) — this
-       alone recovers 3 of the 4 confirmed-missing tables:
+    2. Normalised-stem match (`safe_identifier(stem) == table_name`) -- this
+       recovers 3 of the 4 originally-confirmed-missing tables:
        `canonicaltriples`/`canonical.triples.csv`,
        `contexttable`/`context.table.csv`,
        `variantblob`/`variant.blob.csv`.
-    3. Case-insensitive prefix match on the raw stem — recovers the 4th:
-       `study_eligibility`/`study_eligibility beta.csv`. Only used when it
-       yields exactly one candidate; a tie is reported as ambiguous rather
-       than guessed.
+    3. Case-insensitive prefix match on the raw stem, for any remaining
+       irregular-but-legitimate filenames. Only used when it yields exactly
+       one candidate; a tie is reported as ambiguous rather than guessed.
     """
-    csvs = sorted(data_dir.glob("*.csv"))
+    csvs = [p for p in sorted(data_dir.glob("*.csv")) if "beta" not in p.stem.lower()]
 
     exact = [p for p in csvs if p.stem == table_name]
     if len(exact) == 1:

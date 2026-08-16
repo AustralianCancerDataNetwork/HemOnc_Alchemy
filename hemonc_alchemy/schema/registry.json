@@ -1929,7 +1929,7 @@
           "length": null,
           "name": "component_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "condition": {
           "enum": null,
@@ -2083,7 +2083,7 @@
           "length": null,
           "name": "study_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "study_yn": {
           "enum": null,
@@ -3378,7 +3378,7 @@
           "length": null,
           "name": "dosecapunit_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "dosemaxnum": {
           "enum": null,
@@ -3406,7 +3406,7 @@
           "length": null,
           "name": "doseunit_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "durationmaxnum": {
           "enum": null,
@@ -3434,7 +3434,7 @@
           "length": null,
           "name": "durationunit_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "frequency": {
           "enum": "frequency",
@@ -3448,7 +3448,7 @@
           "length": null,
           "name": "frequency_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "inparens": {
           "enum": null,
@@ -3497,7 +3497,7 @@
           "length": null,
           "name": "route_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "seqrel": {
           "enum": null,
@@ -3581,7 +3581,7 @@
           "length": null,
           "name": "targetlevelunit_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "temp": {
           "enum": null,
@@ -3616,7 +3616,7 @@
           "length": null,
           "name": "variant_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         }
       },
       "denormalised_columns": [
@@ -3915,7 +3915,7 @@
           "length": null,
           "name": "condition_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "date_added": {
           "enum": null,
@@ -4153,116 +4153,8 @@
       "use_surrogate_pk": true
     },
     "study_eligibility": {
-      "columns": {
-        "age": {
-          "enum": null,
-          "length": null,
-          "name": "age",
-          "nullable": true,
-          "type": "Float"
-        },
-        "age_unit": {
-          "enum": null,
-          "length": null,
-          "name": "age_unit",
-          "nullable": false,
-          "type": "String(5)"
-        },
-        "biomarker": {
-          "enum": null,
-          "length": null,
-          "name": "biomarker",
-          "nullable": true,
-          "type": "Float"
-        },
-        "condition": {
-          "enum": null,
-          "length": null,
-          "name": "condition",
-          "nullable": false,
-          "type": "String(47)"
-        },
-        "other": {
-          "enum": null,
-          "length": null,
-          "name": "other",
-          "nullable": true,
-          "type": "Float"
-        },
-        "prior_lines": {
-          "enum": null,
-          "length": null,
-          "name": "prior_lines",
-          "nullable": true,
-          "type": "Float"
-        },
-        "prior_lines_exact": {
-          "enum": null,
-          "length": null,
-          "name": "prior_lines_exact",
-          "nullable": true,
-          "type": "Float"
-        },
-        "prior_lines_type": {
-          "enum": null,
-          "length": null,
-          "name": "prior_lines_type",
-          "nullable": true,
-          "type": "Float"
-        },
-        "ps": {
-          "enum": null,
-          "length": null,
-          "name": "ps",
-          "nullable": true,
-          "type": "Float"
-        },
-        "ps_type": {
-          "enum": null,
-          "length": null,
-          "name": "ps_type",
-          "nullable": true,
-          "type": "Float"
-        },
-        "race": {
-          "enum": null,
-          "length": null,
-          "name": "race",
-          "nullable": false,
-          "type": "String(12)"
-        },
-        "sex": {
-          "enum": null,
-          "length": null,
-          "name": "sex",
-          "nullable": false,
-          "type": "String(12)"
-        },
-        "stage": {
-          "enum": null,
-          "length": null,
-          "name": "stage",
-          "nullable": true,
-          "type": "Float"
-        },
-        "study_id": {
-          "enum": null,
-          "length": null,
-          "name": "study_id",
-          "nullable": false,
-          "type": "Integer"
-        },
-        "study_name": {
-          "enum": null,
-          "length": null,
-          "name": "study_name",
-          "nullable": false,
-          "type": "String(48)"
-        }
-      },
-      "denormalised_columns": [
-        "study_name"
-      ],
+      "columns": {},
+      "denormalised_columns": [],
       "derived_columns": [],
       "description": "Eligibility criteria for studies",
       "enums": {},
@@ -4271,27 +4163,16 @@
       "maturity": "dev",
       "name": "study_eligibility",
       "normalisation_groups": [],
-      "normalised_tables": [
-        {
-          "column": "study_name",
-          "parent": "study_eligibility"
-        }
-      ],
+      "normalised_tables": [],
       "pk_columns": [
         "study_id",
         "condition",
         "biomarker"
       ],
       "soft_m2m_relationships": [],
-      "soft_relationships": [
-        {
-          "local_column": "condition",
-          "target_column": "condition",
-          "target_table": "conditions"
-        }
-      ],
+      "soft_relationships": [],
       "source_defined_keys": [],
-      "source_filename": "study_eligibility beta.csv",
+      "source_filename": null,
       "use_surrogate_pk": true
     },
     "study_results": {
@@ -4434,7 +4315,7 @@
           "length": null,
           "name": "metric_version",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "metricnumthatarm": {
           "enum": null,
@@ -4632,7 +4513,7 @@
           "length": null,
           "name": "concept_code",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "date_added": {
           "enum": null,
@@ -4779,8 +4660,8 @@
           "enum": null,
           "length": null,
           "name": "variant_cui",
-          "nullable": false,
-          "type": "String(6)"
+          "nullable": true,
+          "type": "Integer"
         }
       },
       "denormalised_columns": [

@@ -386,7 +386,7 @@ class Indications(EntityBase, Base):
     age: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     age_unit: Mapped[Optional[Indications_Age_unitEnum]] = mapped_column(Enum(Indications_Age_unitEnum), nullable=True)
     component: Mapped[str] = mapped_column(String(255), nullable=False)
-    component_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    component_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
     date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -397,7 +397,7 @@ class Indications(EntityBase, Base):
     sex: Mapped[Optional[Indications_SexEnum]] = mapped_column(Enum(Indications_SexEnum), nullable=True)
     string: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     study: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    study_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    study_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     study_yn: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     time_contingency: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     withdrawn: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -967,24 +967,24 @@ class Sigs(EntityBase, Base):
     divided: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     dosecapnum: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     dosecapunit: Mapped[Optional[Sigs_DosecapunitEnum]] = mapped_column(Enum(Sigs_DosecapunitEnum), nullable=True)
-    dosecapunit_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    dosecapunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     dosemaxnum: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     doseminnum: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     doseunit: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    doseunit_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    doseunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     durationmaxnum: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     durationminnum: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     durationunit: Mapped[Optional[Sigs_DurationunitEnum]] = mapped_column(Enum(Sigs_DurationunitEnum), nullable=True)
-    durationunit_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    durationunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     frequency: Mapped[Optional[Sigs_FrequencyEnum]] = mapped_column(Enum(Sigs_FrequencyEnum), nullable=True)
-    frequency_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    frequency_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     inparens: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phase: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     portion: Mapped[str] = mapped_column(String(255), nullable=False)
     regimen: Mapped[str] = mapped_column(String(255), nullable=False)
     regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
     route: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    route_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    route_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     seqrelwhat: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     sequence: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     step_number: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -993,11 +993,11 @@ class Sigs(EntityBase, Base):
     targetlevel: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     targetleveltype: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     targetlevelunit: Mapped[Optional[Sigs_TargetlevelunitEnum]] = mapped_column(Enum(Sigs_TargetlevelunitEnum), nullable=True)
-    targetlevelunit_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    targetlevelunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     timing_sequence: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     variant: Mapped[str] = mapped_column(String(255), nullable=False)
-    variant_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    variant_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
 
     normalisation_groups = [
         ['seqrel', 'seqrel'],
@@ -1072,7 +1072,7 @@ class Studies(EntityBase, Base):
 
     biomarker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
-    condition_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    condition_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     end: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     enrollment: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -1127,56 +1127,7 @@ class studies_Study_groupMap(EntityBase, Base):
 
     parent: Mapped['Studies'] = sa_relationship(back_populates='study_group_items')
 
-class StudyEligibility(EntityBase, Base):
-    __tablename__ = 'study_eligibility'
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
-    filename = 'study_eligibility beta.csv'
-    pk_columns = ['id']
-    source_defined_keys = []
-    identity_keys = []
-    denormalised_columns = ['study_name']
-    derived_columns = []
-
-    enum_lookup = {}
-
-    __table_args__ = (
-        sa.UniqueConstraint('study_id', 'condition', 'biomarker', name='uq_study_eligibility_natural_key'),
-    )
-
-    age: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    age_unit: Mapped[str] = mapped_column(String(255), nullable=False)
-    biomarker: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    condition: Mapped[str] = mapped_column(String(255), nullable=False)
-    other: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    prior_lines: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    prior_lines_exact: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    prior_lines_type: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    ps: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    ps_type: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    race: Mapped[str] = mapped_column(String(255), nullable=False)
-    sex: Mapped[str] = mapped_column(String(255), nullable=False)
-    stage: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    study_id: Mapped[int] = mapped_column(BigInteger, nullable=False)
-
-    normalisation_groups = [
-    ]
-    study_name_items: Mapped[list['study_eligibility_Study_nameMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
-        'Conditions',
-        primaryjoin="StudyEligibility.condition == foreign(Conditions.condition)",
-        lazy='selectin',
-        viewonly=True,
-    )
-
-
-class study_eligibility_Study_nameMap(EntityBase, Base):
-    __tablename__ = 'study_eligibility_study_name'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_eligibility.id'), primary_key=True)
-    study_name: Mapped[str] = mapped_column(String(255), primary_key=True)
-
-    parent: Mapped['StudyEligibility'] = sa_relationship(back_populates='study_name_items')
 
 class StudyResults(EntityBase, Base):
     __tablename__ = 'study_results'
@@ -1217,7 +1168,7 @@ class StudyResults(EntityBase, Base):
     estlb: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     estub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     metric: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    metric_version: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    metric_version: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     metricnumthatarm: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     metricnumthisarm: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     metricunit: Mapped[Optional[StudyResults_MetricunitEnum]] = mapped_column(Enum(StudyResults_MetricunitEnum), nullable=True)
@@ -1383,7 +1334,7 @@ class VariantEligibility(EntityBase, Base):
     type: Mapped[str] = mapped_column(String(255), nullable=False)
     unit: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     unit_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    variant_cui: Mapped[str] = mapped_column(String(255), nullable=False)
+    variant_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
 
     normalisation_groups = [
         ['study', 'study'],
@@ -1851,7 +1802,7 @@ class Units(EntityBase, Base):
         'unit_type': Units_Unit_typeEnum,
     }
 
-    concept_code: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    concept_code: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     date_added: Mapped[str] = mapped_column(String(255), nullable=False)
     unit: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
     unit_type: Mapped[Units_Unit_typeEnum] = mapped_column(Enum(Units_Unit_typeEnum), nullable=False)

@@ -58,6 +58,41 @@ ColumnType = str
 TableKind = Literal["lookup", "content"]
 Maturity = Literal["dev", "prod", "prod-"]
 
+# Tokens that mean "not yet assigned" on an identifier column specifically.
+# Deliberately scoped to `_cui`-suffixed columns only (see
+# `_clean_identifier_placeholders`) -- the same words are genuine
+# categorical values elsewhere, e.g. Authors_Site_typeEnum has a real "TBD"
+# member, so this must not become a blanket na_values addition.
+_IDENTIFIER_PLACEHOLDER_TOKENS = {"tba", "tbd", "pending"}
+
+
+def _clean_identifier_placeholders(series: pd.Series, col_name: str) -> pd.Series:
+    """For `_cui`-suffixed identifier columns, treat known "not yet
+    assigned" placeholder tokens as missing when inferring type/nullability
+    (US-18). CONFIRMED against real data: `variant_eligibility.variant_cui`
+    contains a literal "TBA" value alongside otherwise-clean integer IDs,
+    which is why it was the one `_cui` mismatch `detect_numeric`'s
+    float64-with-NaN fix didn't already resolve -- "TBA" prevents the
+    column from parsing as numeric at all, so it never reaches that fix.
+
+    Nulling the placeholder alone isn't enough: pandas keeps the column at
+    object/string dtype (a single non-numeric token is enough to block
+    numeric dtype inference for the whole column), and `detect_numeric`
+    inspects dtype, not values. So also attempt numeric coercion here --
+    but only adopt it if every remaining (non-placeholder) value actually
+    converts; a `_cui` column that's genuinely alphanumeric throughout
+    falls back to staying textual rather than being forced into silently
+    dropping real data as NaN.
+    """
+    if not col_name.endswith("_cui"):
+        return series
+    is_placeholder = series.astype(str).str.strip().str.lower().isin(_IDENTIFIER_PLACEHOLDER_TOKENS)
+    cleaned = series.where(~is_placeholder)
+    coerced = pd.to_numeric(cleaned, errors="coerce")
+    if coerced.notna().sum() >= cleaned.notna().sum():
+        return coerced
+    return cleaned
+
 
 def dataclass_to_dict(obj: Any) -> Any:
     """Recursively convert nested dataclass structures into JSON-safe values."""
@@ -530,18 +565,19 @@ class TableMeta:
         for col in df_data.columns:
             safe_col = safe_identifier(col).lower()
             s = df_data[col]
+            s_typed = _clean_identifier_placeholders(s, safe_col)
 
-            if detect_boolean(s):
+            if detect_boolean(s_typed):
                 inferred_type = "Boolean"
-            elif detect_datetime(s):
+            elif detect_datetime(s_typed):
                 inferred_type = "DateTime"
-            elif (num := detect_numeric(s)) is not None:
+            elif (num := detect_numeric(s_typed)) is not None:
                 inferred_type = num
             else:
-                mn = max_string_length(s)
+                mn = max_string_length(s_typed)
                 inferred_type = "Text" if mn > 255 else f"String({mn})"
 
-            is_nullable = bool(s.isna().any())
+            is_nullable = bool(s_typed.isna().any())
 
             if safe_col not in self.columns:
                 self.columns[safe_col] = ColumnSpec(name=safe_col, type=inferred_type, nullable=is_nullable)
