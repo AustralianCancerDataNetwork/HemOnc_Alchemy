@@ -58,6 +58,21 @@ def validate_registry(registry: Registry) -> list[str]:
             if rel.target_table not in registry.tables:
                 errors.append(f"{name}: soft m2m relationship targets unknown table '{rel.target_table}'")
 
+        # A column repeated within its own group, or appearing in more than
+        # one group, means a table_class of exploded map tables would either
+        # be malformed (a self-pair) or ambiguous about which group governs
+        # it (review follow-up; see schema_model.py's finalise_from_data
+        # dedup-ordering fix for the confirmed real case this catches).
+        seen_in_group: dict[str, int] = {}
+        for group in meta.normalisation_groups:
+            if len(group.columns) != len(set(group.columns)):
+                errors.append(f"{name}: normalisation group {group.columns!r} repeats a column")
+            for col in group.columns:
+                seen_in_group[col] = seen_in_group.get(col, 0) + 1
+        for col, count in seen_in_group.items():
+            if count > 1:
+                errors.append(f"{name}.{col}: appears in {count} normalisation groups, expected at most 1")
+
     return errors
 
 

@@ -105,8 +105,10 @@ cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true 
 # as a diff like any other generated artifact but not hand-styled to the
 # same bar as authored code -- e.g. class-level list literals like
 # `pk_columns = [...]` are intentional class metadata, not accidental
-# mutable defaults.
-extend-exclude = ["hemonc_alchemy/model/entities.py", "hemonc_alchemy/model/enums.py"]
+# mutable defaults. reference/ is salvaged material from the old
+# HemOnc_Alchemy repo (notebooks, NLP patterns) kept for domain context, not
+# held to this project's lint bar.
+extend-exclude = ["hemonc_alchemy/model/entities.py", "hemonc_alchemy/model/enums.py", "reference/"]
 
 [tool.pytest.ini_options]
 markers = [

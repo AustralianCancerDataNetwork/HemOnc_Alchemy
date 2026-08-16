@@ -48,6 +48,7 @@ from .infer import (
     MAX_ENUM_UNIQUE,
     parse_unique_key,
     resolve_source_csv,
+    safe_enum_key,
     safe_identifier,
 )
 from .schema_model import Registry
@@ -65,12 +66,30 @@ TABLE_DECISIONS: dict[str, dict[str, str]] = {
     "hemonc_classes": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
     "indications": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
     "pointers": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
+    # Reviewed against real data: the only duplicate is `Relapsed_or_refractory`
+    # vs `Relapsed_or_Refractory` -- a single case-only variant pair in the raw
+    # CSV (2 of 384 rows), not a key-design problem. No better key exists for
+    # `contextraw`; this is a source-data typo safe to dedupe on load.
+    "contexttable": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
 }
 
 STATUS_NOTES: dict[str, str] = {
     "ACCEPTED_SPARSE_KEY": "Reviewed and accepted as a sparse business-key table.",
     "IGNORE_ON_LOAD": "Reviewed and treated as a source-data issue safe to ignore or dedupe on load.",
 }
+
+# Statuses a CI/script caller should treat as a hard failure -- see
+# `has_hard_failures`/cli.py's `audit --report-only` (US-8 follow-up: the
+# audit command used to always exit 0 regardless of these).
+HARD_FAILURE_STATUSES: frozenset[str] = frozenset({
+    "AMBIGUOUS_CSV_MATCH",
+    "MISSING_KEY_COLUMNS",
+    "DUPLICATE_BUSINESS_KEYS",
+})
+
+
+def has_hard_failures(results: list[AuditResult]) -> bool:
+    return any(r.status in HARD_FAILURE_STATUSES for r in results)
 
 
 @dataclass
@@ -230,8 +249,24 @@ def audit_table(kind: str, raw_table_name: str, maturity: str, unique_key_raw: s
         )
 
     key_df = audit_df[key_columns]
-    rows_with_null_key_parts = int(key_df.isna().any(axis=1).sum())
-    canonical_df = canonical_key_frame(audit_df, key_columns)
+    has_null_key_part = key_df.isna().any(axis=1)
+    rows_with_null_key_parts = int(has_null_key_part.sum())
+
+    # Rows with a null key part are excluded from the duplicate check itself,
+    # not just noted separately (US-12 follow-up): a business key that's
+    # partly unassigned (e.g. `sigs.variant_cui` before HemOnc has linked a
+    # row to its eventual variant) isn't comparable to another row with the
+    # same gap, matching standard SQL UNIQUE-constraint semantics where NULLs
+    # never collide with each other. CONFIRMED against real data: every one
+    # of `sigs`' 2422 flagged "duplicates" had a null `variant_cui`, and zero
+    # duplicate business keys remain among the fully-keyed rows -- these were
+    # genuinely distinct sig rows (different study/regimen/day-pattern), not
+    # a key-design problem, and no alternative key column exists to
+    # disambiguate them while variant_cui is unassigned. Keying only the
+    # fully-populated rows here is what correctly reclassifies that case as
+    # SPARSE_KEY_ROWS instead of a false DUPLICATE_BUSINESS_KEYS.
+    keyed_df = audit_df.loc[~has_null_key_part]
+    canonical_df = canonical_key_frame(keyed_df, key_columns)
     duplicate_mask = canonical_df.duplicated(subset=key_columns, keep=False)
     duplicate_business_keys = int(canonical_df.duplicated(subset=key_columns).sum())
 
@@ -244,7 +279,7 @@ def audit_table(kind: str, raw_table_name: str, maturity: str, unique_key_raw: s
     else:
         status = "OK"
 
-    duplicate_examples = extract_duplicate_examples(audit_df.loc[duplicate_mask, key_columns], key_columns)
+    duplicate_examples = extract_duplicate_examples(keyed_df.loc[duplicate_mask, key_columns], key_columns)
 
     return replace(
         base,
@@ -334,6 +369,40 @@ def run_audit(dictionary_path: Path, data_dir: Path) -> list[AuditResult]:
     return sorted(results, key=lambda r: (r.kind, r.table_name))
 
 
+def enum_collision_warnings(registry: Registry) -> list[str]:
+    """Flag enum columns where two distinct display values collapse onto the
+    same generated member name.
+
+    New in this rewrite (review follow-up). `EnumSpec.enum_class` derives
+    each member's name from `safe_enum_key(value)`; CONFIRMED against real
+    data that this collapses distinct values onto one key -- `sigs`'
+    `targetleveltype` column has both "CPS at least 10%" and "CPS at least
+    10", which both normalise to `CPS_AT_LEAST_10`, so the generated enum
+    silently keeps only one and drops the other's member.
+
+    This is deliberately a warning, not a validation failure: in this
+    specific case the two values are the same real-world category
+    (the `%` is cosmetic), and collapsing them is fine. But the collision
+    should be visible so an author can judge that case by case rather than
+    have it happen silently -- a future collision might not be as harmless.
+    """
+    warnings: list[str] = []
+    for table_name, meta in registry.tables.items():
+        for col_name, enum_spec in meta.enums.items():
+            values = [v.strip().lower() for v in enum_spec.values]
+            by_key: dict[str, set[str]] = {}
+            for v in dict.fromkeys(values):
+                by_key.setdefault(safe_enum_key(v), set()).add(v)
+            for key, members in by_key.items():
+                if len(members) > 1:
+                    collapsed = ", ".join(repr(m) for m in sorted(members))
+                    warnings.append(
+                        f"{table_name}.{col_name}: {collapsed} all normalise to enum member "
+                        f"'{key}' -- only one survives generation"
+                    )
+    return warnings
+
+
 def enum_threshold_warnings(registry: Registry, within: int = 3) -> list[str]:
     """Flag enum columns close to the MAX_ENUM_UNIQUE classification cliff (US-15).
 
@@ -356,7 +425,7 @@ def enum_threshold_warnings(registry: Registry, within: int = 3) -> list[str]:
 def build_report(results: list[AuditResult], dictionary_path: Path, data_dir: Path) -> str:
     status_counts = Counter(result.status for result in results)
 
-    hard_failures = {"AMBIGUOUS_CSV_MATCH", "MISSING_KEY_COLUMNS", "DUPLICATE_BUSINESS_KEYS"}
+    hard_failures = HARD_FAILURE_STATUSES
     reviewed_statuses = {"ACCEPTED_SPARSE_KEY", "IGNORE_ON_LOAD"}
     warning_statuses = {"SPARSE_KEY_ROWS", "NO_CURRENT_CSV", "NO_DECLARED_NATURAL_KEY"}
 

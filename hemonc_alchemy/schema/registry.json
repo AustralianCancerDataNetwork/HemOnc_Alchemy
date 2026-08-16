@@ -922,38 +922,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "conditions",
-      "normalisation_groups": [
-        {
-          "columns": [
-            "map_icd10cm",
-            "map_icd10cm"
-          ]
-        },
-        {
-          "columns": [
-            "map_icd9cm",
-            "map_icd9cm"
-          ]
-        },
-        {
-          "columns": [
-            "map_icdo3",
-            "map_icdo3"
-          ]
-        },
-        {
-          "columns": [
-            "map_icdo3_morph",
-            "map_icdo3_morph"
-          ]
-        },
-        {
-          "columns": [
-            "map_oncotree",
-            "map_oncotree"
-          ]
-        }
-      ],
+      "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "map_icd10cm",
@@ -1310,43 +1279,13 @@
       "normalisation_groups": [
         {
           "columns": [
-            "atc",
-            "atc"
-          ]
-        },
-        {
-          "columns": [
-            "canmed_major_class",
-            "canmed_major_class"
-          ]
-        },
-        {
-          "columns": [
             "canmed_major_class",
             "canmed_major_class_cui"
           ]
         },
         {
           "columns": [
-            "canmed_major_class_cui",
-            "canmed_major_class_cui"
-          ]
-        },
-        {
-          "columns": [
             "canmed_minor_class",
-            "canmed_minor_class"
-          ]
-        },
-        {
-          "columns": [
-            "canmed_minor_class",
-            "canmed_minor_class_cui"
-          ]
-        },
-        {
-          "columns": [
-            "canmed_minor_class_cui",
             "canmed_minor_class_cui"
           ]
         }
@@ -2290,50 +2229,14 @@
       "normalisation_groups": [
         {
           "columns": [
-            "biomarker",
-            "biomarker"
-          ]
-        },
-        {
-          "columns": [
             "biomarker2",
             "biomarker2_finding"
           ]
         },
         {
           "columns": [
-            "biomarker3",
-            "biomarker3"
-          ]
-        },
-        {
-          "columns": [
             "biomarker4",
             "biomarker4_finding"
-          ]
-        },
-        {
-          "columns": [
-            "biomarker_finding",
-            "biomarker_finding"
-          ]
-        },
-        {
-          "columns": [
-            "regimen",
-            "regimen"
-          ]
-        },
-        {
-          "columns": [
-            "regimen_cui",
-            "regimen_cui"
-          ]
-        },
-        {
-          "columns": [
-            "with_field",
-            "with_field"
           ]
         }
       ],
@@ -2723,56 +2626,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "persons",
-      "normalisation_groups": [
-        {
-          "columns": [
-            "condition_types",
-            "condition_types"
-          ]
-        },
-        {
-          "columns": [
-            "conditions",
-            "conditions"
-          ]
-        },
-        {
-          "columns": [
-            "country",
-            "country"
-          ]
-        },
-        {
-          "columns": [
-            "location",
-            "location"
-          ]
-        },
-        {
-          "columns": [
-            "orcid",
-            "orcid"
-          ]
-        },
-        {
-          "columns": [
-            "site",
-            "site"
-          ]
-        },
-        {
-          "columns": [
-            "study_groups",
-            "study_groups"
-          ]
-        },
-        {
-          "columns": [
-            "study_sponsors",
-            "study_sponsors"
-          ]
-        }
-      ],
+      "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "condition_types",
@@ -3815,20 +3669,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "sigs",
-      "normalisation_groups": [
-        {
-          "columns": [
-            "seqrel",
-            "seqrel"
-          ]
-        },
-        {
-          "columns": [
-            "seqrelwhenunit",
-            "seqrelwhenunit"
-          ]
-        }
-      ],
+      "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "cyclesigs_note",
@@ -4112,14 +3953,7 @@
       "kind": "content",
       "maturity": "dev",
       "name": "studies",
-      "normalisation_groups": [
-        {
-          "columns": [
-            "study_group",
-            "study_group"
-          ]
-        }
-      ],
+      "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "sponsor",
@@ -4674,14 +4508,7 @@
       "kind": "content",
       "maturity": "dev",
       "name": "variant_eligibility",
-      "normalisation_groups": [
-        {
-          "columns": [
-            "study",
-            "study"
-          ]
-        }
-      ],
+      "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "study",
@@ -5021,20 +4848,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "variants",
-      "normalisation_groups": [
-        {
-          "columns": [
-            "study",
-            "study"
-          ]
-        },
-        {
-          "columns": [
-            "tracer",
-            "tracer"
-          ]
-        }
-      ],
+      "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "blob",

@@ -206,11 +206,6 @@ class Conditions(EntityBase, Base):
     variantscount: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     normalisation_groups = [
-        ['map_icd10cm', 'map_icd10cm'],
-        ['map_icd9cm', 'map_icd9cm'],
-        ['map_icdo3', 'map_icdo3'],
-        ['map_icdo3_morph', 'map_icdo3_morph'],
-        ['map_oncotree', 'map_oncotree'],
     ]
     map_icd10cm_items: Mapped[list['conditions_Map_icd10cmMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     map_icd9cm_items: Mapped[list['conditions_Map_icd9cmMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -296,13 +291,8 @@ class Drugs(EntityBase, Base):
     multiagent: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     normalisation_groups = [
-        ['atc', 'atc'],
-        ['canmed_major_class', 'canmed_major_class'],
         ['canmed_major_class', 'canmed_major_class_cui'],
-        ['canmed_major_class_cui', 'canmed_major_class_cui'],
-        ['canmed_minor_class', 'canmed_minor_class'],
         ['canmed_minor_class', 'canmed_minor_class_cui'],
-        ['canmed_minor_class_cui', 'canmed_minor_class_cui'],
     ]
     atc_items: Mapped[list['drugs_AtcMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     canmed_major_class_items: Mapped[list['drugs_Canmed_major_classMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -403,14 +393,8 @@ class Indications(EntityBase, Base):
     withdrawn: Mapped[str] = mapped_column(String(255), nullable=False)
 
     normalisation_groups = [
-        ['biomarker', 'biomarker'],
         ['biomarker2', 'biomarker2_finding'],
-        ['biomarker3', 'biomarker3'],
         ['biomarker4', 'biomarker4_finding'],
-        ['biomarker_finding', 'biomarker_finding'],
-        ['regimen', 'regimen'],
-        ['regimen_cui', 'regimen_cui'],
-        ['with_field', 'with_field'],
     ]
     biomarker_items: Mapped[list['indications_BiomarkerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker2_items: Mapped[list['indications_Biomarker2Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -675,14 +659,6 @@ class Persons(EntityBase, Base):
     vital_status: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     normalisation_groups = [
-        ['condition_types', 'condition_types'],
-        ['conditions', 'conditions'],
-        ['country', 'country'],
-        ['location', 'location'],
-        ['orcid', 'orcid'],
-        ['site', 'site'],
-        ['study_groups', 'study_groups'],
-        ['study_sponsors', 'study_sponsors'],
     ]
     condition_types_items: Mapped[list['persons_Condition_typesMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     conditions_items: Mapped[list['persons_ConditionsMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -1000,8 +976,6 @@ class Sigs(EntityBase, Base):
     variant_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
 
     normalisation_groups = [
-        ['seqrel', 'seqrel'],
-        ['seqrelwhenunit', 'seqrelwhenunit'],
     ]
     cyclesigs_note_items: Mapped[list['sigs_Cyclesigs_noteMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     seqrel_items: Mapped[list['sigs_SeqrelMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -1092,7 +1066,6 @@ class Studies(EntityBase, Base):
     unreg_study: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     normalisation_groups = [
-        ['study_group', 'study_group'],
     ]
     sponsor_items: Mapped[list['studies_SponsorMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     study_group_items: Mapped[list['studies_Study_groupMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -1277,8 +1250,6 @@ class Variants(EntityBase, Base):
     version: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
     normalisation_groups = [
-        ['study', 'study'],
-        ['tracer', 'tracer'],
     ]
     blob_items: Mapped[list['variants_BlobMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     study_items: Mapped[list['variants_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -1337,7 +1308,6 @@ class VariantEligibility(EntityBase, Base):
     variant_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
 
     normalisation_groups = [
-        ['study', 'study'],
     ]
     study_items: Mapped[list['variant_eligibility_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     unit_obj: Mapped[Optional['Units']] = sa_relationship(

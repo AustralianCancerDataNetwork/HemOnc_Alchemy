@@ -484,6 +484,15 @@ class TableMeta:
 
     @classmethod
     def from_dict(cls, raw: dict) -> TableMeta:
+        # soft_relationships/soft_m2m_relationships/use_surrogate_pk are
+        # round-tripped here too (review follow-up): they were previously
+        # dropped on load even though `save_registry_json` writes them --
+        # the checked-in registry.json has 18 soft relationships that
+        # silently became 0 once loaded back via `load_registry_json`,
+        # which is what `compiler/diff.py` and `compiler/audit.py` both
+        # operate on. `use_surrogate_pk` defaults to True to match this
+        # dataclass's own field default, for registry snapshots written
+        # before this field existed.
         return cls(
             name=raw["name"],
             description=raw["description"],
@@ -502,6 +511,11 @@ class TableMeta:
             normalised_tables=[
                 NormalisedTable.from_dict(nt) for nt in raw.get("normalised_tables", [])
             ],
+            soft_relationships=[ForeignLikeRef(**r) for r in raw.get("soft_relationships", [])],
+            soft_m2m_relationships=[
+                SoftManyToManyRef(**r) for r in raw.get("soft_m2m_relationships", [])
+            ],
+            use_surrogate_pk=raw.get("use_surrogate_pk", True),
             source_filename=raw.get("source_filename"),
         )
 
@@ -618,6 +632,16 @@ class TableMeta:
             if s.is_unique and safe_col not in self.source_defined_keys:
                 self.source_defined_keys.append(safe_col)
 
+        # Dedupe before inference, not after: `enrich_field_metadata` (the
+        # dictionary-driven pass) and the per-column loop above can both add
+        # the same column to `denormalised_columns`. Deduping only at the end
+        # left `infer_pipe_groups` operating on a list with repeats, which
+        # rendered malformed self-pairs like `['atc', 'atc']` into
+        # `normalisation_groups` (CONFIRMED in the real generated
+        # entities.py's `Drugs` class) even though `denormalised_columns`
+        # itself came out clean.
+        self.denormalised_columns = sorted(set(self.denormalised_columns))
+
         groups = infer_pipe_groups(df_data, self.denormalised_columns)
 
         flattened_multi = {c for g in groups if len(g) > 1 for c in g}
@@ -625,7 +649,6 @@ class TableMeta:
 
         self.normalisation_groups = [NormalisationGroup(columns=g) for g in final_groups]
 
-        self.denormalised_columns = sorted(set(self.denormalised_columns))
         self.derived_columns = sorted(set(self.derived_columns))
         self.source_defined_keys = list(dict.fromkeys(self.source_defined_keys))
 

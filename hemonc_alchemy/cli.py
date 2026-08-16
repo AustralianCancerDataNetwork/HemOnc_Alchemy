@@ -8,6 +8,8 @@ argparse CLI; sa_create.py: no CLI at all, driven ad hoc from a notebook).
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 from typing import Annotated
 
@@ -65,7 +67,34 @@ def regen(
             typer.echo(f"  - {error}")
         raise typer.Exit(code=1)
 
-    changes = diff_module.diff_or_raise(_REGISTRY_JSON, registry)
+    # The ast/dataclass-level checks above pass even if the generated model
+    # can't actually be imported and mapped by SQLAlchemy -- CONFIRMED
+    # earlier in this rewrite (US-21) that a map-table PK bug only surfaced
+    # once orm_loader's validators ran against the real, imported model.
+    # Run that stronger check in a fresh subprocess, not an in-process
+    # reimport: `model.entities` may already be imported (e.g. by an earlier
+    # `regen` in the same process, or a test), and SQLAlchemy's declarative
+    # registry does not support re-mapping the same table names into one
+    # still-live `Base.metadata` -- a subprocess sidesteps that entirely by
+    # starting mapper/metadata state from scratch.
+    orm_check = subprocess.run(
+        [sys.executable, "-m", "hemonc_alchemy.cli", "validate"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if orm_check.returncode != 0:
+        typer.secho("Generated model failed to import/map cleanly:", fg=typer.colors.RED, bold=True)
+        typer.echo(orm_check.stdout)
+        typer.echo(orm_check.stderr)
+        raise typer.Exit(code=1)
+
+    try:
+        changes = diff_module.diff_or_raise(_REGISTRY_JSON, registry)
+    except ValueError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED)
+        raise typer.Exit(code=1) from exc
+
     if changes and not force:
         typer.secho(
             f"Schema changed in {len(changes)} way(s) since the last committed version. "
@@ -76,7 +105,7 @@ def regen(
             typer.echo(f"  - {change}")
         raise typer.Exit(code=1)
 
-    warnings = audit_module.enum_threshold_warnings(registry)
+    warnings = audit_module.enum_collision_warnings(registry) + audit_module.enum_threshold_warnings(registry)
     for warning in warnings:
         typer.secho(f"Warning: {warning}", fg=typer.colors.YELLOW)
 
@@ -134,7 +163,11 @@ def diff(
         raise typer.Exit(code=1)
 
     registry = load_registry_json(_REGISTRY_JSON)
-    changes = diff_module.diff_or_raise(_REGISTRY_JSON, registry, ref=ref)
+    try:
+        changes = diff_module.diff_or_raise(_REGISTRY_JSON, registry, ref=ref)
+    except ValueError as exc:
+        typer.secho(str(exc), fg=typer.colors.RED)
+        raise typer.Exit(code=1) from exc
 
     if not changes:
         typer.secho(f"No schema changes since {ref}.", fg=typer.colors.GREEN)
@@ -150,17 +183,29 @@ def audit(
     dictionary_path: DictionaryPathOption,
     data_dir: DataDirOption,
     output: Annotated[Path | None, typer.Option(help="Write the report here instead of printing it.")] = None,
+    report_only: Annotated[
+        bool, typer.Option(help="Always exit 0, even if hard mismatches are found (for local/manual review).")
+    ] = False,
 ) -> None:
-    """Audit natural/business keys for duplicates and enum-threshold risk."""
+    """Audit natural/business keys for duplicates and enum-threshold risk.
+
+    Exits nonzero on unreviewed hard mismatches (AMBIGUOUS_CSV_MATCH,
+    MISSING_KEY_COLUMNS, DUPLICATE_BUSINESS_KEYS) unless --report-only is
+    passed -- previously this command always exited 0 regardless of what it
+    found, so CI or a script couldn't distinguish a clean audit from a
+    failed one (review follow-up).
+    """
     results = audit_module.run_audit(dictionary_path, data_dir)
     report = audit_module.build_report(results, dictionary_path, data_dir)
 
     if output is None:
         typer.echo(report)
-        return
+    else:
+        output.write_text(report, encoding="utf-8")
+        typer.secho(f"Wrote report to {output}", fg=typer.colors.GREEN)
 
-    output.write_text(report, encoding="utf-8")
-    typer.secho(f"Wrote report to {output}", fg=typer.colors.GREEN)
+    if audit_module.has_hard_failures(results) and not report_only:
+        raise typer.Exit(code=1)
 
 
 def main() -> None:
