@@ -16,6 +16,7 @@ import typer
 from .compiler import audit as audit_module
 from .compiler import diff as diff_module
 from .compiler import generate as generate_module
+from .compiler import spec_adapter
 from .compiler import validate as validate_module
 from .compiler.schema_model import load_registry_json
 from .errors import HemOncValidationError
@@ -88,7 +89,15 @@ def regen(
 
 @app.command()
 def validate() -> None:
-    """Check the currently generated model for structural correctness."""
+    """Check the currently generated model for structural correctness.
+
+    Two layers, run in order (US-8, US-21): compiler/validate.py's own
+    ast-parse/PK-existence checks first (they work even if the generated
+    model doesn't actually import cleanly), then orm_loader's
+    always-on validators (ColumnPresenceValidator, ColumnNullabilityValidator,
+    PrimaryKeyValidator, ForeignKeyShapeValidator) via spec_adapter -- a
+    stronger check that requires the model to actually import and map.
+    """
     if not _REGISTRY_JSON.exists():
         typer.secho(f"No registry found at {_REGISTRY_JSON} — run `regen` first.", fg=typer.colors.RED)
         raise typer.Exit(code=1)
@@ -99,6 +108,18 @@ def validate() -> None:
     except HemOncValidationError as exc:
         typer.secho(str(exc), fg=typer.colors.RED)
         raise typer.Exit(code=1) from exc
+
+    from .model import entities
+    from .model.base import concrete_entities
+
+    models = concrete_entities(entities)
+    report = spec_adapter.validate_with_orm_loader(registry, models)
+
+    typer.echo(report.summary())
+    if not report.is_valid():
+        typer.echo(report.render_text_report())
+    if report.exit_code():
+        raise typer.Exit(code=1)
 
     typer.secho("Model is structurally valid.", fg=typer.colors.GREEN)
 

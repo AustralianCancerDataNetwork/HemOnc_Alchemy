@@ -29,4 +29,9 @@ natural_key_audit.py + load_helpers.py, ~2300 lines total):
 - validate.py    — new (US-8): structural + syntactic validation.
 - diff.py        — new (US-8): registry diff against the last committed
                    version.
+- spec_adapter.py — new (US-21): HemOnc TableSpec/FieldSpec over
+                   orm_loader.registry.validation's always-on validators,
+                   run as a second, stronger validation layer by cli.py's
+                   `validate` command (requires the generated model to
+                   actually import and map, not just parse).
 """

@@ -292,7 +292,17 @@ class ColumnSpec:
         inferred from the data snapshot."""
         return self.nullable and not self.is_primary_key(table)
 
-    def sa_python_type(self, table: TableMeta) -> str:
+    def sa_python_type(self, table: TableMeta, *, force_not_null: bool = False) -> str:
+        """`force_not_null` overrides `effective_nullable`'s parent-relative PK
+        check: needed when rendering a denormalised column onto its own
+        generated map/child table (see `normalised_table_class`), where the
+        column is always part of *that* table's composite primary key
+        regardless of whether it's a natural key column on `table` (the
+        parent). CONFIRMED via compiler/spec_adapter.py's PrimaryKeyValidator
+        integration to matter: every map table's value column was rendered
+        `Optional[...]`/nullable, an inherently inconsistent
+        `primary_key=True, nullable=True` declaration on every single one.
+        """
         t = self.type.lower()
         if t == "boolean":
             base = "bool"
@@ -308,7 +318,8 @@ class ColumnSpec:
             base = f"{table.classname}_{safe_identifier(self.name).capitalize()}Enum"
         else:
             base = "Any"
-        return f"Optional[{base}]" if self.effective_nullable(table) else base
+        nullable = False if force_not_null else self.effective_nullable(table)
+        return f"Optional[{base}]" if nullable else base
 
     def sa_column_type(self, table: TableMeta) -> str:
         t = self.type.lower()
@@ -652,10 +663,14 @@ class TableMeta:
         col_name = nt.column
         col_spec = parent.columns[col_name]
 
-        py_type = col_spec.sa_python_type(parent)
+        # force_not_null=True: this column is always part of *this* map
+        # table's own composite primary key (parent_id + value), regardless
+        # of whether it happens to also be a natural key on the parent --
+        # see sa_python_type's docstring for the confirmed bug this fixes.
+        py_type = col_spec.sa_python_type(parent, force_not_null=True)
         sa_type = col_spec.sa_column_type(parent)
 
-        lines.append(f"    {col_name}: Mapped[{py_type}] = mapped_column({sa_type}, primary_key=True)")
+        lines.append(f"    {col_name}: Mapped[{py_type}] = mapped_column({sa_type}, primary_key=True, nullable=False)")
         lines.append("")
         lines.append(f"    parent: Mapped['{parent.classname}'] = sa_relationship(back_populates='{nt.column}_items')")
 

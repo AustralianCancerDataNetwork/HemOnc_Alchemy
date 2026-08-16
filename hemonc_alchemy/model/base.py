@@ -28,6 +28,8 @@ instead of hemonc_import's old `-1`/`-1.0` sentinel-on-failure behaviour.
 
 from __future__ import annotations
 
+from types import ModuleType
+
 import sqlalchemy.orm as so
 from orm_loader.tables import CSVLoadableTableInterface, SerialisableTableInterface
 
@@ -40,3 +42,30 @@ class EntityBase(Base, CSVLoadableTableInterface, SerialisableTableInterface):
     """Abstract base for every generated HemOnc entity class."""
 
     __abstract__ = True
+
+
+def is_concrete_entity(obj: object) -> bool:
+    """True for a real, mapped entity class -- not `Base` itself, and not an
+    abstract class like `EntityBase`.
+
+    Checks `"__abstract__" in obj.__dict__`, not `getattr(obj, "__abstract__",
+    False)`: the latter follows normal attribute inheritance, so a concrete
+    subclass of an abstract base (e.g. `Sigs(EntityBase, Base)`) incorrectly
+    reports `__abstract__ == True` too, inherited from `EntityBase`, even
+    though `Sigs` itself is genuinely mapped. Confirmed directly: `getattr(
+    Sigs, "__abstract__", False)` is `True`, but `"__abstract__" in
+    Sigs.__dict__` is `False`. SQLAlchemy only ever checks a class's own
+    `__dict__` when deciding whether to map it -- this must too, or every
+    concrete entity class gets silently excluded.
+    """
+    return (
+        isinstance(obj, type)
+        and issubclass(obj, Base)
+        and obj is not Base
+        and not obj.__dict__.get("__abstract__", False)
+    )
+
+
+def concrete_entities(module: ModuleType) -> list[type]:
+    """All concrete, mapped entity classes defined in a generated model module."""
+    return [obj for obj in vars(module).values() if is_concrete_entity(obj)]

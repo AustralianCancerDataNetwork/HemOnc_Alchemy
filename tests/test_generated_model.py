@@ -21,18 +21,16 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 
 from hemonc_alchemy.model import entities
-from hemonc_alchemy.model.base import Base
+from hemonc_alchemy.model.base import Base, concrete_entities
 
 pytestmark = pytest.mark.skipif(
-    not any(isinstance(c, type) and issubclass(c, Base) and c is not Base for c in vars(entities).values()),
+    not concrete_entities(entities),
     reason="model/entities.py has no generated classes yet -- run `hemonc-alchemy regen` first",
 )
 
 
 def test_generated_classes_import_and_configure():
-    entity_classes = [
-        c for c in vars(entities).values() if isinstance(c, type) and issubclass(c, Base) and c is not Base
-    ]
+    entity_classes = concrete_entities(entities)
     assert len(entity_classes) > 0
 
     # Every declarative and soft/inferred relationship must resolve to a

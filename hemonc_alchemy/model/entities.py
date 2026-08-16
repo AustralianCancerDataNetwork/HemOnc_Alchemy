@@ -223,7 +223,7 @@ class conditions_Map_icd10cmMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icd10cm'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icd10cm: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    map_icd10cm: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icd10cm_items')
 
@@ -231,7 +231,7 @@ class conditions_Map_icd9cmMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icd9cm'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icd9cm: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    map_icd9cm: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icd9cm_items')
 
@@ -239,7 +239,7 @@ class conditions_Map_icdo3Map(EntityBase, Base):
     __tablename__ = 'conditions_map_icdo3'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icdo3: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    map_icdo3: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icdo3_items')
 
@@ -247,7 +247,7 @@ class conditions_Map_icdo3_morphMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icdo3_morph'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icdo3_morph: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    map_icdo3_morph: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icdo3_morph_items')
 
@@ -255,7 +255,7 @@ class conditions_Map_oncotreeMap(EntityBase, Base):
     __tablename__ = 'conditions_map_oncotree'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_oncotree: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    map_oncotree: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_oncotree_items')
 
@@ -263,7 +263,7 @@ class conditions_Map_type_icdo3_morphMap(EntityBase, Base):
     __tablename__ = 'conditions_map_type_icdo3_morph'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_type_icdo3_morph: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    map_type_icdo3_morph: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_type_icdo3_morph_items')
 
@@ -314,7 +314,7 @@ class drugs_AtcMap(EntityBase, Base):
     __tablename__ = 'drugs_atc'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    atc: Mapped[str] = mapped_column(String(255), primary_key=True)
+    atc: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='atc_items')
 
@@ -322,7 +322,7 @@ class drugs_Canmed_major_classMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_major_class'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    canmed_major_class: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    canmed_major_class: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_major_class_items')
 
@@ -330,7 +330,7 @@ class drugs_Canmed_major_class_cuiMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_major_class_cui'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    canmed_major_class_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    canmed_major_class_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_major_class_cui_items')
 
@@ -338,7 +338,7 @@ class drugs_Canmed_minor_classMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_minor_class'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    canmed_minor_class: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    canmed_minor_class: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_minor_class_items')
 
@@ -346,7 +346,7 @@ class drugs_Canmed_minor_class_cuiMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_minor_class_cui'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    canmed_minor_class_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    canmed_minor_class_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_minor_class_cui_items')
 
@@ -448,7 +448,7 @@ class indications_BiomarkerMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    biomarker: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_items')
 
@@ -456,7 +456,7 @@ class indications_Biomarker2Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker2'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker2: Mapped[Optional[Indications_Biomarker2Enum]] = mapped_column(Enum(Indications_Biomarker2Enum), primary_key=True)
+    biomarker2: Mapped[Indications_Biomarker2Enum] = mapped_column(Enum(Indications_Biomarker2Enum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker2_items')
 
@@ -464,7 +464,7 @@ class indications_Biomarker2_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker2_finding'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker2_finding: Mapped[Optional[Indications_Biomarker2_findingEnum]] = mapped_column(Enum(Indications_Biomarker2_findingEnum), primary_key=True)
+    biomarker2_finding: Mapped[Indications_Biomarker2_findingEnum] = mapped_column(Enum(Indications_Biomarker2_findingEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker2_finding_items')
 
@@ -472,7 +472,7 @@ class indications_Biomarker2_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker2_type'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker2_type: Mapped[Optional[Indications_Biomarker2_typeEnum]] = mapped_column(Enum(Indications_Biomarker2_typeEnum), primary_key=True)
+    biomarker2_type: Mapped[Indications_Biomarker2_typeEnum] = mapped_column(Enum(Indications_Biomarker2_typeEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker2_type_items')
 
@@ -480,7 +480,7 @@ class indications_Biomarker3Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker3'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker3: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    biomarker3: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_items')
 
@@ -488,7 +488,7 @@ class indications_Biomarker3_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker3_finding'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker3_finding: Mapped[Optional[Indications_Biomarker3_findingEnum]] = mapped_column(Enum(Indications_Biomarker3_findingEnum), primary_key=True)
+    biomarker3_finding: Mapped[Indications_Biomarker3_findingEnum] = mapped_column(Enum(Indications_Biomarker3_findingEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_finding_items')
 
@@ -496,7 +496,7 @@ class indications_Biomarker3_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker3_type'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker3_type: Mapped[Optional[Indications_Biomarker3_typeEnum]] = mapped_column(Enum(Indications_Biomarker3_typeEnum), primary_key=True)
+    biomarker3_type: Mapped[Indications_Biomarker3_typeEnum] = mapped_column(Enum(Indications_Biomarker3_typeEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_type_items')
 
@@ -504,7 +504,7 @@ class indications_Biomarker4Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker4'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker4: Mapped[Optional[Indications_Biomarker4Enum]] = mapped_column(Enum(Indications_Biomarker4Enum), primary_key=True)
+    biomarker4: Mapped[Indications_Biomarker4Enum] = mapped_column(Enum(Indications_Biomarker4Enum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_items')
 
@@ -512,7 +512,7 @@ class indications_Biomarker4_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker4_finding'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker4_finding: Mapped[Optional[Indications_Biomarker4_findingEnum]] = mapped_column(Enum(Indications_Biomarker4_findingEnum), primary_key=True)
+    biomarker4_finding: Mapped[Indications_Biomarker4_findingEnum] = mapped_column(Enum(Indications_Biomarker4_findingEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_finding_items')
 
@@ -520,7 +520,7 @@ class indications_Biomarker4_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker4_type'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker4_type: Mapped[Optional[Indications_Biomarker4_typeEnum]] = mapped_column(Enum(Indications_Biomarker4_typeEnum), primary_key=True)
+    biomarker4_type: Mapped[Indications_Biomarker4_typeEnum] = mapped_column(Enum(Indications_Biomarker4_typeEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_type_items')
 
@@ -528,7 +528,7 @@ class indications_Biomarker_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker_finding'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    biomarker_finding: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_finding_items')
 
@@ -536,7 +536,7 @@ class indications_Biomarker_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker_type'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker_type: Mapped[Optional[Indications_Biomarker_typeEnum]] = mapped_column(Enum(Indications_Biomarker_typeEnum), primary_key=True)
+    biomarker_type: Mapped[Indications_Biomarker_typeEnum] = mapped_column(Enum(Indications_Biomarker_typeEnum), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_type_items')
 
@@ -544,7 +544,7 @@ class indications_ContextMap(EntityBase, Base):
     __tablename__ = 'indications_context'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    context: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    context: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='context_items')
 
@@ -552,7 +552,7 @@ class indications_DemographicsMap(EntityBase, Base):
     __tablename__ = 'indications_demographics'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    demographics: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    demographics: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='demographics_items')
 
@@ -560,7 +560,7 @@ class indications_IneligibilityMap(EntityBase, Base):
     __tablename__ = 'indications_ineligibility'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    ineligibility: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    ineligibility: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='ineligibility_items')
 
@@ -568,7 +568,7 @@ class indications_Prior_therapyMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    prior_therapy: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    prior_therapy: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_items')
 
@@ -576,7 +576,7 @@ class indications_Prior_therapy_negationMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy_negation'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    prior_therapy_negation: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    prior_therapy_negation: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_negation_items')
 
@@ -584,7 +584,7 @@ class indications_Prior_therapy_settingMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy_setting'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    prior_therapy_setting: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    prior_therapy_setting: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_setting_items')
 
@@ -592,7 +592,7 @@ class indications_RegimenMap(EntityBase, Base):
     __tablename__ = 'indications_regimen'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    regimen: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    regimen: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='regimen_items')
 
@@ -600,7 +600,7 @@ class indications_Regimen_cuiMap(EntityBase, Base):
     __tablename__ = 'indications_regimen_cui'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    regimen_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    regimen_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='regimen_cui_items')
 
@@ -608,7 +608,7 @@ class indications_Response_contingencyMap(EntityBase, Base):
     __tablename__ = 'indications_response_contingency'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    response_contingency: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    response_contingency: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='response_contingency_items')
 
@@ -616,7 +616,7 @@ class indications_Risk_stratificationMap(EntityBase, Base):
     __tablename__ = 'indications_risk_stratification'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    risk_stratification: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    risk_stratification: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='risk_stratification_items')
 
@@ -624,7 +624,7 @@ class indications_Stage_or_statusMap(EntityBase, Base):
     __tablename__ = 'indications_stage_or_status'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    stage_or_status: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    stage_or_status: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='stage_or_status_items')
 
@@ -632,7 +632,7 @@ class indications_With_fieldMap(EntityBase, Base):
     __tablename__ = 'indications_with_field'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    with_field: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    with_field: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='with_field_items')
 
@@ -697,7 +697,7 @@ class persons_Condition_typesMap(EntityBase, Base):
     __tablename__ = 'persons_condition_types'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    condition_types: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    condition_types: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='condition_types_items')
 
@@ -705,7 +705,7 @@ class persons_ConditionsMap(EntityBase, Base):
     __tablename__ = 'persons_conditions'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    conditions: Mapped[str] = mapped_column(Text, primary_key=True)
+    conditions: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='conditions_items')
 
@@ -713,7 +713,7 @@ class persons_CountryMap(EntityBase, Base):
     __tablename__ = 'persons_country'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    country: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    country: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='country_items')
 
@@ -721,7 +721,7 @@ class persons_LocationMap(EntityBase, Base):
     __tablename__ = 'persons_location'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    location: Mapped[str] = mapped_column(String(255), primary_key=True)
+    location: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='location_items')
 
@@ -729,7 +729,7 @@ class persons_OrcidMap(EntityBase, Base):
     __tablename__ = 'persons_orcid'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    orcid: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    orcid: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='orcid_items')
 
@@ -737,7 +737,7 @@ class persons_SiteMap(EntityBase, Base):
     __tablename__ = 'persons_site'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    site: Mapped[str] = mapped_column(Text, primary_key=True)
+    site: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='site_items')
 
@@ -745,7 +745,7 @@ class persons_Study_groupsMap(EntityBase, Base):
     __tablename__ = 'persons_study_groups'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    study_groups: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    study_groups: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='study_groups_items')
 
@@ -753,7 +753,7 @@ class persons_Study_sponsorsMap(EntityBase, Base):
     __tablename__ = 'persons_study_sponsors'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    study_sponsors: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    study_sponsors: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='study_sponsors_items')
 
@@ -799,7 +799,7 @@ class pointers_BiomarkerMap(EntityBase, Base):
     __tablename__ = 'pointers_biomarker'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
-    biomarker: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    biomarker: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Pointers'] = sa_relationship(back_populates='biomarker_items')
 
@@ -807,7 +807,7 @@ class pointers_ContextMap(EntityBase, Base):
     __tablename__ = 'pointers_context'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
-    context: Mapped[str] = mapped_column(String(255), primary_key=True)
+    context: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Pointers'] = sa_relationship(back_populates='context_items')
 
@@ -815,7 +815,7 @@ class pointers_NotesMap(EntityBase, Base):
     __tablename__ = 'pointers_notes'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
-    notes: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    notes: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Pointers'] = sa_relationship(back_populates='notes_items')
 
@@ -886,7 +886,7 @@ class refs_BiblioMap(EntityBase, Base):
     __tablename__ = 'refs_biblio'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
-    biblio: Mapped[str] = mapped_column(String(255), primary_key=True)
+    biblio: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='biblio_items')
 
@@ -894,7 +894,7 @@ class refs_DoiMap(EntityBase, Base):
     __tablename__ = 'refs_doi'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
-    doi: Mapped[str] = mapped_column(String(255), primary_key=True)
+    doi: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='doi_items')
 
@@ -902,7 +902,7 @@ class refs_ReferenceMap(EntityBase, Base):
     __tablename__ = 'refs_reference'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
-    reference: Mapped[str] = mapped_column(String(255), primary_key=True)
+    reference: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='reference_items')
 
@@ -910,7 +910,7 @@ class refs_TempMap(EntityBase, Base):
     __tablename__ = 'refs_temp'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
-    temp: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    temp: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='temp_items')
 
@@ -918,7 +918,7 @@ class refs_TitleMap(EntityBase, Base):
     __tablename__ = 'refs_title'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
-    title: Mapped[str] = mapped_column(Text, primary_key=True)
+    title: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='title_items')
 
@@ -1013,7 +1013,7 @@ class sigs_Cyclesigs_noteMap(EntityBase, Base):
     __tablename__ = 'sigs_cyclesigs_note'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
-    cyclesigs_note: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    cyclesigs_note: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='cyclesigs_note_items')
 
@@ -1021,7 +1021,7 @@ class sigs_SeqrelMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrel'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
-    seqrel: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    seqrel: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrel_items')
 
@@ -1029,7 +1029,7 @@ class sigs_SeqrelwhenMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrelwhen'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
-    seqrelwhen: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    seqrelwhen: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrelwhen_items')
 
@@ -1037,7 +1037,7 @@ class sigs_SeqrelwhenunitMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrelwhenunit'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
-    seqrelwhenunit: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    seqrelwhenunit: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrelwhenunit_items')
 
@@ -1045,7 +1045,7 @@ class sigs_TimingMap(EntityBase, Base):
     __tablename__ = 'sigs_timing'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
-    timing: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    timing: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='timing_items')
 
@@ -1115,7 +1115,7 @@ class studies_SponsorMap(EntityBase, Base):
     __tablename__ = 'studies_sponsor'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('studies.id'), primary_key=True)
-    sponsor: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    sponsor: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Studies'] = sa_relationship(back_populates='sponsor_items')
 
@@ -1123,7 +1123,7 @@ class studies_Study_groupMap(EntityBase, Base):
     __tablename__ = 'studies_study_group'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('studies.id'), primary_key=True)
-    study_group: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    study_group: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Studies'] = sa_relationship(back_populates='study_group_items')
 
@@ -1203,7 +1203,7 @@ class study_results_Comparator_codeMap(EntityBase, Base):
     __tablename__ = 'study_results_comparator_code'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    comparator_code: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    comparator_code: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['StudyResults'] = sa_relationship(back_populates='comparator_code_items')
 
@@ -1211,7 +1211,7 @@ class study_results_EfficacyMap(EntityBase, Base):
     __tablename__ = 'study_results_efficacy'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    efficacy: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    efficacy: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['StudyResults'] = sa_relationship(back_populates='efficacy_items')
 
@@ -1219,7 +1219,7 @@ class study_results_EstciMap(EntityBase, Base):
     __tablename__ = 'study_results_estci'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    estci: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    estci: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['StudyResults'] = sa_relationship(back_populates='estci_items')
 
@@ -1227,7 +1227,7 @@ class study_results_ToxicityMap(EntityBase, Base):
     __tablename__ = 'study_results_toxicity'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    toxicity: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    toxicity: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['StudyResults'] = sa_relationship(back_populates='toxicity_items')
 
@@ -1288,7 +1288,7 @@ class variants_BlobMap(EntityBase, Base):
     __tablename__ = 'variants_blob'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
-    blob: Mapped[str] = mapped_column(Text, primary_key=True)
+    blob: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Variants'] = sa_relationship(back_populates='blob_items')
 
@@ -1296,7 +1296,7 @@ class variants_StudyMap(EntityBase, Base):
     __tablename__ = 'variants_study'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
-    study: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    study: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Variants'] = sa_relationship(back_populates='study_items')
 
@@ -1304,7 +1304,7 @@ class variants_TracerMap(EntityBase, Base):
     __tablename__ = 'variants_tracer'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
-    tracer: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    tracer: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Variants'] = sa_relationship(back_populates='tracer_items')
 
@@ -1352,7 +1352,7 @@ class variant_eligibility_StudyMap(EntityBase, Base):
     __tablename__ = 'variant_eligibility_study'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variant_eligibility.id'), primary_key=True)
-    study: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    study: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['VariantEligibility'] = sa_relationship(back_populates='study_items')
 
@@ -1393,7 +1393,7 @@ class canonicaltriples_Class_1_provenanceMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['class_1', 'relationship', 'class_2'], ['canonicaltriples.class_1', 'canonicaltriples.relationship', 'canonicaltriples.class_2']),
     )
-    class_1_provenance: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    class_1_provenance: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Canonicaltriples'] = sa_relationship(back_populates='class_1_provenance_items')
 
@@ -1407,7 +1407,7 @@ class canonicaltriples_Class_2_provenanceMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['class_1', 'relationship', 'class_2'], ['canonicaltriples.class_1', 'canonicaltriples.relationship', 'canonicaltriples.class_2']),
     )
-    class_2_provenance: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    class_2_provenance: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Canonicaltriples'] = sa_relationship(back_populates='class_2_provenance_items')
 
@@ -1449,7 +1449,7 @@ class hemonc_classes_Secondary_home_as_cuiMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['concept_class_id'], ['hemonc_classes.concept_class_id']),
     )
-    secondary_home_as_cui: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    secondary_home_as_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['HemoncClasses'] = sa_relationship(back_populates='secondary_home_as_cui_items')
 
@@ -1461,7 +1461,7 @@ class hemonc_classes_Secondary_home_as_stringMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['concept_class_id'], ['hemonc_classes.concept_class_id']),
     )
-    secondary_home_as_string: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    secondary_home_as_string: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['HemoncClasses'] = sa_relationship(back_populates='secondary_home_as_string_items')
 
@@ -1546,7 +1546,7 @@ class affiliations_Affiliation_europmcMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['pmid', 'sequence', 'aff_no'], ['affiliations.pmid', 'affiliations.sequence', 'affiliations.aff_no']),
     )
-    affiliation_europmc: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    affiliation_europmc: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_europmc_items')
 
@@ -1560,7 +1560,7 @@ class affiliations_Affiliation_hemoncMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['pmid', 'sequence', 'aff_no'], ['affiliations.pmid', 'affiliations.sequence', 'affiliations.aff_no']),
     )
-    affiliation_hemonc: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    affiliation_hemonc: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_hemonc_items')
 
@@ -1574,7 +1574,7 @@ class affiliations_Affiliation_journalMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['pmid', 'sequence', 'aff_no'], ['affiliations.pmid', 'affiliations.sequence', 'affiliations.aff_no']),
     )
-    affiliation_journal: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    affiliation_journal: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_journal_items')
 
@@ -1622,7 +1622,7 @@ class contexttable_ContextprettyMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
     )
-    contextpretty: Mapped[str] = mapped_column(String(255), primary_key=True)
+    contextpretty: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Contexttable'] = sa_relationship(back_populates='contextpretty_items')
 
@@ -1634,7 +1634,7 @@ class contexttable_PhenotypeMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
     )
-    phenotype: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    phenotype: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Contexttable'] = sa_relationship(back_populates='phenotype_items')
 
@@ -1646,7 +1646,7 @@ class contexttable_SettingMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
     )
-    setting: Mapped[str] = mapped_column(String(255), primary_key=True)
+    setting: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Contexttable'] = sa_relationship(back_populates='setting_items')
 
@@ -1658,7 +1658,7 @@ class contexttable_Stage_or_statusMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
     )
-    stage_or_status: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    stage_or_status: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Contexttable'] = sa_relationship(back_populates='stage_or_status_items')
 
@@ -1702,7 +1702,7 @@ class exclusions_TitleMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['pmid'], ['exclusions.pmid']),
     )
-    title: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    title: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Exclusions'] = sa_relationship(back_populates='title_items')
 
@@ -1746,7 +1746,7 @@ class inclusions_Reason_noteMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['pmid'], ['inclusions.pmid']),
     )
-    reason_note: Mapped[Optional[str]] = mapped_column(Text, primary_key=True)
+    reason_note: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['Inclusions'] = sa_relationship(back_populates='reason_note_items')
 
@@ -1783,7 +1783,7 @@ class sig_branch_types_DescriptionMap(EntityBase, Base):
     __table_args__ = (
         ForeignKeyConstraint(['value'], ['sig_branch_types.value']),
     )
-    description: Mapped[Optional[str]] = mapped_column(String(255), primary_key=True)
+    description: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['SigBranchTypes'] = sa_relationship(back_populates='description_items')
 
