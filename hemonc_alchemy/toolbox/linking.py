@@ -83,7 +83,7 @@ def sig_study_objects(sig) -> list[Studies]:
             # `study_objects` is attached post-hoc in model.relationships,
             # so it is not visible to static analysis on the generated map
             # class even though it is present at runtime.
-            study_objects = cast(list[Studies], getattr(study_map_row, "study_objects"))
+            study_objects = cast(list[Studies], study_map_row.study_objects)
             studies.extend(study_objects)
 
     tokens = set(sig_study_tokens(sig))

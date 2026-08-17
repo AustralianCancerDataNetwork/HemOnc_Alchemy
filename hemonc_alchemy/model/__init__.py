@@ -1,5 +1,16 @@
 from .base import Base, EntityBase
-from .entities import Conditions, Drugs, Sigs, Studies, VariantEligibility, Variants, StudyResults, drugs_Canmed_major_classMap, drugs_Canmed_minor_classMap, variants_StudyMap, variants_StudyMap
+from .entities import (
+    Conditions,
+    Drugs,
+    Sigs,
+    Studies,
+    StudyResults,
+    VariantEligibility,
+    Variants,
+    drugs_Canmed_major_classMap,
+    drugs_Canmed_minor_classMap,
+    variants_StudyMap,
+)
 
 __all__ = [
     "Base",
