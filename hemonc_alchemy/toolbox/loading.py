@@ -38,6 +38,7 @@ import pandas as pd
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 
+from ..model.base import register_enum_casts
 from ..naming import resolve_source_csv, safe_identifier
 
 logger = logging.getLogger(__name__)
@@ -81,6 +82,7 @@ def load_entity(
     any of it. `load_csv_kwargs` passes through unchanged (`merge_strategy`,
     `chunksize`, `dedupe`, etc.).
     """
+    register_enum_casts()
     with _resolved_csv_path(data_dir, entity_cls.__tablename__) as path:
         return entity_cls.load_csv(session, path, **load_csv_kwargs)
 
@@ -163,12 +165,14 @@ def load_denormalised(
     Scalar casting reuses `perform_cast` (the same mechanism `load_csv`
     itself uses), so a bad value in a denormalised column is dropped with
     a warning rather than defaulted to a sentinel -- consistent with
-    US-20. Enum-typed denormalised columns hit the same known gap
-    `load_csv` does (no `CastRule` for `sa.Enum` at all) -- that's US-22,
-    not something worked around here.
+    US-20. Enum-typed denormalised columns (several map tables have them,
+    e.g. `indications_biomarker2.biomarker2`) get the same validated
+    casting as any other enum column, via `register_enum_casts` (US-22).
     """
     from orm_loader.loaders.data.converters import perform_cast
     from orm_loader.loaders.data_classes import TableCastingStats
+
+    register_enum_casts()
 
     if not entity_cls.denormalised_columns:
         return {}
@@ -223,6 +227,8 @@ def load_denormalised(
                     token,
                     value_type,
                     on_error=lambda v, _col=column, _stats=stats: _stats.record(column=_col, value=v),
+                    table_name=map_cls.__tablename__,
+                    column_name=column,
                 )
                 if value is None:
                     continue

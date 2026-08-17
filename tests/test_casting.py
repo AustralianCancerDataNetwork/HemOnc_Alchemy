@@ -1,15 +1,11 @@
 """Proves US-20 (reuse orm-loader's type casting) is satisfied by composition
-alone -- no casting code needed in model/base.py.
+alone -- no casting code needed in model/base.py for non-enum types.
 
 `EntityBase` already composes `orm_loader.tables.CSVLoadableTableInterface`,
 whose `load_csv()` delegates scalar casting to `PandasLoader.cast_to_model()`,
 which calls `orm_loader.loaders.data.converters.perform_cast()` per column
 and records failures on a `TableCastingStats` object rather than silently
-substituting a sentinel value. This was blocked until now by a circular
-import in orm-loader itself (see model/base.py's docstring and
-https://github.com/AustralianCancerDataNetwork/orm-loader/issues/31),
-fixed on a local `circular`-branch checkout that `pyproject.toml`
-temporarily points at.
+substituting a sentinel value.
 
 Two levels of proof:
 - `TestPerformCastDirectly` exercises `perform_cast`/`TableCastingStats`
@@ -36,9 +32,8 @@ Two levels of proof:
 `Units` is the entity used throughout: a simple lookup table (no surrogate
 `id`, no FK, no denormalised columns) with one nullable BigInteger column
 (`concept_code`) that's a clean target for a bad-value test, independent
-of `unit_type`'s Enum casting (out of scope here -- orm_loader's
-`perform_cast` has no Enum CastRule at all, which is exactly why
-enum-from-CSV casting stays custom and is tracked separately as US-22).
+of `unit_type`'s Enum casting -- that's US-22, covered separately in
+`test_enum_casting.py` now that it's built.
 """
 
 from __future__ import annotations

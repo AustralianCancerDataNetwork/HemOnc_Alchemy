@@ -831,7 +831,7 @@ requires-dist = [
     { name = "oa-configurator", extras = ["dev", "postgres"], marker = "extra == 'dev'", specifier = ">=1.1.0,<2.0.0" },
     { name = "openpyxl", marker = "extra == 'author'", specifier = ">=3.1.5" },
     { name = "openpyxl", marker = "extra == 'dev'", specifier = ">=3.1.5" },
-    { name = "orm-loader", editable = "../../core_repos/orm-loader" },
+    { name = "orm-loader", git = "https://github.com/AustralianCancerDataNetwork/orm-loader?branch=register_cast_rule" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'dev'", specifier = ">=3.2" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" },
@@ -1649,7 +1649,8 @@ wheels = [
 
 [[package]]
 name = "orm-loader"
-source = { editable = "../../core_repos/orm-loader" }
+version = "1.0.2.dev2+g2aa8321dd"
+source = { git = "https://github.com/AustralianCancerDataNetwork/orm-loader?branch=register_cast_rule#2aa8321ddf3be5811d45071aa7d55ba633b75fd6" }
 dependencies = [
     { name = "chardet" },
     { name = "oa-configurator" },
@@ -1657,28 +1658,6 @@ dependencies = [
     { name = "pyarrow" },
     { name = "sqlalchemy" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "chardet", specifier = ">=5.2.0" },
-    { name = "mkdocs", marker = "extra == 'dev'", specifier = ">=1.6.1" },
-    { name = "mkdocs-material", marker = "extra == 'dev'", specifier = ">=9.7.7" },
-    { name = "mkdocs-mermaid2-plugin", marker = "extra == 'dev'" },
-    { name = "mkdocstrings-python", marker = "extra == 'dev'", specifier = ">=2.0.1" },
-    { name = "oa-configurator", specifier = ">=1.0.0,<2.0.0" },
-    { name = "oa-configurator", extras = ["postgres"], marker = "extra == 'dev'", specifier = ">=1.0.0,<2.0.0" },
-    { name = "pandas", specifier = ">=2.3.3" },
-    { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" },
-    { name = "pyarrow", specifier = ">=23.0.1" },
-    { name = "pygments", marker = "extra == 'dev'", specifier = ">=2.20.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
-    { name = "python-dotenv", marker = "extra == 'dev'" },
-    { name = "requests", marker = "extra == 'dev'", specifier = ">=2.33.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.11" },
-    { name = "sqlalchemy", specifier = ">=2.0.45" },
-    { name = "ty", marker = "extra == 'dev'", specifier = ">=0.0.59" },
-]
-provides-extras = ["dev", "postgres"]
 
 [[package]]
 name = "packaging"
