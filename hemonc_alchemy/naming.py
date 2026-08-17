@@ -1,20 +1,5 @@
-"""Identifier normalisation and source-file resolution shared across tiers.
-
-Both the compiler (matching a table to its dictionary-declared CSV at
-generation time) and the runtime loader (matching a generated entity to its
-real CSV at load time) need the exact same answer to "which file on disk is
-this table's data" -- HemOnc's own filenames don't always match a table's
-name (punctuation gets added or dropped: `canonical.triples.csv` for
-`canonicaltriples`). Two independent implementations of that matching
-already drifted apart once before this rewrite (see compiler/infer.py's own
-history) -- this module exists so there's exactly one, usable by both
-`compiler/` and `toolbox/` without either needing to import the other
-(`.importlinter`'s layers contract forbids `toolbox` from importing
-`compiler`).
-
-Deliberately dependency-free (no pandas, no project-internal imports) so it
-sits below every layer in the `.importlinter` contract without needing to be
-named in it at all -- the same role `config.py`/`errors.py` already play.
+"""
+Identifier normalisation and source-file resolution shared across tiers.
 """
 
 from __future__ import annotations

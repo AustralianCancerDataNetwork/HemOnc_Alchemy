@@ -55,6 +55,17 @@ class TestInferPipeGroups:
         # across *different* processes, not within one).
         assert infer_pipe_groups(df, ["biomarker4", "biomarker4_finding"]) == groups
 
+    def test_missing_values_are_handled(self):
+        df = pd.DataFrame(
+            {
+                "biomarker4": pd.array(["a|b", pd.NA, "c"], dtype="string"),
+                "biomarker4_finding": pd.array(["x|y", pd.NA, "z"], dtype="string"),
+            }
+        )
+        assert infer_pipe_groups(df, ["biomarker4", "biomarker4_finding"]) == [
+            ["biomarker4", "biomarker4_finding"]
+        ]
+
 
 class TestDetectNumeric:
     """detect_numeric's float64-with-NaN fix (US-18)."""

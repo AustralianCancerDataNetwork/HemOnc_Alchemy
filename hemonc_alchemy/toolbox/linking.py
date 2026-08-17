@@ -1,40 +1,15 @@
-"""Fuzzy cross-entity resolution: sig <-> study <-> variant <-> condition.
+"""
+Fuzzy cross-entity resolution: sig <-> study <-> variant <-> condition.
 
-Tier 2 of the split from hemonc_import's final_model/relationships.py
-(US-16). These resolvers parse pipe-delimited free text and issue ad hoc
-`session.execute(select(...))` queries -- best-effort cross-referencing,
-not guaranteed-correct FK joins, which is exactly why they don't belong in
-model/relationships.py.
+These resolvers parse pipe-delimited free text and issue ad hoc
+`session.execute(select(...))` queries.
 
-Deliberately plain functions taking the entity as an explicit argument
-(`sig_study_tokens(sig)`), not properties monkey-patched onto the entity
-classes (`sig.study_tokens`). The original attached these via
-`Cls.attr = free_function; Cls.attr.__set_name__(Cls, "attr")` --
-`cached_property` specifically *requires* `__set_name__` to know its own
-storage key, and that call is only made automatically by the interpreter
-during class-body execution, not on a post-hoc setattr. A plain function is
-just as discoverable (`dir(toolbox.linking)`, normal imports) without that
-fragility, directly serving US-4.
-
-One real bug fixed during the port, not reproduced: the original's
-`variant_condition_objects` (bound to `Variants.condition_objects`) and
-`sig_study_objects` both referenced `variant.study_objects` -- but no such
-attribute was ever defined anywhere on `Variants` (only
-`Studies.variant_objects` and `variants_StudyMap.study_objects` exist).
-`variant_condition_objects` would have raised `AttributeError` on first
-real use; `sig_study_objects` silently degraded via `getattr(..., [])`.
-Both are fixed here by routing through the actual relationship chain:
-`variant.study_items` (the raw per-token child rows) -> each row's
-`.study_objects` (resolved Studies matching that token).
-
-Also removed: `sig_variant_context`'s manual `int(variant_cui)` cast. It
-existed specifically because `Sigs.variant_cui` (Float) and
-`Variants.variant_cui` (BigInteger) used to disagree -- now that both are
-BigInteger (US-18, compiler/infer.py's detect_numeric fix), the cast is
-unneeded.
+This is best-effort cross-referencing, not guaranteed-correct FK joins.
 """
 
 from __future__ import annotations
+
+from typing import cast
 
 from sqlalchemy import select
 from sqlalchemy.orm import object_session
@@ -105,7 +80,11 @@ def sig_study_objects(sig) -> list[Studies]:
     variant = sig_variant_context(sig)
     if variant is not None:
         for study_map_row in variant.study_items:
-            studies.extend(study_map_row.study_objects)
+            # `study_objects` is attached post-hoc in model.relationships,
+            # so it is not visible to static analysis on the generated map
+            # class even though it is present at runtime.
+            study_objects = cast(list[Studies], getattr(study_map_row, "study_objects"))
+            studies.extend(study_objects)
 
     tokens = set(sig_study_tokens(sig))
     tokens.difference_update({getattr(study, "study", None) for study in studies if getattr(study, "study", None)})

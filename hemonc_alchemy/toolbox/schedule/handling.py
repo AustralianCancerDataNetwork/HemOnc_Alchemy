@@ -1,24 +1,5 @@
-"""Dosing-schedule string parsing and resolution.
-
-Ported from hemonc_import's final_model/schedule_handling.py, with one
-behavioural fix (US-5, _design/hemonc-alchemy-spec.md): indefinite/continuing
-regimens ("+n" = continue until progression, "+c" = continue indefinitely —
-common notation in maintenance-phase regimens) used to be silently dropped
-by `expand()`'s bare `continue`. That produced complete, silent data loss for
-exactly the long-running regimens HemOnc is built to model: the returned day
-list looked "fully resolved" with no way to tell a schedule was truncated.
-
-`resolve_all_days` now returns a `ResolvedSchedule` (explicit days plus an
-`indefinite` marker, if any) instead of a bare `list[Day]`, and logs a
-warning whenever an indefinite or otherwise-unparseable token is encountered,
-so a caller can tell the difference between "this regimen has no further
-dosing" and "this regimen continues, and here's how."
-
-Deliberately NOT solved here: how to represent an open-ended schedule inside
-`administration_matrices`' finite day-range grid is a real design question
-(does it extend the grid, annotate the last column, something else?) that
-needs a domain decision, not a unilateral technical guess — flagged in
-_design/hemonc-alchemy-spec.md open questions rather than answered here.
+"""
+Dosing-schedule string parsing and resolution.
 """
 
 from __future__ import annotations

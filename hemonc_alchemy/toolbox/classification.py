@@ -1,18 +1,5 @@
-"""Clinical/domain classification rules.
-
-Tier 3 of the split from hemonc_import's final_model/relationships.py
-(US-17) -- not a relationship at all, but domain classification, comparable
-to SCOOP's protocols/classification/. Plain functions taking a `Variants`
-instance explicitly, not monkey-patched properties -- see toolbox/linking.py's
-module docstring for why.
-
-`RAD_SIG_CLASS_VALUE` is a named constant rather than the original's inline
-`"rad sig"` string literal. Confirmed real and stable: `Sigs.class_field` is
-a proper enum column (`Sigs_Class_fieldEnum.RAD_SIG = 'rad sig'` in
-model/enums.py) -- comparing against the string constant works because
-`Sigs_Class_fieldEnum(str, Enum)` members compare equal to their string
-value, without this module needing to import the generated enums module
-directly.
+"""
+Clinical/domain classification rules.
 """
 
 from __future__ import annotations

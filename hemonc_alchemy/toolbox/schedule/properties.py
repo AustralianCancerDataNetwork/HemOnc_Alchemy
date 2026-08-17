@@ -145,12 +145,14 @@ def home_administered_sigs_by_drug(self):
 
 @cached_property
 def administration_matrices(self) -> dict[str, pd.DataFrame]:
-    """Per-route day-by-drug intensity grids for explicit dosing days.
+    """
+    Per-route day-by-drug intensity grids for explicit dosing days.
 
-    NOTE: does not currently represent indefinite/open-ended continuation
-    (see handling.py's module docstring) — a schedule_event with
-    `indefinite is not None` contributes only its explicit `days`, same as
-    before. Extending the grid (or otherwise marking it) to reflect an
+    NOTE: does not currently represent indefinite/open-ended continuation.
+    A schedule_event with `indefinite is not None` contributes only its 
+    explicit `days`. 
+    
+    Extending the grid (or otherwise marking it) to reflect an
     open-ended tail is an open design question, not solved here.
     """
     return compute_administration_matrices(self, decay_days=2, decay_factor=0.5)

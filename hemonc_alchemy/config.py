@@ -1,13 +1,5 @@
-"""oa-configurator integration for hemonc-alchemy.
-
-Mirrors omop_alchemy.config's shape (US-2), with one deliberate difference:
-HemOnc's own database is a plain, non-CDM-shaped database, so it is declared
-and resolved via ``GenericDatabaseConfig``/``ResolvedDatabase`` rather than
-the ``CDMDatabaseConfig``/``ResolvedCDMDatabase`` pair omop-alchemy owns.
-
-hemonc-alchemy does not import omop-alchemy's ORM models — it shares only
-this configuration mechanism and orm-loader. See
-_design/hemonc-alchemy-spec.md TS-5.
+"""
+oa-configurator integration for hemonc-alchemy.
 """
 
 from __future__ import annotations

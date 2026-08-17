@@ -1,15 +1,16 @@
 """
 Checks whether HemOnc's declared identity (sourced from data dictionary) 
-for a table actually holds up in the real data, plus a couple of small 
-enumerator health checks.
+for a table holds up in the real data, plus a couple of small enumerator 
+health checks.
 
-A "natural key" (or business key) is the column, or combination of columns,
-that HemOnc's own data dictionary says is enough to uniquely identify a row
-of a table. That's different from the surrogate `id` a content table gets 
-in the generated model: the surrogate id is just a database convenience, 
-but the natural key is the stated claim about what makes a row distinct.
+A "natural key" (or business key) is the column(s) that the data dictionary 
+says is enough to uniquely identify a row of a table. 
 
-This module re-derives that declared key for every table in the dictionary,
+This is different from the surrogate `id` a content table gets in the 
+generated model: the surrogate id is just a database convenience, but the 
+natural key is the stated claim about what makes a row distinct.
+
+This module re-derives the declared key for every table in the dictionary,
 then checks whether it's actually unique in the current CSV snapshot. When
 it isn't, it may be a sign the real data doesn't behave the way its own
 declared key implies.
@@ -51,8 +52,11 @@ from .infer import (
 from .schema_model import Registry
 
 # these table-specific decisions are reviewed and accepted exceptions to the
-# audit's default "hard failure" rules. they should be reviewed at the source 
-# to confirm exceptions are valid and/or if a correction is required at the source.
+# audit's default "hard failure" rules. 
+
+# TODO: review at source to confirm these are still valid, and remove them if 
+# they are no longer needed.
+
 TABLE_DECISIONS: dict[str, dict[str, str]] = {
     "studies": {"SPARSE_KEY_ROWS": "ACCEPTED_SPARSE_KEY"},
     "refs": {"SPARSE_KEY_ROWS": "ACCEPTED_SPARSE_KEY"},
@@ -75,10 +79,8 @@ HARD_FAILURE_STATUSES: frozenset[str] = frozenset({
     "DUPLICATE_BUSINESS_KEYS",
 })
 
-
 def has_hard_failures(results: list[AuditResult]) -> bool:
     return any(r.status in HARD_FAILURE_STATUSES for r in results)
-
 
 @dataclass
 class AuditResult:
@@ -101,16 +103,10 @@ class AuditResult:
 
 
 def canonical_key_value(value: Any) -> str:
-    """Canonicalize a business-key cell the same way the runtime column
+    """
+    Canonicalise a business-key cell the same way the runtime column
     caster does, so the audit can't pass on data that will actually
-    collide once loaded (US-12 fix).
-
-    Two normalisations, both confirmed necessary against real data:
-    - case-folding (`contexttable`'s "Relapsed_or_refractory" vs
-      "Relapsed_or_Refractory")
-    - numeric-string canonicalization (a float like 46096.0 and a string
-      "46096" must compare equal, matching hemonc_import's old
-      `perform_cast` String-branch behaviour)
+    collide once loaded.
     """
     if value is None or (isinstance(value, float) and pd.isna(value)):
         return "__NULL_KEY__"
@@ -233,19 +229,15 @@ def audit_table(kind: str, raw_table_name: str, maturity: str, unique_key_raw: s
     has_null_key_part = key_df.isna().any(axis=1)
     rows_with_null_key_parts = int(has_null_key_part.sum())
 
-    # Rows with a null key part are excluded from the duplicate check itself,
-    # not just noted separately (US-12 follow-up): a business key that's
-    # partly unassigned (e.g. `sigs.variant_cui` before HemOnc has linked a
-    # row to its eventual variant) isn't comparable to another row with the
-    # same gap, matching standard SQL UNIQUE-constraint semantics where NULLs
-    # never collide with each other. CONFIRMED against real data: every one
-    # of `sigs`' 2422 flagged "duplicates" had a null `variant_cui`, and zero
-    # duplicate business keys remain among the fully-keyed rows -- these were
-    # genuinely distinct sig rows (different study/regimen/day-pattern), not
-    # a key-design problem, and no alternative key column exists to
-    # disambiguate them while variant_cui is unassigned. Keying only the
-    # fully-populated rows here is what correctly reclassifies that case as
-    # SPARSE_KEY_ROWS instead of a false DUPLICATE_BUSINESS_KEYS.
+    # Rows with a null key part are excluded from the duplicate check 
+    # because a business key that's partly unassigned (e.g. `sigs.variant_cui` 
+    # before it is linked to its eventual variant) isn't comparable to another 
+    # row with the same gap, matching standard SQL UNIQUE-constraint semantics 
+    # where NULLs never collide
+
+    # Keying only the fully-populated rows reclassifies partial nulls as
+    # SPARSE_KEY_ROWS instead of false DUPLICATE_BUSINESS_KEYS.
+
     keyed_df = audit_df.loc[~has_null_key_part]
     canonical_df = canonical_key_frame(keyed_df, key_columns)
     duplicate_mask = canonical_df.duplicated(subset=key_columns, keep=False)
@@ -351,7 +343,8 @@ def run_audit(data_dir: Path) -> list[AuditResult]:
 
 
 def enum_collision_warnings(registry: Registry) -> list[str]:
-    """Flag enum columns where two distinct display values collapse onto the
+    """
+    Flag enum columns where two distinct display values collapse onto the
     same generated member name.
     """
     warnings: list[str] = []

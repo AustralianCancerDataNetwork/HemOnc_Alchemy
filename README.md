@@ -4,7 +4,6 @@ SQLAlchemy-based models, regeneration tooling, and utilities for the HemOnc.org 
 
 Sibling to [omop-alchemy](https://github.com/AustralianCancerDataNetwork/OMOP_Alchemy) — shares its infrastructure (`oa-configurator`, `orm-loader`) and packaging conventions, but not its ORM models. Unlike OMOP CDM, HemOnc's schema is dictionary-driven and evolves release to release, so this repo also ships an author-facing compiler that regenerates the model from HemOnc's data dictionary — see `_design/hemonc-alchemy-spec.md` for the full rationale.
 
-**Status: ground-up rewrite in progress, on the `refactor` branch.** This replaces the previous `HemOnc_Alchemy` codebase (hand-typed model, notebook-driven ETL, no tests) rather than extending it. See `_design/migration-status.md` for exactly what's ported, what's a placeholder, and what's next.
 
 ## Layout
 

@@ -1,25 +1,22 @@
-"""Load a generated entity's primary rows from a real HemOnc data directory.
+"""
+Load a generated entity's primary rows from a real HemOnc data directory.
 
 `EntityBase.load_csv()` (via orm-loader's `CSVLoadableTableInterface`,
 already composed onto every generated entity) does the actual staged
-ingestion -- staging table, casting with failure tracking, merge strategy,
-index management (see `tests/test_casting.py`). It also enforces a real
-safety check: `path.stem.lower() == cls.__tablename__`, guarding against
-loading the wrong file into the wrong table.
+ingestion.
 
 HemOnc's own filenames don't always agree with the table name they belong
-to (`canonical.triples.csv` for `canonicaltriples`, `context.table.csv` for
-`contexttable`) -- that's exactly what `naming.resolve_source_csv` already
-works around at compile time. This module reuses the same resolver at load
-time, and satisfies orm-loader's filename check with a throwaway symlink
-rather than weakening the check itself.
+to requiring `naming.resolve_source_csv` compile-time workaround.
+This module reuses the same resolver at load time, and satisfies 
+orm-loader's filename check with a throwaway symlink rather than 
+weakening the check itself.
 
-`load_denormalised` handles the other half: pipe-delimited HemOnc columns
-that the compiler explodes into their own generated map tables (e.g.
-`Sigs.timing` -> `sigs_timing`, one row per pipe-delimited value) rather
-than a plain scalar column. `load_csv()` only ever populates an entity's
-own scalar columns -- it has no idea these child tables exist, since
-they're a HemOnc-specific convention with no orm-loader equivalent. This
+`load_denormalised` handles pipe-delimited HemOnc columns that the 
+compiler explodes into their own generated map tables (e.g. `Sigs.timing` 
+-> `sigs_timing`, one row per pipe-delimited value) rather than a plain 
+scalar column. `load_csv()` only ever populates an entity's own scalar 
+columns -- it has no idea these child tables exist, since they're a 
+HemOnc-specific convention with no orm-loader equivalent. This
 must run *after* `load_entity` for the same entity: surrogate-PK ("content")
 tables have no `id` in the source CSV at all (it's assigned on insert), so
 resolving which parent row a denormalised value belongs to means looking

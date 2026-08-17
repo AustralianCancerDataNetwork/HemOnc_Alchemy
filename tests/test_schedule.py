@@ -5,6 +5,7 @@ classification (US-6) and indefinite-dosing handling (US-5).
 
 from __future__ import annotations
 
+from hemonc_alchemy.model.enums import Sigs_RouteEnum
 from hemonc_alchemy.toolbox.schedule import (
     Day,
     Indefinite,
@@ -25,6 +26,7 @@ class TestRouteGroup:
         assert route_group("IV") == "IV"
         assert route_group("PO") == "PO"
         assert route_group("SC") == "IV"
+        assert route_group(Sigs_RouteEnum.IV) == "IV"
 
     def test_intravesicularly_now_classifies_as_iv(self):
         # 23 real rows in sigs.csv used this exact wording; the old
@@ -44,6 +46,7 @@ class TestRouteGroup:
 
     def test_unknown_route_is_unclassified(self):
         assert route_group("some future route nobody has seen yet") is None
+        assert route_group("intravenous") is None
 
 
 class TestResolveAllDays:

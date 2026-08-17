@@ -166,3 +166,9 @@ data/
 .DS_Store
 *.csv
 _design/
+.vscode/
+old/
+logs/
+notebooks/
+reference/
+TODO.md

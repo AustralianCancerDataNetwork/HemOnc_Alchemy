@@ -41,10 +41,6 @@ CONTENT_COL = "Content Tables"
 LOOKUP_COL = "Lookup and Metadata Tables"
 MATURITY_COL = "Maturity"
 UNIQUE_COL = "Unique Key"
-
-# The dictionary workbook always has this exact filename inside a HemOnc
-# data directory -- no need for callers to track a separate dictionary
-# path alongside data_dir.
 DICTIONARY_FILENAME = "data.dictionary.xlsx"
 
 
@@ -253,9 +249,11 @@ def infer_pipe_groups(
     df = df.rename(columns=lambda c: safe_identifier(c).lower())
     for c1, c2 in pairwise(cols):
         if c1 in c2 or c2 in c1:
-            s1: pd.Series = df[c1].fillna("").astype(str)
-            s2: pd.Series = df[c2].fillna("").astype(str)
+            s1 = df[c1].fillna("").astype("string")
+            s2 = df[c2].fillna("").astype("string")
 
-            if (s1.map(lambda x: len(x.split("|"))) == s2.map(lambda x: len(x.split("|")))).all():
+            n1 = s1.str.count(r"\|").add(1)
+            n2 = s2.str.count(r"\|").add(1)
+            if n1.eq(n2).all():
                 groups.append(sorted([str(c1), str(c2)]))
     return groups
