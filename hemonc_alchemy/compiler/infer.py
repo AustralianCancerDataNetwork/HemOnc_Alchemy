@@ -1,48 +1,26 @@
-"""Type/enum/natural-key/denormalisation inference from the HemOnc data dictionary.
+"""
+Turns a raw HemOnc data-dictionary column into the shape the generated
+model needs: what SQL type it should be, whether it's really an enum,
+whether it should be exploded into its own table, and what actually
+identifies a row.
 
-Ported from hemonc_import/src/hemonc_import/registry_version/infer.py (326
-lines), with three confirmed bugs fixed during the port (empirically
-validated against the real data dictionary — see hemonc_import's
-_design/refactor-followups.md §4):
+Most of this works from the real CSV data, in combination with the 
+data dictionary declared types 
 
-- `parse_unique_key`: previously claimed (in its own docstring) to strip
-  parenthetical explanatory text but didn't. Two real cases were affected:
-  `sequencetable`'s `"(complex)"` produced a fabricated `'complex'`
-  pseudo-column, and `changelog`'s
-  `"Date + Type + Affected Table + (Addition|Change|Deletion)"` fused the
-  parenthetical alternatives into one garbage token
-  `'additionchangedeletion'`. Fixed by stripping `(...)` before tokenizing,
-  applying the fix a commented-out line in the original had already drafted
-  but never wired in.
-- `infer_pipe_groups`: wrapped an already-distinct 2-element list in
-  `set()`, making output order depend on Python's string hash
-  randomization. CONFIRMED via repeated runs under different
-  `PYTHONHASHSEED` values to be the actual mechanism behind a real
-  git-merge inconsistency in hemonc_import (a column-ordering fix present
-  on one branch, silently absent on another after a regeneration run).
-  Fixed with `sorted(...)`.
-- Filename resolution: `TableMeta.filename` (see schema_model.py) used a
-  naive `f"{name}.csv"` convention that missed real, available data for 4
-  tables whose actual filenames don't match: `canonicaltriples` (real file
-  `canonical.triples.csv`), `contexttable` (`context.table.csv`),
-  `variantblob` (`variant.blob.csv`), and `study_eligibility`
-  (`study_eligibility beta.csv` — a literal space plus a "beta" suffix).
-  `resolve_source_csv` below replaces the naive check. Note: the OLD
-  natural_key_audit.py already had its own, separate `resolve_csv_path`
-  with a normalized-match fallback that happened to handle 3 of these 4
-  cases correctly (punctuation-insensitive matching) — but the actual
-  generation step never used it, so the audit and the generator silently
-  disagreed about which source files exist. There is now exactly one
-  implementation, used by both compiler/generate.py and compiler/audit.py.
+Handling notes:
+
+- if a plain string column only holds a handful of distinct values it is treated as an enum candidate)
+- a pipe-delimited free text field is denormalised into a child table 
+- type detection reads the live data
+- unique keys and identity keys are parsed from the data dictionary, which may have added annotations that need handling
+
 """
 
 from __future__ import annotations
 
-import keyword
 import re
 from dataclasses import dataclass
 from itertools import pairwise
-from pathlib import Path
 
 import pandas as pd
 from pandas.api.types import (
@@ -52,10 +30,22 @@ from pandas.api.types import (
     is_integer_dtype,
 )
 
-PY_KEYWORDS = set(keyword.kwlist)
+from ..naming import PY_KEYWORDS, resolve_source_csv, safe_identifier  # noqa: F401
+
 MAX_ENUM_UNIQUE = 20
 MAX_STRING_INLINE = 100
 BOOLEAN_LIKE = {"true", "false", "t", "f", "yes", "no", "y", "n", "0", "1"}
+
+# Column headers from the data dictionary
+CONTENT_COL = "Content Tables"
+LOOKUP_COL = "Lookup and Metadata Tables"
+MATURITY_COL = "Maturity"
+UNIQUE_COL = "Unique Key"
+
+# The dictionary workbook always has this exact filename inside a HemOnc
+# data directory -- no need for callers to track a separate dictionary
+# path alongside data_dir.
+DICTIONARY_FILENAME = "data.dictionary.xlsx"
 
 
 def looks_denormalised_text(series: pd.Series) -> bool:
@@ -74,7 +64,7 @@ def max_string_length(series: pd.Series) -> int:
 
 def detect_boolean(series: pd.Series) -> bool:
     """
-    Robust detection of boolean / logical data, including:
+    Detection of boolean / logical data, including:
     - pandas nullable boolean dtype
     - strings 'yes/no', '0/1', 'true/false'
     - numerics 0/1
@@ -91,7 +81,7 @@ def detect_boolean(series: pd.Series) -> bool:
 
 def detect_datetime(series: pd.Series) -> bool:
     """
-    Detect datetime columns robustly:
+    Detect datetime columns:
     - native datetime dtype
     - pyarrow timestamp
     - string columns that mostly look like real dates (with separators)
@@ -106,7 +96,6 @@ def detect_datetime(series: pd.Series) -> bool:
     if s.empty:
         return False
 
-    # sample a bit more than 5 to reduce false positives
     sample = s.head(20)
 
     parsed = pd.to_datetime(sample, errors="coerce", format="ISO8601")
@@ -121,30 +110,10 @@ def detect_datetime(series: pd.Series) -> bool:
 
 def detect_numeric(series: pd.Series) -> str | None:
     """
-    Return 'Integer', 'Float', or None.
-    Works with numpy, pandas nullable, and pyarrow dtypes.
+    Return 'Integer', 'Float', or None, based on the real values
 
-    A float64 dtype alone doesn't mean the underlying values are
-    fractional: pandas upcasts an otherwise-integer column to float64 the
-    moment it has any missing values, since a native int array can't hold
-    NaN. CONFIRMED against the real HemOnc data to be the root cause of
-    three of the four `_cui` business-key type mismatches found across
-    tables (US-18): `sigs.variant_cui`, `studies.condition_cui`, and
-    `indications.component_cui` are all genuinely integer identifiers,
-    misclassified as Float purely because that particular table's export
-    has some missing values for that column. Real fractional data (a dose
-    amount, a p-value) still has non-integral values among its non-null
-    entries and is still correctly classified as Float.
-
-    NOT fixed here: `variant_eligibility.variant_cui` contains a literal
-    "TBA" placeholder token mixed into an otherwise-numeric identifier
-    column, which prevents even reaching this function as a numeric dtype
-    at all (it loads as `object`/string). Recognising placeholder tokens
-    as null-equivalent needs to be scoped to identifier-shaped columns
-    specifically -- "TBA"/"TBD" are also genuine categorical values
-    elsewhere (e.g. Authors_Site_typeEnum has a real "TBD" member), so a
-    blanket na_values addition at CSV-read time would be wrong. Left as a
-    follow-up requiring a judgment call, not guessed at here.
+    This doesn't handle placeholder text like "TBA" mixed into an
+    otherwise-numeric column
     """
     dt = str(series.dtype).lower()
 
@@ -160,87 +129,9 @@ def detect_numeric(series: pd.Series) -> str | None:
     return None
 
 
-def table_to_class(table: str) -> str:
-    """Convert a normalised table name into a PascalCase class name."""
-    table = table.replace(".", "_")
-    return "".join(part.capitalize() for part in table.split("_"))
-
-
-def safe_identifier(name: str) -> str:
-    """Return a normalised lowercase identifier safe for code and model fields."""
-    if name == "":
-        return "_"
-
-    ident = re.sub(r"[^0-9a-zA-Z_]", "", str(name))
-
-    if ident and ident[0].isdigit():
-        ident = "_" + ident
-
-    if not ident:
-        ident = "_"
-
-    if ident in PY_KEYWORDS:
-        ident = ident + "_field"
-
-    return ident.lower()
-
-
-def resolve_source_csv(data_dir: Path, table_name: str) -> tuple[Path | None, list[str]]:
-    """Find the real CSV backing `table_name` in `data_dir`, tolerating the
-    filename irregularities confirmed in the real HemOnc data export
-    (dots stripped when normalised) -- but never treating a file marked
-    "beta" as a legitimate source, regardless of how well its name
-    otherwise matches.
-
-    Returns (path, ambiguous_matches). `path` is None if nothing resolved;
-    `ambiguous_matches` is non-empty only when multiple candidates tied and
-    the caller should treat this as an error rather than guess.
-
-    `study_eligibility beta.csv` and `study_demographics beta.csv` are
-    excluded by the "beta" filter below on purpose: draft/unvalidated data
-    shouldn't feed schema generation just because its filename happens to
-    match. This means `study_eligibility` correctly has no entity class
-    today -- there is no non-beta source for it -- which is a deliberate
-    exclusion, not a residual gap in the filename-matching logic.
-
-    Resolution order (first tier that produces exactly one match wins):
-    1. Exact stem match (`table_name.csv`).
-    2. Normalised-stem match (`safe_identifier(stem) == table_name`) -- this
-       recovers 3 of the 4 originally-confirmed-missing tables:
-       `canonicaltriples`/`canonical.triples.csv`,
-       `contexttable`/`context.table.csv`,
-       `variantblob`/`variant.blob.csv`.
-    3. Case-insensitive prefix match on the raw stem, for any remaining
-       irregular-but-legitimate filenames. Only used when it yields exactly
-       one candidate; a tie is reported as ambiguous rather than guessed.
-    """
-    csvs = [p for p in sorted(data_dir.glob("*.csv")) if "beta" not in p.stem.lower()]
-
-    exact = [p for p in csvs if p.stem == table_name]
-    if len(exact) == 1:
-        return exact[0], []
-    if len(exact) > 1:
-        return None, [p.name for p in exact]
-
-    normalised = [p for p in csvs if safe_identifier(p.stem) == table_name]
-    if len(normalised) == 1:
-        return normalised[0], []
-    if len(normalised) > 1:
-        return None, [p.name for p in normalised]
-
-    prefixed = [p for p in csvs if p.stem.lower().startswith(table_name.lower())]
-    if len(prefixed) == 1:
-        return prefixed[0], []
-    if len(prefixed) > 1:
-        return None, [p.name for p in prefixed]
-
-    return None, []
-
-
 @dataclass
 class EnumInfo:
     """Represents an enum candidate inferred from observed data values."""
-
     kind: str  # "normal" | "relationship"
     values: list[str]
 
@@ -309,17 +200,19 @@ def parse_unique_key(value: str) -> list[str]:
     """
     Parse a workbook `Unique Key` or `Identity Key` cell into column names.
 
-    The parser is intentionally permissive so workbook expressions such as
-    `a + b + c` or `name or person_cui` can still be reduced to the column
-    tokens used by the registry. Parenthetical explanatory text (e.g.
-    `"study_id (see note)"`, or an inline set of alternatives like
-    `"(Addition|Change|Deletion)"`) is stripped before tokenizing — this is
-    the fix for the two real, confirmed corrupted-key cases described in
-    this module's docstring.
+    These cells are written for a human reader, not a parser 
+    
+    things like `a + b + c`, `name or person_cui`, or `study_id (see note)` 
+    show up in the real dictionary. 
+    
+    This is intentionally permissive about the `+`/`or` join syntax, and 
+    strips parenthetical text before tokenizing so explanatory asides 
+    or an inline list of alternatives like `"(Addition|Change|Deletion)"`
+    don't get treated as column names.
     """
     text = value.strip()
 
-    # Strip parenthetical text before anything else (US-9 fix).
+    # Strip parenthetical text before anything else.
     text = re.sub(r"\(.*?\)", "", text)
 
     text = text.replace(" OR ", " or ")
@@ -349,13 +242,11 @@ def infer_pipe_groups(
     columns: list[str],
 ) -> list[list[str]]:
     """
-    Group denormalised columns that appear to explode together row-by-row.
-
-    Column pairs within a group are returned `sorted(...)`, not wrapped in
-    `set(...)` — the original's `set()` usage produced non-deterministic
-    output ordering across process runs (Python's string hash
-    randomization), confirmed to be the mechanism behind a real git-merge
-    inconsistency (US-10 fix).
+    Group denormalised columns that appear to explode together row-by-row
+    e.g. `biomarker2` and `biomarker2_finding`, where each pipe-delimited
+    entry in one column lines up with the corresponding entry in the other.
+    Paired columns like this share one exploded child table instead of two
+    separate ones.
     """
     groups: list[list[str]] = []
     cols = sorted(columns)

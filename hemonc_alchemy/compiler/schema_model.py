@@ -1,43 +1,15 @@
-"""Registry metadata objects: TableMeta, ColumnSpec, EnumSpec, Registry.
-
-Ported from hemonc_import/src/hemonc_import/registry_version/dataclasses.py
-(956 lines — renamed here to avoid shadowing the stdlib `dataclasses`
-module, which the original name did). This is the data model shared by
-enrichment (infer.py-driven), rendering (generate.py), and validation
-(audit.py, validate.py).
-
-Three confirmed bugs fixed during the port (see hemonc_import's
-_design/hemonc-import-audit.md and _design/refactor-followups.md):
-
-- `ColumnSpec.sa_column_line` (source dataclasses.py:246): applied
-  `default=-1` to every primary key regardless of column type. CONFIRMED
-  already manifested in checked-in hemonc_import output — String primary
-  keys on HemoncClasses, HemoncRels, Exclusions, SigBranchTypes, Units all
-  got an int default. Fixed by branching on the Python type, the same way
-  sa_create.py (now deleted, US-11) already did correctly: `-1` for int
-  PKs, `''` for string PKs, no default otherwise.
-- `ColumnSpec.sa_python_type` vs `sa_column_line` (source dataclasses.py:208
-  vs :245): the Python type hint's `Optional[...]` and the SQL `nullable=`
-  flag were computed from two different values (raw `self.nullable` vs. a
-  PK-adjusted local variable). CONFIRMED manifested:
-  `Mapped[Optional[str]] = mapped_column(..., nullable=False, ...)`. Both
-  are now derived from one `effective_nullable` computation.
-- `EnumSpec.tablename` (source dataclasses.py:435, in
-  `enrich_field_metadata`): set to the *column* name instead of the table
-  name, corrupting registry metadata (didn't affect generated code, which
-  uses the `table` argument passed to `enum_type`/`enum_class` directly,
-  but corrupted anything reading `EnumSpec.tablename` itself, e.g. registry
-  previews). Fixed to use the table's own name.
+"""
+Registry metadata objects: TableMeta, ColumnSpec, EnumSpec, Registry.
 """
 
 from __future__ import annotations
 
 import json
 from collections import Counter
-from dataclasses import asdict, dataclass, field, is_dataclass
+from dataclasses import asdict, dataclass, field
 from html import escape
 from pathlib import Path
-from typing import Any, Literal, Protocol, runtime_checkable
+from typing import Literal, Protocol, runtime_checkable
 
 import pandas as pd
 
@@ -59,30 +31,18 @@ TableKind = Literal["lookup", "content"]
 Maturity = Literal["dev", "prod", "prod-"]
 
 # Tokens that mean "not yet assigned" on an identifier column specifically.
-# Deliberately scoped to `_cui`-suffixed columns only (see
-# `_clean_identifier_placeholders`) -- the same words are genuine
-# categorical values elsewhere, e.g. Authors_Site_typeEnum has a real "TBD"
-# member, so this must not become a blanket na_values addition.
+# This is scoped to `_cui`-suffixed columns only
+# 
+# the same words are genuine categorical values elsewhere, e.g. 
+# Authors_Site_typeEnum has a real "TBD" member, so this must not become 
+# a blanket na_values addition.
 _IDENTIFIER_PLACEHOLDER_TOKENS = {"tba", "tbd", "pending"}
 
 
 def _clean_identifier_placeholders(series: pd.Series, col_name: str) -> pd.Series:
-    """For `_cui`-suffixed identifier columns, treat known "not yet
+    """
+    For `_cui`-suffixed identifier columns, treat known "not yet
     assigned" placeholder tokens as missing when inferring type/nullability
-    (US-18). CONFIRMED against real data: `variant_eligibility.variant_cui`
-    contains a literal "TBA" value alongside otherwise-clean integer IDs,
-    which is why it was the one `_cui` mismatch `detect_numeric`'s
-    float64-with-NaN fix didn't already resolve -- "TBA" prevents the
-    column from parsing as numeric at all, so it never reaches that fix.
-
-    Nulling the placeholder alone isn't enough: pandas keeps the column at
-    object/string dtype (a single non-numeric token is enough to block
-    numeric dtype inference for the whole column), and `detect_numeric`
-    inspects dtype, not values. So also attempt numeric coercion here --
-    but only adopt it if every remaining (non-placeholder) value actually
-    converts; a `_cui` column that's genuinely alphanumeric throughout
-    falls back to staying textual rather than being forced into silently
-    dropping real data as NaN.
     """
     if not col_name.endswith("_cui"):
         return series
@@ -94,27 +54,11 @@ def _clean_identifier_placeholders(series: pd.Series, col_name: str) -> pd.Serie
     return cleaned
 
 
-def dataclass_to_dict(obj: Any) -> Any:
-    """Recursively convert nested dataclass structures into JSON-safe values."""
-    if is_dataclass(obj) and not isinstance(obj, type):
-        return {k: dataclass_to_dict(v) for k, v in asdict(obj).items()}
-    elif isinstance(obj, dict):
-        return {k: dataclass_to_dict(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [dataclass_to_dict(v) for v in obj]
-    else:
-        return obj
-
-
 def registry_to_json(registry: Registry) -> str:
-    """Serialise a `Registry` into a stable, pretty-printed JSON string.
-
-    Interim schema representation until schema/hemonc.linkml.yaml is
-    authored (US-14, pending the slot-scoping prototype — see
-    _design/hemonc-alchemy-spec.md open questions). compiler/diff.py
-    operates on this JSON for now.
     """
-    return json.dumps(dataclass_to_dict(registry), indent=2, sort_keys=True)
+    Serialise a `Registry` into a stable, pretty-printed JSON string.
+    """
+    return json.dumps(asdict(registry), indent=2, sort_keys=True)
 
 
 def save_registry_json(registry: Registry, path: Path) -> None:
@@ -129,19 +73,11 @@ def load_registry_json(path: Path) -> Registry:
 
 
 def sa_import_block() -> str:
-    """Return the import block used at the top of generated SQLAlchemy models.
-
-    Explicit, not `from .entity_base import *` (the original's approach,
-    and exactly the leaky-namespace pattern US-1 fixes -- a consumer doing
-    `from hemonc_alchemy.model.entities import *` would otherwise inherit
-    whatever `entity_base`/`base` happened to import, e.g. `os`, `re`,
-    `Path`). Every name the generated column/relationship lines actually
-    reference must be listed here explicitly instead.
+    """
+    Return the import block used at the top of generated SQLAlchemy models.
 
     entities.py is generated directly into hemonc_alchemy/model/, alongside
-    base.py and enums.py -- these are sibling-module imports (single dot),
-    not `..model.x` (which would also resolve correctly here but is
-    needlessly roundabout for a same-package import).
+    base.py and enums.py
     """
     return (
         "from __future__ import annotations\n\n"
@@ -278,16 +214,18 @@ class ColumnSpec:
         return "Any"
 
     def is_primary_key(self, table: TableMeta) -> bool:
-        """Whether this column is the (natural) primary key on the generated
+        """
+        Whether this column is the (natural) primary key on the generated
         class — i.e. declared as PK *and* the table isn't using a surrogate
-        `id` PK instead. Shared by sa_python_type/sa_column_line so both
-        derive nullability from the same fact (the bug this fixes)."""
+        `id` PK instead. 
+        """
         is_natural_pk = self.name in table.pk_columns
         use_surrogate = table.use_surrogate_pk and table.kind == "content"
         return is_natural_pk and not use_surrogate
 
     def effective_nullable(self, table: TableMeta) -> bool:
-        """Nullability actually enforced on the generated column: never
+        """
+        Nullability actually enforced on the generated column: never
         nullable if this column is the primary key, regardless of what was
         inferred from the data snapshot."""
         return self.nullable and not self.is_primary_key(table)
@@ -295,13 +233,9 @@ class ColumnSpec:
     def sa_python_type(self, table: TableMeta, *, force_not_null: bool = False) -> str:
         """`force_not_null` overrides `effective_nullable`'s parent-relative PK
         check: needed when rendering a denormalised column onto its own
-        generated map/child table (see `normalised_table_class`), where the
-        column is always part of *that* table's composite primary key
-        regardless of whether it's a natural key column on `table` (the
-        parent). CONFIRMED via compiler/spec_adapter.py's PrimaryKeyValidator
-        integration to matter: every map table's value column was rendered
-        `Optional[...]`/nullable, an inherently inconsistent
-        `primary_key=True, nullable=True` declaration on every single one.
+        generated map/child table where the column is always part of *that* 
+        table's composite primary key regardless of whether it's a natural key 
+        column on `table` (the parent). 
         """
         t = self.type.lower()
         if t == "boolean":
@@ -427,10 +361,11 @@ class SoftManyToManyRef:
 
 @dataclass
 class TableMeta:
-    """All metadata required to generate and load one logical table.
+    """
+    All metadata required to generate and load one logical table.
 
-    `pk_columns` carries the declared business/natural key from the
-    workbook. `source_defined_keys` and `identity_keys` are used as
+    `pk_columns` carries the declared business/natural key from the data
+    dictionary. `source_defined_keys` and `identity_keys` are used as
     relationship targets when inferring proxy-style links between generated
     ORM classes.
     """
@@ -464,10 +399,6 @@ class TableMeta:
     source_filename: str | None = None
 
     @property
-    def has_surrogate_pk(self) -> bool:
-        return self.kind == "content"
-
-    @property
     def classname(self) -> str:
         return "".join(part.capitalize() for part in self.name.split("_"))
 
@@ -484,15 +415,6 @@ class TableMeta:
 
     @classmethod
     def from_dict(cls, raw: dict) -> TableMeta:
-        # soft_relationships/soft_m2m_relationships/use_surrogate_pk are
-        # round-tripped here too (review follow-up): they were previously
-        # dropped on load even though `save_registry_json` writes them --
-        # the checked-in registry.json has 18 soft relationships that
-        # silently became 0 once loaded back via `load_registry_json`,
-        # which is what `compiler/diff.py` and `compiler/audit.py` both
-        # operate on. `use_surrogate_pk` defaults to True to match this
-        # dataclass's own field default, for registry snapshots written
-        # before this field existed.
         return cls(
             name=raw["name"],
             description=raw["description"],
@@ -559,8 +481,6 @@ class TableMeta:
                     enum_values = [v.strip() for v in raw.split(";") if v.strip()]
 
             if enum_values:
-                # Fix: tablename is this table's own name, not the column
-                # name (source dataclasses.py:435 bug).
                 self.enums[col_name] = EnumSpec(name=col_name, tablename=self.name, values=enum_values)
                 self.columns[col_name].type = "Enum"
 
@@ -632,14 +552,6 @@ class TableMeta:
             if s.is_unique and safe_col not in self.source_defined_keys:
                 self.source_defined_keys.append(safe_col)
 
-        # Dedupe before inference, not after: `enrich_field_metadata` (the
-        # dictionary-driven pass) and the per-column loop above can both add
-        # the same column to `denormalised_columns`. Deduping only at the end
-        # left `infer_pipe_groups` operating on a list with repeats, which
-        # rendered malformed self-pairs like `['atc', 'atc']` into
-        # `normalisation_groups` (CONFIRMED in the real generated
-        # entities.py's `Drugs` class) even though `denormalised_columns`
-        # itself came out clean.
         self.denormalised_columns = sorted(set(self.denormalised_columns))
 
         groups = infer_pipe_groups(df_data, self.denormalised_columns)
@@ -685,11 +597,7 @@ class TableMeta:
 
         col_name = nt.column
         col_spec = parent.columns[col_name]
-
-        # force_not_null=True: this column is always part of *this* map
-        # table's own composite primary key (parent_id + value), regardless
-        # of whether it happens to also be a natural key on the parent --
-        # see sa_python_type's docstring for the confirmed bug this fixes.
+        
         py_type = col_spec.sa_python_type(parent, force_not_null=True)
         sa_type = col_spec.sa_column_type(parent)
 
@@ -758,9 +666,9 @@ class TableMeta:
             lines.append("")
         lines.append(f"    filename = '{self.filename}'")
         if self.use_surrogate_pk and self.kind == "content":
-            lines.append("    pk_columns = ['id']")
+            lines.append("    natural_key_columns = ['id']")
         else:
-            lines.append(f"    pk_columns = {self.pk_columns!r}")
+            lines.append(f"    natural_key_columns = {self.pk_columns!r}")
         lines.append(f"    source_defined_keys = {self.source_defined_keys!r}")
         lines.append(f"    identity_keys = {self.identity_keys!r}")
         lines.append(f"    denormalised_columns = {self.denormalised_columns!r}")
@@ -854,12 +762,6 @@ class Registry:
     def get(self, name: str) -> TableMeta:
         return self.tables[name]
 
-    def content_tables(self) -> list[TableMeta]:
-        return [t for t in self.tables.values() if t.kind == "content"]
-
-    def lookup_tables(self) -> list[TableMeta]:
-        return [t for t in self.tables.values() if t.kind == "lookup"]
-
     def __repr__(self) -> str:
         n_content = sum(1 for t in self.tables.values() if t.kind == "content")
         n_lookup = sum(1 for t in self.tables.values() if t.kind == "lookup")
@@ -891,8 +793,6 @@ class Registry:
                 df_dict = norm_cols(df_dict)
                 meta.enrich_field_metadata(df_dict)
             else:
-                # Kept as a warning, not an error -- schema often evolves
-                # faster than dictionaries.
                 print(f"Warning: no dictionary sheet for table '{table_name}'")
 
     def finalise_table_metadata_from_data(self, data_dir: str | Path) -> None:

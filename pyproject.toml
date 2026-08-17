@@ -28,14 +28,6 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
 ]
 
-# Runtime only: model, toolbox, and loading. No LinkML, no openpyxl, no
-# dictionary-parsing tooling here — that's the `author` extra. See
-# _design/hemonc-alchemy-spec.md TS-2/TS-1.
-#
-# Deliberately NOT a dependency: omop-alchemy. hemonc-alchemy shares
-# infrastructure with omop-alchemy (oa-configurator, orm-loader) but not its
-# ORM models — see TS-5. A consumer that wants both (e.g. SCOOP) depends on
-# each directly.
 dependencies = [
   "sqlalchemy>=2.0.45",
   "pandas>=2.0",
@@ -49,17 +41,12 @@ dependencies = [
 postgres = [
   "psycopg[binary]>=3.2",
 ]
-
-# Author-facing only: the compiler (dictionary parsing, LinkML schema
-# authoring/generation). A consumer installing hemonc-alchemy for its models
-# does not need any of this. See US-23.
 author = [
   "linkml>=1.9.6",
   "linkml-runtime>=1.9.5",
   "openpyxl>=3.1.5",
   "pyyaml>=6.0",
 ]
-
 dev = [
   "oa-configurator[dev,postgres]>=1.1.0,<2.0.0",
   "hemonc-alchemy[author,postgres]",
@@ -100,14 +87,17 @@ packages = ["hemonc_alchemy"]
 [tool.uv]
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
 
+[tool.uv.sources]
+# TEMPORARY: points at a local checkout on the `circular` branch, which
+# fixes the circular import in orm_loader.loaders that otherwise makes
+# orm_loader.loaders.data.converters (perform_cast/cast_scalar) unimportable
+# -- see https://github.com/AustralianCancerDataNetwork/orm-loader/issues/31
+# and model/base.py's own docstring. Revert this to the plain PyPI
+# `orm-loader>=1.0.0,<2.0.0` dependency (already declared above) once a real
+# release with the fix ships.
+orm-loader = { path = "../../core_repos/orm-loader", editable = true }
+
 [tool.ruff]
-# entities.py/enums.py are compiler output (compiler/generate.py), reviewed
-# as a diff like any other generated artifact but not hand-styled to the
-# same bar as authored code -- e.g. class-level list literals like
-# `pk_columns = [...]` are intentional class metadata, not accidental
-# mutable defaults. reference/ is salvaged material from the old
-# HemOnc_Alchemy repo (notebooks, NLP patterns) kept for domain context, not
-# held to this project's lint bar.
 extend-exclude = ["hemonc_alchemy/model/entities.py", "hemonc_alchemy/model/enums.py", "reference/"]
 
 [tool.pytest.ini_options]

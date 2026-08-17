@@ -1,10 +1,7 @@
-"""Build a Registry from the HemOnc data dictionary and render the model.
+"""
+Build a Registry from the HemOnc data dictionary and render the model.
 
-Replaces hemonc_import's registry_version/registry_main.py (the entry point)
-and registry_version/sa_create.py (the second, crash-prone generator --
-deleted, US-11: `write_entity_class` referenced `rel_lines` before
-assignment, an UnboundLocalError on any table with an FK-like column). This
-is the one path from data dictionary to generated code.
+This is the path from data dictionary to generated code.
 """
 
 from __future__ import annotations
@@ -13,11 +10,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from .infer import parse_unique_key, safe_identifier
+from .infer import (
+    CONTENT_COL,
+    DICTIONARY_FILENAME,
+    LOOKUP_COL,
+    MATURITY_COL,
+    UNIQUE_COL,
+    parse_unique_key,
+    safe_identifier,
+)
 from .schema_model import Registry, TableMeta, save_registry_json
-
-CONTENT_COL = "Content Tables"
-LOOKUP_COL = "Lookup and Metadata Tables"
 
 
 def build_registry(dictionary_path: Path) -> Registry:
@@ -29,9 +31,9 @@ def build_registry(dictionary_path: Path) -> Registry:
     for content_col, df in {CONTENT_COL: content_df, LOOKUP_COL: lookup_df}.items():
         name_map = {
             content_col: "name",
-            "Maturity": "maturity",
+            MATURITY_COL: "maturity",
             "Description": "description",
-            "Unique Key": "unique_key",
+            UNIQUE_COL: "unique_key",
         }
         if "Identity Key" in df.columns:
             name_map["Identity Key"] = "identity_key"
@@ -49,15 +51,14 @@ def build_registry(dictionary_path: Path) -> Registry:
 
 
 def regenerate(
-    dictionary_path: Path,
     data_dir: Path,
     output_dir: Path,
 ) -> Registry:
-    """Regenerate model/entities.py, model/enums.py, and the interim JSON
-    registry snapshot. Does NOT validate or diff -- that's compiler/validate.py
-    and compiler/diff.py, called separately by the `regen` CLI command so
-    each step's failure is attributable.
     """
+    Regenerate model/entities.py, model/enums.py, and the interim JSON
+    registry snapshot. Does NOT validate or diff.
+    """
+    dictionary_path = data_dir / DICTIONARY_FILENAME
     registry = build_registry(dictionary_path)
     registry.enrich_table_metadata(dictionary_path)
     registry.finalise_table_metadata_from_data(data_dir)

@@ -831,7 +831,7 @@ requires-dist = [
     { name = "oa-configurator", extras = ["dev", "postgres"], marker = "extra == 'dev'", specifier = ">=1.1.0,<2.0.0" },
     { name = "openpyxl", marker = "extra == 'author'", specifier = ">=3.1.5" },
     { name = "openpyxl", marker = "extra == 'dev'", specifier = ">=3.1.5" },
-    { name = "orm-loader", specifier = ">=1.0.0,<2.0.0" },
+    { name = "orm-loader", editable = "../../core_repos/orm-loader" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'dev'", specifier = ">=3.2" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" },
@@ -1649,8 +1649,7 @@ wheels = [
 
 [[package]]
 name = "orm-loader"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
+source = { editable = "../../core_repos/orm-loader" }
 dependencies = [
     { name = "chardet" },
     { name = "oa-configurator" },
@@ -1658,10 +1657,28 @@ dependencies = [
     { name = "pyarrow" },
     { name = "sqlalchemy" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a9/f5/d71344e3f65dc29021e3e0b59d7ebfbd2070b11f8c9224cdb891278dc649/orm_loader-1.0.0.tar.gz", hash = "sha256:171969195afec304398ef8e3cceab52dba4b082347d0dc84feefff10b81bed52", size = 136810, upload-time = "2026-08-12T04:49:18.284Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/36/f8/952d95e9e6573787cd30f276604b1c2aad166e1922b9e486fff516a48919/orm_loader-1.0.0-py3-none-any.whl", hash = "sha256:3212894544fe1ae5e0f9e88ebf873addff9854726ec70a84f9140e39e591d68a", size = 56790, upload-time = "2026-08-12T04:49:16.697Z" },
+
+[package.metadata]
+requires-dist = [
+    { name = "chardet", specifier = ">=5.2.0" },
+    { name = "mkdocs", marker = "extra == 'dev'", specifier = ">=1.6.1" },
+    { name = "mkdocs-material", marker = "extra == 'dev'", specifier = ">=9.7.7" },
+    { name = "mkdocs-mermaid2-plugin", marker = "extra == 'dev'" },
+    { name = "mkdocstrings-python", marker = "extra == 'dev'", specifier = ">=2.0.1" },
+    { name = "oa-configurator", specifier = ">=1.0.0,<2.0.0" },
+    { name = "oa-configurator", extras = ["postgres"], marker = "extra == 'dev'", specifier = ">=1.0.0,<2.0.0" },
+    { name = "pandas", specifier = ">=2.3.3" },
+    { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" },
+    { name = "pyarrow", specifier = ">=23.0.1" },
+    { name = "pygments", marker = "extra == 'dev'", specifier = ">=2.20.0" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.3" },
+    { name = "python-dotenv", marker = "extra == 'dev'" },
+    { name = "requests", marker = "extra == 'dev'", specifier = ">=2.33.0" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.14.11" },
+    { name = "sqlalchemy", specifier = ">=2.0.45" },
+    { name = "ty", marker = "extra == 'dev'", specifier = ">=0.0.59" },
 ]
+provides-extras = ["dev", "postgres"]
 
 [[package]]
 name = "packaging"

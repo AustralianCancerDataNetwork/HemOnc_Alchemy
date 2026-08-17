@@ -1,4 +1,5 @@
-"""Base class for all hemonc-alchemy entity tables.
+"""
+Base class for all hemonc-alchemy entity tables.
 
 Mirrors ``omop_alchemy.cdm.base.CDMTableBase``: the same orm-loader
 interfaces provide chunked, staged CSV loading (merge strategies, not
@@ -10,20 +11,22 @@ What this class does NOT provide, because orm-loader is deliberately
 domain-agnostic and has no equivalent (US-19's "what stays custom"):
 
 - Pipe-delimited denormalisation / explode handling (a HemOnc sig/regimen
-  row can expand into N child rows). Port from hemonc_import's
-  final_model/entity_base.py: `_prepare_denorm_dataframe`,
-  `__load_denormalised__`.
-- Enum-from-CSV-snapshot casting. Port from
-  hemonc_import's registry_version/load_helpers.py `_to_enum_literal`,
-  fixed per US-22 to surface unknown values rather than silently return
-  None.
-- Natural-key business logic / `_lookup_parent_ids`-style resolution by
-  business key rather than surrogate FK.
+  row can expand into N child rows), and natural-key-based FK resolution
+  at load time for surrogate-PK tables. Both built in
+  `toolbox/loading.py` (`load_denormalised`), verified end-to-end against
+  real HemOnc data on both SQLite and Postgres.
+- Enum-from-CSV-snapshot casting (US-22) -- still not built.
+  `orm_loader.loaders.data.converters.perform_cast` has no `CastRule` for
+  `sa.Enum` at all, confirmed while building `toolbox/loading.py`. Needs a
+  HemOnc-specific home here, fixed per US-22 to surface unknown values
+  rather than silently return None (the old `_to_enum_literal`'s
+  behaviour, in hemonc_import's registry_version/load_helpers.py).
 
-Type casting itself should NOT be re-implemented here — reuse
-`orm_loader.data.converters.perform_cast`/`cast_scalar` directly (US-20),
-which already tracks per-column cast failures via `TableCastingStats`
-instead of hemonc_import's old `-1`/`-1.0` sentinel-on-failure behaviour.
+Type casting itself is NOT re-implemented here -- reuses
+`orm_loader.loaders.data.converters.perform_cast`/`cast_scalar` directly
+(US-20), which already tracks per-column cast failures via
+`TableCastingStats` instead of hemonc_import's old `-1`/`-1.0`
+sentinel-on-failure behaviour.
 """
 
 from __future__ import annotations

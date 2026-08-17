@@ -99,7 +99,7 @@ class Authors(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'authors.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = []
@@ -168,7 +168,7 @@ class Conditions(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'conditions.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = ['condition', 'condition_cui']
     identity_keys = []
     denormalised_columns = ['map_icd10cm', 'map_icd9cm', 'map_icdo3', 'map_icdo3_morph', 'map_oncotree', 'map_type_icdo3_morph']
@@ -267,7 +267,7 @@ class Drugs(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'drugs.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = ['drug', 'drug_cui']
     identity_keys = []
     denormalised_columns = ['atc', 'canmed_major_class', 'canmed_major_class_cui', 'canmed_minor_class', 'canmed_minor_class_cui']
@@ -345,7 +345,7 @@ class Indications(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'indications.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['biomarker', 'biomarker2', 'biomarker2_finding', 'biomarker2_type', 'biomarker3', 'biomarker3_finding', 'biomarker3_type', 'biomarker4', 'biomarker4_finding', 'biomarker4_type', 'biomarker_finding', 'biomarker_type', 'context', 'demographics', 'ineligibility', 'prior_therapy', 'prior_therapy_negation', 'prior_therapy_setting', 'regimen', 'regimen_cui', 'response_contingency', 'risk_stratification', 'stage_or_status', 'with_field']
@@ -625,7 +625,7 @@ class Persons(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'persons.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = ['name', 'person_cui']
     identity_keys = []
     denormalised_columns = ['condition_types', 'conditions', 'country', 'location', 'orcid', 'site', 'study_groups', 'study_sponsors']
@@ -738,7 +738,7 @@ class Pointers(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'pointers.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['biomarker', 'context', 'notes']
@@ -804,7 +804,7 @@ class Refs(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'refs.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['biblio', 'doi', 'reference', 'temp', 'title']
@@ -903,7 +903,7 @@ class Sigs(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'sigs.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['cyclesigs_note', 'seqrel', 'seqrelwhen', 'seqrelwhenunit', 'timing']
@@ -1028,7 +1028,7 @@ class Studies(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'studies.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['sponsor', 'study_group']
@@ -1107,7 +1107,7 @@ class StudyResults(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'study_results.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['comparator_code', 'efficacy', 'estci', 'toxicity']
@@ -1209,7 +1209,7 @@ class Variants(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'variants.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['blob', 'study', 'tracer']
@@ -1284,7 +1284,7 @@ class VariantEligibility(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'variant_eligibility.csv'
-    pk_columns = ['id']
+    natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['study']
@@ -1329,7 +1329,7 @@ class variant_eligibility_StudyMap(EntityBase, Base):
 class Canonicaltriples(EntityBase, Base):
     __tablename__ = 'canonicaltriples'
     filename = 'canonical.triples.csv'
-    pk_columns = ['class_1', 'relationship', 'class_2']
+    natural_key_columns = ['class_1', 'relationship', 'class_2']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['class_1_provenance', 'class_2_provenance']
@@ -1384,7 +1384,7 @@ class canonicaltriples_Class_2_provenanceMap(EntityBase, Base):
 class HemoncClasses(EntityBase, Base):
     __tablename__ = 'hemonc_classes'
     filename = 'hemonc_classes.csv'
-    pk_columns = ['concept_class_id']
+    natural_key_columns = ['concept_class_id']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['secondary_home_as_cui', 'secondary_home_as_string']
@@ -1438,7 +1438,7 @@ class hemonc_classes_Secondary_home_as_stringMap(EntityBase, Base):
 class HemoncRels(EntityBase, Base):
     __tablename__ = 'hemonc_rels'
     filename = 'hemonc_rels.csv'
-    pk_columns = ['relationship_id']
+    natural_key_columns = ['relationship_id']
     source_defined_keys = ['relationship_id']
     identity_keys = []
     denormalised_columns = []
@@ -1458,7 +1458,7 @@ class HemoncRels(EntityBase, Base):
 class Affiliations(EntityBase, Base):
     __tablename__ = 'affiliations'
     filename = 'affiliations.csv'
-    pk_columns = ['pmid', 'sequence', 'aff_no']
+    natural_key_columns = ['pmid', 'sequence', 'aff_no']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['affiliation_europmc', 'affiliation_hemonc', 'affiliation_journal']
@@ -1555,7 +1555,7 @@ class affiliations_Affiliation_journalMap(EntityBase, Base):
 class Contexttable(EntityBase, Base):
     __tablename__ = 'contexttable'
     filename = 'context.table.csv'
-    pk_columns = ['contextraw']
+    natural_key_columns = ['contextraw']
     source_defined_keys = ['contextraw']
     identity_keys = []
     denormalised_columns = ['contextpretty', 'phenotype', 'setting', 'stage_or_status']
@@ -1635,7 +1635,7 @@ class contexttable_Stage_or_statusMap(EntityBase, Base):
 class Exclusions(EntityBase, Base):
     __tablename__ = 'exclusions'
     filename = 'exclusions.csv'
-    pk_columns = ['pmid']
+    natural_key_columns = ['pmid']
     source_defined_keys = ['pmid']
     identity_keys = []
     denormalised_columns = ['title']
@@ -1681,7 +1681,7 @@ class exclusions_TitleMap(EntityBase, Base):
 class Inclusions(EntityBase, Base):
     __tablename__ = 'inclusions'
     filename = 'inclusions.csv'
-    pk_columns = ['pmid']
+    natural_key_columns = ['pmid']
     source_defined_keys = ['pmid']
     identity_keys = []
     denormalised_columns = ['reason_note']
@@ -1731,7 +1731,7 @@ class inclusions_Reason_noteMap(EntityBase, Base):
 class SigBranchTypes(EntityBase, Base):
     __tablename__ = 'sig_branch_types'
     filename = 'sig_branch_types.csv'
-    pk_columns = ['value']
+    natural_key_columns = ['value']
     source_defined_keys = ['value']
     identity_keys = []
     denormalised_columns = ['description']
@@ -1762,7 +1762,7 @@ class sig_branch_types_DescriptionMap(EntityBase, Base):
 class Units(EntityBase, Base):
     __tablename__ = 'units'
     filename = 'units.csv'
-    pk_columns = ['unit']
+    natural_key_columns = ['unit']
     source_defined_keys = ['unit']
     identity_keys = []
     denormalised_columns = []
@@ -1783,7 +1783,7 @@ class Units(EntityBase, Base):
 class Variantblob(EntityBase, Base):
     __tablename__ = 'variantblob'
     filename = 'variant.blob.csv'
-    pk_columns = ['version', 'chunk']
+    natural_key_columns = ['version', 'chunk']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = []

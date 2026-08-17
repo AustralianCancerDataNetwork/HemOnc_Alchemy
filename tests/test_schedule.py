@@ -1,11 +1,16 @@
-"""Regression tests for model/schedule/ — the one module ported end-to-end
+"""Regression tests for toolbox/schedule/ — the one module ported end-to-end
 so far. Covers the two behavioural fixes applied during porting: route
 classification (US-6) and indefinite-dosing handling (US-5).
 """
 
 from __future__ import annotations
 
-from hemonc_alchemy.model.schedule import Day, Indefinite, resolve_all_days, route_group
+from hemonc_alchemy.toolbox.schedule import (
+    Day,
+    Indefinite,
+    resolve_all_days,
+    route_group,
+)
 
 
 class TestRouteGroup:

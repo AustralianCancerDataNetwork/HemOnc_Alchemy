@@ -13,7 +13,7 @@ isn't advertised here.
 
 from .config import HemOncAlchemyConfig, create_hemonc_engine, get_hemonc_context
 from .model import Conditions, Drugs, Sigs, Studies, VariantEligibility, Variants
-from .model.schedule import resolve_all_days
+from .toolbox.schedule import resolve_all_days
 
 __all__ = [
     "Conditions",

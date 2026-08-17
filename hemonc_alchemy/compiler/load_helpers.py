@@ -1,17 +1,5 @@
-"""Data-dictionary-facing helpers: column normalisation and declared-type mapping.
-
-Ported from hemonc_import/src/hemonc_import/registry_version/load_helpers.py
-(175 lines) -- but only the two functions the compiler itself needs.
-
-Deliberately NOT ported here: `load_csv_best`, `perform_cast`, `cast_value`,
-`_to_bool`, `_to_enum_literal`. Those were runtime CSV-loading/casting
-helpers (imported by hemonc_import's final_model/entity_base.py, not by
-anything in registry_version's own build path), and per US-19/US-20 they're
-being replaced at runtime by orm_loader's `loading_helpers`/`data.converters`
--- not ported verbatim into the compiler. Enum casting
-(`_to_enum_literal`'s job) has no orm_loader equivalent and still needs a
-HemOnc-specific home in `model/base.py`, fixed per US-22 (surface unknown
-values instead of silently returning None) -- tracked there, not here.
+"""
+Data-dictionary-facing helpers: column normalisation and declared-type mapping.
 """
 
 from __future__ import annotations

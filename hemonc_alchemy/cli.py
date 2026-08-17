@@ -1,11 +1,3 @@
-"""hemonc-alchemy CLI — one entry point (US-7, US-24), mirroring
-omop-alchemy's maintenance/cli.py assembly pattern.
-
-Replaces hemonc_import's three inconsistent invocation styles
-(registry_main.py: no CLI args, env-vars only; natural_key_audit.py: its own
-argparse CLI; sa_create.py: no CLI at all, driven ad hoc from a notebook).
-"""
-
 from __future__ import annotations
 
 import subprocess
@@ -33,23 +25,22 @@ _MODEL_DIR = _PACKAGE_ROOT / "model"
 _SCHEMA_DIR = _PACKAGE_ROOT / "schema"
 _REGISTRY_JSON = _SCHEMA_DIR / "registry.json"
 
-DictionaryPathOption = Annotated[
-    Path,
-    typer.Option(envvar="HEMONC_DICTIONARY_PATH", help="Path to the HemOnc data dictionary workbook (.xlsx)."),
-]
 DataDirOption = Annotated[
     Path,
-    typer.Option(envvar="HEMONC_DATA_DIR", help="Directory containing the current HemOnc CSV extracts."),
+    typer.Option(
+        envvar="HEMONC_DATA_DIR",
+        help="Directory containing the current HemOnc CSV extracts and data.dictionary.xlsx.",
+    ),
 ]
 
 
 @app.command()
 def regen(
-    dictionary_path: DictionaryPathOption,
     data_dir: DataDirOption,
     force: Annotated[bool, typer.Option(help="Proceed even if the schema diff shows unacknowledged changes.")] = False,
 ) -> None:
-    """Regenerate model/entities.py, model/enums.py, and schema/registry.json
+    """
+    Regenerate model/entities.py, model/enums.py, and schema/registry.json
     from the HemOnc data dictionary.
 
     Runs generate -> validate -> diff as one gated pipeline (US-8): a
@@ -58,7 +49,7 @@ def regen(
     committed. Pass --force to accept the diff (e.g. after reviewing it
     with `hemonc-alchemy diff`).
     """
-    registry = generate_module.regenerate(dictionary_path, data_dir, _MODEL_DIR)
+    registry = generate_module.regenerate(data_dir, _MODEL_DIR)
 
     errors = validate_module.validate_all(registry, _MODEL_DIR / "entities.py", _MODEL_DIR / "enums.py")
     if errors:
@@ -67,16 +58,6 @@ def regen(
             typer.echo(f"  - {error}")
         raise typer.Exit(code=1)
 
-    # The ast/dataclass-level checks above pass even if the generated model
-    # can't actually be imported and mapped by SQLAlchemy -- CONFIRMED
-    # earlier in this rewrite (US-21) that a map-table PK bug only surfaced
-    # once orm_loader's validators ran against the real, imported model.
-    # Run that stronger check in a fresh subprocess, not an in-process
-    # reimport: `model.entities` may already be imported (e.g. by an earlier
-    # `regen` in the same process, or a test), and SQLAlchemy's declarative
-    # registry does not support re-mapping the same table names into one
-    # still-live `Base.metadata` -- a subprocess sidesteps that entirely by
-    # starting mapper/metadata state from scratch.
     orm_check = subprocess.run(
         [sys.executable, "-m", "hemonc_alchemy.cli", "validate"],
         capture_output=True,
@@ -118,14 +99,8 @@ def regen(
 
 @app.command()
 def validate() -> None:
-    """Check the currently generated model for structural correctness.
-
-    Two layers, run in order (US-8, US-21): compiler/validate.py's own
-    ast-parse/PK-existence checks first (they work even if the generated
-    model doesn't actually import cleanly), then orm_loader's
-    always-on validators (ColumnPresenceValidator, ColumnNullabilityValidator,
-    PrimaryKeyValidator, ForeignKeyShapeValidator) via spec_adapter -- a
-    stronger check that requires the model to actually import and map.
+    """
+    Check the currently generated model for structural correctness.
     """
     if not _REGISTRY_JSON.exists():
         typer.secho(f"No registry found at {_REGISTRY_JSON} — run `regen` first.", fg=typer.colors.RED)
@@ -180,23 +155,17 @@ def diff(
 
 @app.command()
 def audit(
-    dictionary_path: DictionaryPathOption,
     data_dir: DataDirOption,
     output: Annotated[Path | None, typer.Option(help="Write the report here instead of printing it.")] = None,
     report_only: Annotated[
         bool, typer.Option(help="Always exit 0, even if hard mismatches are found (for local/manual review).")
     ] = False,
 ) -> None:
-    """Audit natural/business keys for duplicates and enum-threshold risk.
-
-    Exits nonzero on unreviewed hard mismatches (AMBIGUOUS_CSV_MATCH,
-    MISSING_KEY_COLUMNS, DUPLICATE_BUSINESS_KEYS) unless --report-only is
-    passed -- previously this command always exited 0 regardless of what it
-    found, so CI or a script couldn't distinguish a clean audit from a
-    failed one (review follow-up).
     """
-    results = audit_module.run_audit(dictionary_path, data_dir)
-    report = audit_module.build_report(results, dictionary_path, data_dir)
+    Audit natural/business keys for duplicates and enum-threshold risk.
+    """
+    results = audit_module.run_audit(data_dir)
+    report = audit_module.build_report(results, data_dir)
 
     if output is None:
         typer.echo(report)

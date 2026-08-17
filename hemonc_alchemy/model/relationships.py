@@ -6,9 +6,9 @@ That file mixed four things in one module: (1) real declarative
 `relationship()`/`association_proxy` FK-like joins, (2) fuzzy cross-entity
 resolvers that parse free text and issue ad hoc queries, (3) clinical
 classification logic, and (4) schedule properties attached from a different
-file entirely. Tiers 2 and 3 now live in ../../toolbox/ (linking.py,
-classification.py); tier 4 is attached from model/schedule/ itself, not
-reached into from here.
+file entirely. Tiers 2, 3, and 4 now live in ../../toolbox/ (linking.py,
+classification.py, schedule/) -- none of them are declarative ORM shape,
+so none of them belong here.
 
 These are NOT redundant with the compiler's auto-inferred soft
 relationships (the `*_obj`/`*_objects` viewonly relationships already

@@ -165,3 +165,4 @@ oa_system_config.yaml
 data/
 .DS_Store
 *.csv
+_design/

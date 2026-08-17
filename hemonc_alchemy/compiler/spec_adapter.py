@@ -1,31 +1,21 @@
-"""HemOnc TableSpec/FieldSpec adapter over orm_loader.registry.validation (US-21).
+"""
+Builds the "spec" orm_loader's validators check the generated model
+against.
 
-New in this rewrite — not a port of anything in hemonc_import. orm_loader's
-`registry.ModelRegistry`/`ModelDescriptor.from_model` and its four
-always-on validators (`ColumnPresenceValidator`, `ColumnNullabilityValidator`,
-`PrimaryKeyValidator`, `ForeignKeyShapeValidator`) already implement "does
-the generated ORM model match its declared spec" — today coupled to
-OMOP-style CSV specs (`load_table_specs`/`load_field_specs` read
-`cdmTableName`/`cdmFieldName`/`isRequired` columns from a CSV). The
-`Validator` protocol itself is spec-format-agnostic, and orm_loader's own
-docstring flags exactly this gap: "TODO: support generalised specification
-formats via LinkML or similar."
+orm_loader already checks whether a mapped SQLAlchemy model
+matches its own declared shape (`ModelRegistry`, plus validators for
+column presence, nullability, primary keys, and foreign keys)
 
-hemonc-alchemy's "spec" is not a CSV -- it's the `Registry` built by
-compiler/schema_model.py, itself derived from the real HemOnc data
-dictionary. This module builds TableSpec/FieldSpec directly from that
-Registry and hands them to orm_loader's existing validators, rather than
-reimplementing validator plumbing.
+This module translates that Registry into the `TableSpec`/`FieldSpec`
+objects orm_loader's validators can use, so the same validation
+logic can run without reimplementation.
 
-Lives in compiler/, not loaders/: this is fundamentally "does the compiled
-schema match the generated model" (an author-facing, US-8 validation
-concern), not a runtime loading concern. The `.importlinter` layers
-contract (cli > compiler > toolbox > model) would forbid a `loaders`-tier
-module from importing `compiler.schema_model` anyway, and there was never
-any real content that needed to live in loaders/ once vocab_load.py was
-dropped (its only other candidate, EntityBase's orm-loader composition,
-already lives in model/base.py) -- so that empty package was removed
-rather than kept around for one module that belongs elsewhere.
+Notes:
+- a content table's real primary key is the generated `id` column, not
+  the natural key in `pk_columns` (that's only a UniqueConstraint)
+- HemOnc's cross-table relationships are all viewonly and never declared
+  as a real SQLAlchemy ForeignKey (see model/relationships.py), so
+  `is_foreign_key` is always False here.
 """
 
 from __future__ import annotations
@@ -43,14 +33,8 @@ from .schema_model import Registry as SchemaRegistry
 
 
 def hemonc_table_specs(registry: SchemaRegistry) -> dict[str, TableSpec]:
-    """Build orm_loader TableSpec objects directly from a hemonc-alchemy
-    schema Registry -- the "generalised specification format" orm_loader's
-    own ModelRegistry docstring flags as unsupported (CSV-only today).
-
-    Only tables that actually produced an entity class (`meta.columns`
-    non-empty) get a spec; the rest have no generated model to validate.
-    `is_required` mirrors HemOnc's own `maturity` field (prod == required),
-    the closest real analogue to OMOP's isRequired convention.
+    """
+    Build one TableSpec per table that produced an entity class
     """
     return {
         name: TableSpec(
@@ -65,22 +49,12 @@ def hemonc_table_specs(registry: SchemaRegistry) -> dict[str, TableSpec]:
 
 
 def hemonc_field_specs(registry: SchemaRegistry) -> dict[str, dict[str, FieldSpec]]:
-    """Build orm_loader FieldSpec objects from a hemonc-alchemy schema Registry.
-
-    Mirrors compiler/schema_model.py's own table_class() rendering rules so
-    the spec actually matches what gets generated, not a naive reading of
-    TableMeta:
-    - denormalised/derived columns are excluded (table_class() skips them
-      too -- they aren't rendered as scalar columns at all, see
-      schema_model.py:695-696).
-    - for surrogate-PK ("content") tables, the real primary key is the
-      generated `id` column, not the natural key in `pk_columns` (that's
-      only a UniqueConstraint) -- marking pk_columns as is_primary_key here
-      would make every natural-key column show up as
-      PRIMARY_KEY_MISSING_FROM_MODEL against the real generated PK.
-    - HemOnc's soft relationships are viewonly, primaryjoin-based, and
-      never declared as a real SQLAlchemy ForeignKey (see
-      model/relationships.py) -- is_foreign_key is always False here.
+    """
+    Build one FieldSpec per column that gets rendered onto the generated class
+     
+    Denormalised/derived columns are skipped since they don't become scalar 
+    columns at all, and a surrogate-PK table's real primary key is the 
+    generated `id` column rather than its natural key.
     """
     out: dict[str, dict[str, FieldSpec]] = {}
 
@@ -129,22 +103,16 @@ def build_model_registry(
     *,
     model_version: str,
 ) -> ModelRegistry:
-    """Construct an orm_loader ModelRegistry from a hemonc-alchemy schema
-    Registry and a list of live, mapped ORM classes.
-
-    `models` is passed in rather than imported here so this module stays
-    decoupled from `model/entities.py` -- the caller (compiler/validate.py)
-    already has to import it to get real classes for `ModelDescriptor.from_model`
-    (which requires an actually-mapped class, not just parsed AST), so there's
-    no reason for this adapter to import it too.
+    """
+    Build an orm_loader ModelRegistry from a schema Registry and a list
+    of already-mapped ORM classes.
     """
     registry = ModelRegistry(model_version=model_version, model_name="HemOnc")
 
-    # orm_loader's public API (`load_table_specs`) only reads CSV files.
-    # Setting these "private" attributes directly is filling the documented
-    # gap in ModelRegistry's own docstring ("TODO: support generalised
-    # specification formats via LinkML or similar"), not working around a
-    # considered design decision.
+    # orm_loader's public API only reads specs from CSV files. Setting
+    # these directly fills a gap orm_loader's own docstring already flags
+    # as unsupported ("TODO: support generalised specification formats via
+    # LinkML or similar").
     registry._table_specs = hemonc_table_specs(schema_registry)
     registry._field_specs = hemonc_field_specs(schema_registry)
 
@@ -158,17 +126,8 @@ def validate_with_orm_loader(
     *,
     model_version: str = "unversioned",
 ) -> ValidationReport:
-    """Run orm_loader's always-on validators against the generated model.
-
-    A stronger, more structural check than compiler/validate.py's own
-    ast/dataclass-level checks: this one requires the generated model to
-    actually import and map correctly first, and validates PK/FK/nullability
-    shape via the same battle-tested validators omop-alchemy uses.
-
-    `model_version` has no real value to pass yet -- HemOnc's data
-    dictionary isn't itself versioned in a way this project tracks (see
-    _design/hemonc-alchemy-spec.md's open questions); "unversioned" is a
-    placeholder pending that decision, not a considered value.
+    """
+    Run orm_loader's validators against the generated model.
     """
     registry = build_model_registry(schema_registry, models, model_version=model_version)
     runner = ValidationRunner(validators=always_on_validators())

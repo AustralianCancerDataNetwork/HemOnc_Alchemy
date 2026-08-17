@@ -1,9 +1,7 @@
-"""Post-generation structural validation — new in this rewrite (US-8).
+"""
+Post-generation structural validation 
 
-hemonc_import had no validation step after writing generated files: nothing
-checked the output was syntactically valid Python, or that every declared
-primary-key column actually existed on its table. Two checks, run
-independently so a failure is attributable to the right stage:
+Confirms that output is syntactically valid Python
 
 1. `validate_registry` — structural checks against the Registry object
    itself, before rendering (catches a bad pk_columns/enum declaration
@@ -11,11 +9,6 @@ independently so a failure is attributable to the right stage:
 2. `validate_generated_file` — `ast.parse` on the actual written Python, so
    a bug in the *generator* (producing invalid syntax from valid metadata)
    is caught too, not just bad input metadata.
-
-Deferred: reusing orm_loader.registry.validation's `Validator` protocol
-(US-21) via a HemOnc TableSpec/FieldSpec adapter (loaders/spec_adapter.py)
-is the more complete long-term answer and would subsume some of this — not
-done yet, this module is the minimum bar in the meantime.
 """
 
 from __future__ import annotations

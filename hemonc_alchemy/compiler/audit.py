@@ -1,37 +1,29 @@
-"""Natural-key duplicate audit and enum-threshold proximity checks.
+"""
+Checks whether HemOnc's declared identity (sourced from data dictionary) 
+for a table actually holds up in the real data, plus a couple of small 
+enumerator health checks.
 
-Ported from hemonc_import/src/hemonc_import/registry_version/natural_key_audit.py
-(537 lines) -- the strongest module in the original registry_version
-package (clear AuditResult model, reasonable status taxonomy). Two fixes
-applied during the port:
+A "natural key" (or business key) is the column, or combination of columns,
+that HemOnc's own data dictionary says is enough to uniquely identify a row
+of a table. That's different from the surrogate `id` a content table gets 
+in the generated model: the surrogate id is just a database convenience, 
+but the natural key is the stated claim about what makes a row distinct.
 
-- Value comparison (source natural_key_audit.py:102-109, `null_safe_key_frame`):
-  compared business-key values via raw `repr(value)`, so `1`/`1.0`/`"1"`
-  were treated as distinct even though the runtime loader canonicalizes
-  numeric-looking values to one string form specifically to avoid this.
-  CONFIRMED real disagreement in the real data: `contexttable`
-  (key=`contextraw`) -- the old repr()-based audit reports 0 duplicates,
-  a canonicalized comparison reports 1, caused by
-  `"Relapsed_or_refractory"` vs `"Relapsed_or_Refractory"` (case-only).
-  Fixed with `canonical_key_value`, which case-folds AND numeric-normalizes
-  (mirroring the String-cast logic in hemonc_import's old
-  `load_helpers.perform_cast`).
-- Boilerplate (source natural_key_audit.py:125-291): five near-identical
-  ~14-field `AuditResult(...)` constructions, and a decision-application
-  function that re-lists all 14 fields to change 2 of them. Replaced with
-  `dataclasses.replace`.
+This module re-derives that declared key for every table in the dictionary,
+then checks whether it's actually unique in the current CSV snapshot. When
+it isn't, it may be a sign the real data doesn't behave the way its own
+declared key implies.
 
-New in this module (US-8, US-15, no hemonc_import equivalent):
+A "sparse key" means one or more of the composite key columns is blank for 
+some real rows. This is fine in principle, but doesn't meet sqlalchemy's 
+strict uniqueness requirement, so the audit flags it as a warning.
 
-- `enum_threshold_warnings`: flags enum columns close to
-  `infer.MAX_ENUM_UNIQUE`. Currently 3 real columns would be flagged:
-  `conditions.condition_type` (19/20), `units.unit_type` (19/20),
-  `studies.registry` (17/20).
+There are some already-understood edge case (see `TABLE_DECISIONS` below
+for the ones already reviewed and accepted).
 
-Also carried over as-is from the original: `TABLE_DECISIONS` is still a
-hardcoded per-table review-exception dict (source natural_key_audit.py:14-36).
-If this audit grows beyond hemonc-alchemy's own use, that should become
-external config -- not urgent enough to block this port.
+`enum_threshold_warnings` flags enum columns getting close to the point 
+where they'd stop being treated as an enum at all, and `enum_collision_warnings` 
+flags enum values that look distinct but collapse to same generated member name.
 """
 
 from __future__ import annotations
@@ -45,7 +37,12 @@ from typing import Any
 import pandas as pd
 
 from .infer import (
+    CONTENT_COL,
+    DICTIONARY_FILENAME,
+    LOOKUP_COL,
+    MATURITY_COL,
     MAX_ENUM_UNIQUE,
+    UNIQUE_COL,
     parse_unique_key,
     resolve_source_csv,
     safe_enum_key,
@@ -53,11 +50,9 @@ from .infer import (
 )
 from .schema_model import Registry
 
-CONTENT_COL = "Content Tables"
-LOOKUP_COL = "Lookup and Metadata Tables"
-MATURITY_COL = "Maturity"
-UNIQUE_COL = "Unique Key"
-
+# these table-specific decisions are reviewed and accepted exceptions to the
+# audit's default "hard failure" rules. they should be reviewed at the source 
+# to confirm exceptions are valid and/or if a correction is required at the source.
 TABLE_DECISIONS: dict[str, dict[str, str]] = {
     "studies": {"SPARSE_KEY_ROWS": "ACCEPTED_SPARSE_KEY"},
     "refs": {"SPARSE_KEY_ROWS": "ACCEPTED_SPARSE_KEY"},
@@ -66,10 +61,6 @@ TABLE_DECISIONS: dict[str, dict[str, str]] = {
     "hemonc_classes": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
     "indications": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
     "pointers": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
-    # Reviewed against real data: the only duplicate is `Relapsed_or_refractory`
-    # vs `Relapsed_or_Refractory` -- a single case-only variant pair in the raw
-    # CSV (2 of 384 rows), not a key-design problem. No better key exists for
-    # `contextraw`; this is a source-data typo safe to dedupe on load.
     "contexttable": {"DUPLICATE_BUSINESS_KEYS": "IGNORE_ON_LOAD"},
 }
 
@@ -78,9 +69,6 @@ STATUS_NOTES: dict[str, str] = {
     "IGNORE_ON_LOAD": "Reviewed and treated as a source-data issue safe to ignore or dedupe on load.",
 }
 
-# Statuses a CI/script caller should treat as a hard failure -- see
-# `has_hard_failures`/cli.py's `audit --report-only` (US-8 follow-up: the
-# audit command used to always exit 0 regardless of these).
 HARD_FAILURE_STATUSES: frozenset[str] = frozenset({
     "AMBIGUOUS_CSV_MATCH",
     "MISSING_KEY_COLUMNS",
@@ -142,13 +130,6 @@ def canonical_key_value(value: Any) -> str:
             pass
 
     return text.casefold()
-
-
-def resolve_csv_path(data_dir: Path, table_name: str) -> tuple[Path | None, list[str]]:
-    """Kept as a thin alias -- audit and generation now share one filename
-    resolver (infer.resolve_source_csv), where previously they disagreed
-    (US-13; see infer.py's module docstring)."""
-    return resolve_source_csv(data_dir, table_name)
 
 
 def extract_duplicate_examples(df: pd.DataFrame, key_columns: list[str], limit: int = 5) -> list[dict[str, Any]]:
@@ -362,8 +343,8 @@ def load_overview_rows(dictionary_path: Path) -> list[tuple[str, str, str, str]]
     return rows
 
 
-def run_audit(dictionary_path: Path, data_dir: Path) -> list[AuditResult]:
-    overview_rows = load_overview_rows(dictionary_path)
+def run_audit(data_dir: Path) -> list[AuditResult]:
+    overview_rows = load_overview_rows(data_dir / DICTIONARY_FILENAME)
     results = [audit_table(kind, raw_name, maturity, unique_key_raw, data_dir) for kind, raw_name, maturity, unique_key_raw in overview_rows]
     results = apply_review_decisions(results)
     return sorted(results, key=lambda r: (r.kind, r.table_name))
@@ -372,19 +353,6 @@ def run_audit(dictionary_path: Path, data_dir: Path) -> list[AuditResult]:
 def enum_collision_warnings(registry: Registry) -> list[str]:
     """Flag enum columns where two distinct display values collapse onto the
     same generated member name.
-
-    New in this rewrite (review follow-up). `EnumSpec.enum_class` derives
-    each member's name from `safe_enum_key(value)`; CONFIRMED against real
-    data that this collapses distinct values onto one key -- `sigs`'
-    `targetleveltype` column has both "CPS at least 10%" and "CPS at least
-    10", which both normalise to `CPS_AT_LEAST_10`, so the generated enum
-    silently keeps only one and drops the other's member.
-
-    This is deliberately a warning, not a validation failure: in this
-    specific case the two values are the same real-world category
-    (the `%` is cosmetic), and collapsing them is fine. But the collision
-    should be visible so an author can judge that case by case rather than
-    have it happen silently -- a future collision might not be as harmless.
     """
     warnings: list[str] = []
     for table_name, meta in registry.tables.items():
@@ -404,11 +372,8 @@ def enum_collision_warnings(registry: Registry) -> list[str]:
 
 
 def enum_threshold_warnings(registry: Registry, within: int = 3) -> list[str]:
-    """Flag enum columns close to the MAX_ENUM_UNIQUE classification cliff (US-15).
-
-    New in this rewrite -- hemonc_import had no equivalent. Currently 3 real
-    columns would be flagged: conditions.condition_type (19/20),
-    units.unit_type (19/20), studies.registry (17/20).
+    """
+    Flag enum columns close to the MAX_ENUM_UNIQUE threshold
     """
     warnings: list[str] = []
     for table_name, meta in registry.tables.items():
@@ -416,13 +381,12 @@ def enum_threshold_warnings(registry: Registry, within: int = 3) -> list[str]:
             n = len(enum_spec.values)
             if MAX_ENUM_UNIQUE - within <= n <= MAX_ENUM_UNIQUE:
                 warnings.append(
-                    f"{table_name}.{col_name}: {n}/{MAX_ENUM_UNIQUE} distinct values -- "
-                    f"one HemOnc release away from being reclassified as plain String"
+                    f"{table_name}.{col_name}: {n}/{MAX_ENUM_UNIQUE} distinct values - close to max threshold"
                 )
     return warnings
 
 
-def build_report(results: list[AuditResult], dictionary_path: Path, data_dir: Path) -> str:
+def build_report(results: list[AuditResult], data_dir: Path) -> str:
     status_counts = Counter(result.status for result in results)
 
     hard_failures = HARD_FAILURE_STATUSES
@@ -430,7 +394,7 @@ def build_report(results: list[AuditResult], dictionary_path: Path, data_dir: Pa
     warning_statuses = {"SPARSE_KEY_ROWS", "NO_CURRENT_CSV", "NO_DECLARED_NATURAL_KEY"}
 
     lines: list[str] = ["# Natural Key Audit Report", ""]
-    lines.append(f"- Dictionary: `{dictionary_path}`")
+    lines.append(f"- Dictionary: `{data_dir / DICTIONARY_FILENAME}`")
     lines.append(f"- Data directory: `{data_dir}`")
     lines.append(f"- Overview tables scanned: `{len(results)}`")
     lines.append("")
@@ -470,13 +434,12 @@ def build_report(results: list[AuditResult], dictionary_path: Path, data_dir: Pa
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Audit overview-declared natural keys against current CSV data.")
-    parser.add_argument("dictionary_path", type=Path)
     parser.add_argument("data_dir", type=Path)
     parser.add_argument("--output", type=Path, default=None)
     args = parser.parse_args()
 
-    results = run_audit(args.dictionary_path, args.data_dir)
-    report = build_report(results, args.dictionary_path, args.data_dir)
+    results = run_audit(args.data_dir)
+    report = build_report(results, args.data_dir)
 
     if args.output is None:
         print(report)
