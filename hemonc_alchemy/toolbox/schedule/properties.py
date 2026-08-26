@@ -1,36 +1,28 @@
-"""Cross-entity schedule/administration properties.
+"""Summarising when a regimen variant's drugs are actually given.
 
-Ported from hemonc_import's final_model/schedule_properties.py. These are
-attached to Sigs/Variants once model/entities.py exists (see the compiler
-work in _design/hemonc-alchemy-spec.md TS-6 step 2-3) — until then this
-module is correct, self-contained Python that operates on any object
-duck-typing the expected attributes (sig.route, sig.resolved_days,
-sig.drug_object, ...), same as the original.
+`schedule_events` flattens a variant's sigs into one dosing event per sig.
+`administration_frame` turns those into a per-drug, per-day picture of a cycle,
+which is what you want for comparing regimens by the demand they place on
+clinic time versus what a patient takes at home.
 
-Three changes from the original, all already applied here rather than left
-as follow-up:
-- `route_group` now comes from routes.py's case-corrected, empirically
-  re-checked classification (US-6), not a hand-duplicated vocabulary.
-- `ScheduleEvent` carries `indefinite` alongside `days`, and `resolved_days`
-  exposes both explicitly, since `resolve_all_days` now returns a
-  `ResolvedSchedule` rather than a bare list (US-5).
-- `administration_matrices`'s per-drug grid used to be keyed by `drug.drug`
-  (the display name string) while every other property in this file keys by
-  `drug.drug_cui` — confirmed inconsistent in the audit (two distinct Drugs
-  rows sharing a display name would silently merge). Now keyed by
-  `drug_cui` throughout. The original also declared `decay_days`/
-  `decay_factor` parameters on a `@cached_property`, which are unreachable
-  through normal property access (`cached_property.__get__` only ever calls
-  `fget(instance)`) — split into a zero-arg property for the common case
-  plus `compute_administration_matrices(...)` for callers who need
-  non-default decay parameters.
+    frame = administration_frame(variant)
+    frame[frame.route_group == "IV"]
+
+One row per drug per day, so it composes: pivot it for the grid view, group it
+to compare variants, join it to anything else keyed on `drug_cui`.
+
+    frame.pivot_table(index="drug", columns="day", values="intensity")
+
+Passing many variants at once gets you one frame to compare across rather than
+a frame each. It costs no fewer queries than a loop would -- sigs and drugs are
+already batch-loaded when the variants are, so these functions issue none of
+their own.
 """
 
 from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
-from functools import cached_property
 from typing import Any
 
 import pandas as pd
@@ -38,17 +30,34 @@ import pandas as pd
 from .handling import Day, Indefinite, apply_sig_to_series, resolve_all_days
 from .routes import route_group
 
+DEFAULT_DECAY_DAYS = 2
+DEFAULT_DECAY_FACTOR = 0.5
+
+_FRAME_COLUMNS = [
+    "variant_cui",
+    "variant",
+    "route_group",
+    "drug_cui",
+    "drug",
+    "day",
+    "intensity",
+    "optional",
+    "indefinite",
+]
+
 
 @dataclass(frozen=True)
 class ScheduleEvent:
+    """One sig's dosing instruction, with its schedule resolved."""
+
     sig: Any
     drug_object: Any | None
     route_group: str | None
     days: tuple[Day, ...]
     indefinite: Indefinite | None
     phase: str | None
+    phase_step: int | None
     portion: str | None
-    branch: str | None
     timing_sequence: str | None
     step_number: str | None
     dose_min: str | None
@@ -61,11 +70,11 @@ class ScheduleEvent:
     raw_all_days: str | None
 
 
-@cached_property
-def schedule_events(self):
+def schedule_events(variant) -> list[ScheduleEvent]:
+    """One `ScheduleEvent` per sig in `variant`, in the order the sigs come."""
     events = []
-    for sig in self.component_sigs:
-        resolved = sig.resolved_days
+    for sig in variant.component_sigs:
+        resolved = resolve_all_days(sig.alldays)
         events.append(
             ScheduleEvent(
                 sig=sig,
@@ -74,8 +83,8 @@ def schedule_events(self):
                 days=resolved.days,
                 indefinite=resolved.indefinite,
                 phase=sig.phase,
+                phase_step=sig.phase_step,
                 portion=sig.portion,
-                branch=sig.branch,
                 timing_sequence=sig.timing_sequence,
                 step_number=sig.step_number,
                 dose_min=sig.doseminnum,
@@ -91,124 +100,142 @@ def schedule_events(self):
     return events
 
 
-@cached_property
-def cancer_services_drugs(self):
-    """
-    Unique Drugs administered in a chemo suite (IV / parenteral).
-    """
+def _drugs_where(variant, group: str) -> list:
     drugs = {}
-    for event in self.schedule_events:
+    for event in schedule_events(variant):
         drug = event.drug_object
-        if event.route_group == "IV" and drug is not None:
+        if event.route_group == group and drug is not None:
             drugs[drug.drug_cui] = drug
     return list(drugs.values())
 
 
-@cached_property
-def home_administered_drugs(self):
-    """
-    Unique Drugs administered at home (PO, topical, inhaled).
-    """
-    drugs = {}
-    for event in self.schedule_events:
-        drug = event.drug_object
-        if event.route_group == "PO" and drug is not None:
-            drugs[drug.drug_cui] = drug
-    return list(drugs.values())
-
-
-@cached_property
-def cancer_services_sigs_by_drug(self):
-    """
-    { Drug -> [Sigs, ...] } for chemo-suite administration.
-    """
+def _sigs_by_drug_where(variant, group: str) -> dict:
     out = defaultdict(list)
-    for event in self.schedule_events:
+    for event in schedule_events(variant):
         drug = event.drug_object
-        if event.route_group == "IV" and drug is not None:
+        if event.route_group == group and drug is not None:
             out[drug].append(event.sig)
     return dict(out)
 
 
-@cached_property
-def home_administered_sigs_by_drug(self):
+def cancer_services_drugs(variant) -> list:
+    """The distinct drugs in `variant` that need a clinic visit."""
+    return _drugs_where(variant, "IV")
+
+
+def home_administered_drugs(variant) -> list:
+    """The distinct drugs in `variant` a patient takes at home."""
+    return _drugs_where(variant, "PO")
+
+
+def cancer_services_sigs_by_drug(variant) -> dict:
+    """`{drug: [sigs]}` for the clinic-administered part of `variant`."""
+    return _sigs_by_drug_where(variant, "IV")
+
+
+def home_administered_sigs_by_drug(variant) -> dict:
+    """`{drug: [sigs]}` for the home-administered part of `variant`."""
+    return _sigs_by_drug_where(variant, "PO")
+
+
+def administration_frame(
+    variants,
+    *,
+    decay_days: int = DEFAULT_DECAY_DAYS,
+    decay_factor: float = DEFAULT_DECAY_FACTOR,
+) -> pd.DataFrame:
+    """When each drug is given across a cycle, one row per drug per day.
+
+    Accepts a single variant or any iterable of them. Columns:
+
+    | column | |
+    |---|---|
+    | `variant_cui`, `variant` | which variant the row belongs to |
+    | `route_group` | `"IV"` (clinic) or `"PO"` (home) |
+    | `drug_cui`, `drug` | the drug, by identifier and by name |
+    | `day` | day of cycle; can be negative for lead-in dosing |
+    | `intensity` | 1.0 on a dosing day, tapering over `decay_days` after |
+    | `optional` | whether the dosing day itself was marked optional |
+    | `indefinite` | set when the sig continues past its stated days |
+
+    `intensity` tapers after each dose by `decay_factor` per day for
+    `decay_days`, so a treatment day and the days it encroaches on both
+    register. Set `decay_days=0` for dosing days alone.
+
+    Rows whose route is unrecognised or not specified are excluded, as are
+    sigs with no resolvable days -- including open-ended `EOC` ranges, so a
+    variant can legitimately produce no rows. Where `indefinite` is set, the
+    days present are only the part that was written down.
     """
-    { Drug -> [Sigs, ...] } for home administration.
-    """
-    out = defaultdict(list)
-    for event in self.schedule_events:
-        drug = event.drug_object
-        if event.route_group == "PO" and drug is not None:
-            out[drug].append(event.sig)
-    return dict(out)
+    # Duck-typed rather than `isinstance(variants, Iterable)`: entities inherit
+    # __iter__ from orm-loader's serialisation interface, so a single variant
+    # passes an Iterable check and gets iterated into its own columns.
+    if hasattr(variants, "component_sigs"):
+        variants = [variants]
 
+    records: list[dict] = []
 
-@cached_property
-def administration_matrices(self) -> dict[str, pd.DataFrame]:
-    """
-    Per-route day-by-drug intensity grids for explicit dosing days.
-
-    NOTE: does not currently represent indefinite/open-ended continuation.
-    A schedule_event with `indefinite is not None` contributes only its 
-    explicit `days`. 
-    
-    Extending the grid (or otherwise marking it) to reflect an
-    open-ended tail is an open design question, not solved here.
-    """
-    return compute_administration_matrices(self, decay_days=2, decay_factor=0.5)
-
-
-def compute_administration_matrices(
-    self,
-    decay_days: int = 2,
-    decay_factor: float = 0.5,
-) -> dict[str, pd.DataFrame]:
-    matrices = {}
-    route_groups = {
-        "IV": [event for event in self.schedule_events if event.route_group == "IV"],
-        "PO": [event for event in self.schedule_events if event.route_group == "PO"],
-    }
-
-    for route, events in route_groups.items():
-        if not events:
-            continue
-
-        grid = defaultdict(lambda: defaultdict(float))
-        all_days = set()
-
-        for event in events:
+    for variant in variants:
+        for event in schedule_events(variant):
             drug = event.drug_object
-            if drug is None or not event.days:
+            if event.route_group is None or drug is None or not event.days:
                 continue
 
+            series: dict[int, float] = defaultdict(float)
             apply_sig_to_series(
-                grid[drug.drug_cui],
+                series,
                 list(event.days),
                 decay_days=decay_days,
                 decay_factor=decay_factor,
             )
-            all_days.update(day.value for day in event.days)
+            optional_days = {day.value for day in event.days if day.optional}
 
-        if not all_days:
-            continue
+            for day, intensity in series.items():
+                records.append(
+                    {
+                        "variant_cui": variant.variant_cui,
+                        "variant": variant.variant,
+                        "route_group": event.route_group,
+                        "drug_cui": drug.drug_cui,
+                        "drug": drug.drug,
+                        "day": day,
+                        "intensity": intensity,
+                        "optional": day in optional_days,
+                        "indefinite": event.indefinite,
+                    }
+                )
 
-        day_range = range(min(all_days), max(all_days) + decay_days + 1)
-        df = pd.DataFrame(
-            0.0,
-            index=sorted(grid.keys()),
-            columns=list(day_range),
+    if not records:
+        return pd.DataFrame(columns=_FRAME_COLUMNS)
+
+    frame = pd.DataFrame.from_records(records, columns=_FRAME_COLUMNS)
+
+    # One drug can be dosed by several sigs in the same variant, and their
+    # decay tails can land on the same day; keep the strongest.
+    grouped = (
+        frame.groupby(
+            ["variant_cui", "variant", "route_group", "drug_cui", "drug", "day"],
+            as_index=False,
+            dropna=False,
         )
-
-        for drug_cui, series in grid.items():
-            for day, value in series.items():
-                if day in df.columns:
-                    df.loc[drug_cui, day] = value
-
-        matrices[route] = df
-
-    return matrices
+        .agg(intensity=("intensity", "max"), optional=("optional", "all"),
+             indefinite=("indefinite", "first"))
+    )
+    return grouped[_FRAME_COLUMNS].sort_values(
+        ["variant_cui", "route_group", "drug", "day"], ignore_index=True
+    )
 
 
-@cached_property
-def resolved_days(self):
-    return resolve_all_days(self.alldays)
+def administration_matrix(frame: pd.DataFrame, route: str = "IV") -> pd.DataFrame:
+    """A drug-by-day grid for one route group, from `administration_frame`.
+
+    The grid view: drugs down the side, cycle days across the top, zero where
+    a drug isn't given. Days with no dosing at all are still omitted -- pass a
+    reindexed frame if you need a contiguous calendar.
+    """
+    subset = frame[frame["route_group"] == route]
+    if subset.empty:
+        return pd.DataFrame()
+    return subset.pivot_table(
+        index="drug", columns="day", values="intensity", aggfunc="max", fill_value=0.0
+    )

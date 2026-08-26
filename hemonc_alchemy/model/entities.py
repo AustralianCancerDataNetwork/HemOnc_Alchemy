@@ -23,7 +23,6 @@ from .base import Base, EntityBase
 
 from .enums import (
     Authors_RoleEnum,
-    Authors_Site_typeEnum,
     Canonicaltriples_Class_1Enum,
     Conditions_Age_focusEnum,
     Conditions_Condition_typeEnum,
@@ -33,18 +32,20 @@ from .enums import (
     Conditions_Map_type_icdo3_morphEnum,
     Conditions_Map_type_ncitEnum,
     Conditions_Map_type_oncotreeEnum,
+    Conditions_Map_type_seerEnum,
+    Conditions_Map_type_snomedEnum,
     Conditions_SectionEnum,
-    Contexttable_IntentEnum,
-    Contexttable_PhaseEnum,
-    Contexttable_Risk_stratificationEnum,
-    Contexttable_Therapy_typeEnum,
+    Contexts_IntentEnum,
+    Contexts_Risk_stratificationEnum,
     Drugs_Class_typeEnum,
     Exclusions_Rev1Enum,
+    Exclusions_Rev2Enum,
     HemoncClasses_Class_typeEnum,
+    HemoncClasses_DomainEnum,
     HemoncClasses_Omopdomain_idEnum,
     HemoncClasses_Omopstandard_conceptEnum,
+    HemoncRels_In_ohdsiEnum,
     Inclusions_ReasonEnum,
-    Inclusions_Ref_typeEnum,
     Indications_Age_unitEnum,
     Indications_Biomarker2Enum,
     Indications_Biomarker2_findingEnum,
@@ -56,6 +57,7 @@ from .enums import (
     Indications_Biomarker4_typeEnum,
     Indications_Biomarker_findingEnum,
     Indications_Biomarker_typeEnum,
+    Indications_Exposure_phenotypeEnum,
     Indications_NoteEnum,
     Indications_RegulatorEnum,
     Indications_SexEnum,
@@ -63,36 +65,40 @@ from .enums import (
     Persons_Hyphen_typeEnum,
     Persons_Vital_statusEnum,
     Refs_Ref_typeEnum,
+    Regimens_All_sact_fdaEnum,
+    Regimens_Highest_evidenceEnum,
+    Regimens_Regimen_typeEnum,
     Sigs_Class_fieldEnum,
     Sigs_Component_roleEnum,
     Sigs_Cycle_length_unitEnum,
     Sigs_DosecapunitEnum,
-    Sigs_DoseunitEnum,
     Sigs_DurationunitEnum,
     Sigs_FrequencyEnum,
     Sigs_PhaseEnum,
     Sigs_RouteEnum,
-    Sigs_Step_numberEnum,
+    Sigs_SequenceEnum,
+    Sigs_SubcomponentEnum,
     Sigs_TargetleveltypeEnum,
     Sigs_TargetlevelunitEnum,
+    Studies_IntentEnum,
+    Studies_PhaseEnum,
     Studies_RegistryEnum,
     Studies_Sponsor_typeEnum,
     Studies_Study_designEnum,
     StudyResults_Arm_typeEnum,
+    StudyResults_Comparator_codeEnum,
     StudyResults_Endpoint_classEnum,
     StudyResults_Endpoint_typeEnum,
-    StudyResults_MetricunitEnum,
+    StudyResults_IntentEnum,
+    StudyResults_Landmark_unitEnum,
+    StudyResults_Metric_unitEnum,
+    StudyResults_P_valueEnum,
     StudyResults_StatisticEnum,
-    Units_Unit_typeEnum,
+    VariantEligibility_SubtypeEnum,
+    VariantEligibility_UnitEnum,
     Variantblob_BlockEnum,
     Variantblob_Chunk_typeEnum,
 )
-
-
-
-
-
-
 
 class Authors(EntityBase, Base):
     __tablename__ = 'authors'
@@ -107,7 +113,6 @@ class Authors(EntityBase, Base):
 
     enum_lookup = {
         'role': Authors_RoleEnum,
-        'site_type': Authors_Site_typeEnum,
     }
 
     __table_args__ = (
@@ -116,28 +121,30 @@ class Authors(EntityBase, Base):
 
     aff_no: Mapped[int] = mapped_column(BigInteger, nullable=False)
     city: Mapped[str] = mapped_column(String(255), nullable=False)
+    city_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     country: Mapped[str] = mapped_column(String(255), nullable=False)
-    date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    country_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    date_added: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     department: Mapped[str] = mapped_column(String(255), nullable=False)
     flag: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    forename: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    fullname_europmc: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    fore_name_europmc: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    fore_name_hemonc: Mapped[str] = mapped_column(String(255), nullable=False)
+    full_name_europmc: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    full_name_hemonc: Mapped[str] = mapped_column(String(255), nullable=False)
     imputed: Mapped[bool] = mapped_column(Boolean, nullable=False)
     initials: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    lastname: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    last_name_europmc: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    last_name_hemonc: Mapped[str] = mapped_column(String(255), nullable=False)
     orcid: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    person_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    person_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     pmid: Mapped[int] = mapped_column(BigInteger, nullable=False)
     region: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[Optional[Authors_RoleEnum]] = mapped_column(Enum(Authors_RoleEnum), nullable=True)
     sequence: Mapped[int] = mapped_column(BigInteger, nullable=False)
     site: Mapped[str] = mapped_column(String(255), nullable=False)
-    site_type: Mapped[Optional[Authors_Site_typeEnum]] = mapped_column(Enum(Authors_Site_typeEnum), nullable=True)
+    site_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     suffix: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    tforename: Mapped[str] = mapped_column(String(255), nullable=False)
-    tfullname: Mapped[str] = mapped_column(String(255), nullable=False)
-    tlastname: Mapped[str] = mapped_column(String(255), nullable=False)
 
     normalisation_groups = [
     ]
@@ -155,13 +162,6 @@ class Authors(EntityBase, Base):
         viewonly=True,
     )
 
-    person_cui_obj: Mapped[Optional['Persons']] = sa_relationship(
-        'Persons',
-        primaryjoin="Authors.person_cui == foreign(Persons.person_cui)",
-        lazy='selectin',
-        viewonly=True,
-    )
-
 
 class Conditions(EntityBase, Base):
     __tablename__ = 'conditions'
@@ -170,8 +170,8 @@ class Conditions(EntityBase, Base):
     filename = 'conditions.csv'
     natural_key_columns = ['id']
     source_defined_keys = ['condition', 'condition_cui']
-    identity_keys = []
-    denormalised_columns = ['map_icd10cm', 'map_icd9cm', 'map_icdo3', 'map_icdo3_morph', 'map_oncotree', 'map_type_icdo3_morph']
+    identity_keys = ['condition_cui']
+    denormalised_columns = ['map_icd10cm', 'map_icd9cm', 'map_icdo3', 'map_icdo3_morph', 'map_oncotree', 'map_seer', 'map_type_icdo3_morph']
     derived_columns = []
 
     enum_lookup = {
@@ -179,15 +179,17 @@ class Conditions(EntityBase, Base):
         'section': Conditions_SectionEnum,
         'age_focus': Conditions_Age_focusEnum,
         'map_type_ncit': Conditions_Map_type_ncitEnum,
+        'map_type_snomed': Conditions_Map_type_snomedEnum,
         'map_type_oncotree': Conditions_Map_type_oncotreeEnum,
         'map_type_icd9cm': Conditions_Map_type_icd9cmEnum,
         'map_type_icd10cm': Conditions_Map_type_icd10cmEnum,
         'map_type_icdo3': Conditions_Map_type_icdo3Enum,
         'map_type_icdo3_morph': Conditions_Map_type_icdo3_morphEnum,
+        'map_type_seer': Conditions_Map_type_seerEnum,
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('condition', 'condition_cui', name='uq_conditions_natural_key'),
+        sa.UniqueConstraint('condition_cui', name='uq_conditions_natural_key'),
     )
 
     age_focus: Mapped[Conditions_Age_focusEnum] = mapped_column(Enum(Conditions_Age_focusEnum), nullable=False)
@@ -196,14 +198,22 @@ class Conditions(EntityBase, Base):
     condition_type: Mapped[Conditions_Condition_typeEnum] = mapped_column(Enum(Conditions_Condition_typeEnum), nullable=False)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     map_ncit: Mapped[str] = mapped_column(String(255), nullable=False)
-    map_type_icd10cm: Mapped[str] = mapped_column(String(255), nullable=False)
-    map_type_icd9cm: Mapped[str] = mapped_column(String(255), nullable=False)
-    map_type_icdo3: Mapped[str] = mapped_column(String(255), nullable=False)
+    map_snomed: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    map_type_icd10cm: Mapped[Optional[Conditions_Map_type_icd10cmEnum]] = mapped_column(Enum(Conditions_Map_type_icd10cmEnum), nullable=True)
+    map_type_icd9cm: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    map_type_icdo3: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     map_type_ncit: Mapped[Conditions_Map_type_ncitEnum] = mapped_column(Enum(Conditions_Map_type_ncitEnum), nullable=False)
     map_type_oncotree: Mapped[Optional[Conditions_Map_type_oncotreeEnum]] = mapped_column(Enum(Conditions_Map_type_oncotreeEnum), nullable=True)
-    regimenscount: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    section: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    variantscount: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    map_type_seer: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    map_type_snomed: Mapped[Optional[Conditions_Map_type_snomedEnum]] = mapped_column(Enum(Conditions_Map_type_snomedEnum), nullable=True)
+    regimens_count: Mapped[str] = mapped_column(String(255), nullable=False)
+    regimenscount: Mapped[str] = mapped_column(String(255), nullable=False)
+    regimenscountdate: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    section: Mapped[str] = mapped_column(String(255), nullable=False)
+    variants_count: Mapped[str] = mapped_column(String(255), nullable=False)
+    variantscount: Mapped[str] = mapped_column(String(255), nullable=False)
+    variantscountdate: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
     ]
@@ -212,13 +222,14 @@ class Conditions(EntityBase, Base):
     map_icdo3_items: Mapped[list['conditions_Map_icdo3Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     map_icdo3_morph_items: Mapped[list['conditions_Map_icdo3_morphMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     map_oncotree_items: Mapped[list['conditions_Map_oncotreeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    map_seer_items: Mapped[list['conditions_Map_seerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     map_type_icdo3_morph_items: Mapped[list['conditions_Map_type_icdo3_morphMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
 class conditions_Map_icd10cmMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icd10cm'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icd10cm: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    map_icd10cm: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icd10cm_items')
 
@@ -226,7 +237,7 @@ class conditions_Map_icd9cmMap(EntityBase, Base):
     __tablename__ = 'conditions_map_icd9cm'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icd9cm: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    map_icd9cm: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icd9cm_items')
 
@@ -234,7 +245,7 @@ class conditions_Map_icdo3Map(EntityBase, Base):
     __tablename__ = 'conditions_map_icdo3'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
-    map_icdo3: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    map_icdo3: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_icdo3_items')
 
@@ -254,6 +265,14 @@ class conditions_Map_oncotreeMap(EntityBase, Base):
 
     parent: Mapped['Conditions'] = sa_relationship(back_populates='map_oncotree_items')
 
+class conditions_Map_seerMap(EntityBase, Base):
+    __tablename__ = 'conditions_map_seer'
+
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('conditions.id'), primary_key=True)
+    map_seer: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['Conditions'] = sa_relationship(back_populates='map_seer_items')
+
 class conditions_Map_type_icdo3_morphMap(EntityBase, Base):
     __tablename__ = 'conditions_map_type_icdo3_morph'
 
@@ -269,7 +288,7 @@ class Drugs(EntityBase, Base):
     filename = 'drugs.csv'
     natural_key_columns = ['id']
     source_defined_keys = ['drug', 'drug_cui']
-    identity_keys = []
+    identity_keys = ['drug_cui']
     denormalised_columns = ['atc', 'canmed_major_class', 'canmed_major_class_cui', 'canmed_minor_class', 'canmed_minor_class_cui']
     derived_columns = []
 
@@ -278,7 +297,7 @@ class Drugs(EntityBase, Base):
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('drug', 'drug_cui', name='uq_drugs_natural_key'),
+        sa.UniqueConstraint('drug_cui', name='uq_drugs_natural_key'),
     )
 
     class_type: Mapped[Optional[Drugs_Class_typeEnum]] = mapped_column(Enum(Drugs_Class_typeEnum), nullable=True)
@@ -289,10 +308,10 @@ class Drugs(EntityBase, Base):
     investigational: Mapped[bool] = mapped_column(Boolean, nullable=False)
     main_class: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     multiagent: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
         ['canmed_major_class', 'canmed_major_class_cui'],
-        ['canmed_minor_class', 'canmed_minor_class_cui'],
     ]
     atc_items: Mapped[list['drugs_AtcMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     canmed_major_class_items: Mapped[list['drugs_Canmed_major_classMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -320,7 +339,7 @@ class drugs_Canmed_major_class_cuiMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_major_class_cui'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    canmed_major_class_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+    canmed_major_class_cui: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_major_class_cui_items')
 
@@ -336,7 +355,7 @@ class drugs_Canmed_minor_class_cuiMap(EntityBase, Base):
     __tablename__ = 'drugs_canmed_minor_class_cui'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('drugs.id'), primary_key=True)
-    canmed_minor_class_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+    canmed_minor_class_cui: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False)
 
     parent: Mapped['Drugs'] = sa_relationship(back_populates='canmed_minor_class_cui_items')
 
@@ -347,8 +366,8 @@ class Indications(EntityBase, Base):
     filename = 'indications.csv'
     natural_key_columns = ['id']
     source_defined_keys = []
-    identity_keys = []
-    denormalised_columns = ['biomarker', 'biomarker2', 'biomarker2_finding', 'biomarker2_type', 'biomarker3', 'biomarker3_finding', 'biomarker3_type', 'biomarker4', 'biomarker4_finding', 'biomarker4_type', 'biomarker_finding', 'biomarker_type', 'context', 'demographics', 'ineligibility', 'prior_therapy', 'prior_therapy_negation', 'prior_therapy_setting', 'regimen', 'regimen_cui', 'response_contingency', 'risk_stratification', 'stage_or_status', 'with_field']
+    identity_keys = ['component_cui']
+    denormalised_columns = ['biomarker2', 'biomarker2_finding', 'biomarker2_type', 'biomarker3', 'biomarker3_finding', 'biomarker3_type', 'biomarker4', 'biomarker4_finding', 'biomarker4_type', 'biomarker_type', 'context', 'demographics', 'prior_therapy_negation', 'prior_therapy_setting', 'regimen', 'regimen_cui', 'response_contingency', 'risk_stratification']
     derived_columns = []
 
     enum_lookup = {
@@ -364,39 +383,54 @@ class Indications(EntityBase, Base):
         'biomarker3_type': Indications_Biomarker3_typeEnum,
         'biomarker4_finding': Indications_Biomarker4_findingEnum,
         'biomarker4_type': Indications_Biomarker4_typeEnum,
+        'exposure_phenotype': Indications_Exposure_phenotypeEnum,
         'biomarker2': Indications_Biomarker2Enum,
         'biomarker4': Indications_Biomarker4Enum,
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('component_cui', 'condition', 'regulator', 'study', 'string', name='uq_indications_natural_key'),
+        sa.UniqueConstraint('component_cui', 'condition_cui', 'regulator', 'withdrawn', 'stage', 'status', 'stage_or_status', 'age', 'ineligibility', 'prior_therapy', 'with_field', 'biomarker', 'biomarker_finding', 'study', 'substudy', name='uq_indications_natural_key'),
     )
 
     accelerated: Mapped[bool] = mapped_column(Boolean, nullable=False)
     age: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     age_unit: Mapped[Optional[Indications_Age_unitEnum]] = mapped_column(Enum(Indications_Age_unitEnum), nullable=True)
+    biomarker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     component: Mapped[str] = mapped_column(String(255), nullable=False)
     component_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
+    condition_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     date: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    exposure_phenotype: Mapped[Optional[Indications_Exposure_phenotypeEnum]] = mapped_column(Enum(Indications_Exposure_phenotypeEnum), nullable=True)
     first_in_class: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    ineligibility: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     note: Mapped[Optional[Indications_NoteEnum]] = mapped_column(Enum(Indications_NoteEnum), nullable=True)
     prior_biomarker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    prior_therapy: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     regulator: Mapped[Indications_RegulatorEnum] = mapped_column(Enum(Indications_RegulatorEnum), nullable=False)
     sex: Mapped[Optional[Indications_SexEnum]] = mapped_column(Enum(Indications_SexEnum), nullable=True)
+    stage: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    stage_or_status: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     string: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     study: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    study_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    study_cui: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     study_yn: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    substudy: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    substudy_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    temp: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     time_contingency: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    with_field: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     withdrawn: Mapped[str] = mapped_column(String(255), nullable=False)
 
     normalisation_groups = [
         ['biomarker2', 'biomarker2_finding'],
+        ['biomarker3', 'biomarker3_finding'],
         ['biomarker4', 'biomarker4_finding'],
     ]
-    biomarker_items: Mapped[list['indications_BiomarkerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker2_items: Mapped[list['indications_Biomarker2Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker2_finding_items: Mapped[list['indications_Biomarker2_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker2_type_items: Mapped[list['indications_Biomarker2_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
@@ -406,20 +440,15 @@ class Indications(EntityBase, Base):
     biomarker4_items: Mapped[list['indications_Biomarker4Map']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker4_finding_items: Mapped[list['indications_Biomarker4_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker4_type_items: Mapped[list['indications_Biomarker4_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    biomarker_finding_items: Mapped[list['indications_Biomarker_findingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     biomarker_type_items: Mapped[list['indications_Biomarker_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     context_items: Mapped[list['indications_ContextMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     demographics_items: Mapped[list['indications_DemographicsMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    ineligibility_items: Mapped[list['indications_IneligibilityMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    prior_therapy_items: Mapped[list['indications_Prior_therapyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     prior_therapy_negation_items: Mapped[list['indications_Prior_therapy_negationMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     prior_therapy_setting_items: Mapped[list['indications_Prior_therapy_settingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     regimen_items: Mapped[list['indications_RegimenMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     regimen_cui_items: Mapped[list['indications_Regimen_cuiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     response_contingency_items: Mapped[list['indications_Response_contingencyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     risk_stratification_items: Mapped[list['indications_Risk_stratificationMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    stage_or_status_items: Mapped[list['indications_Stage_or_statusMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    with_field_items: Mapped[list['indications_With_fieldMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Indications.condition == foreign(Conditions.condition)",
@@ -427,14 +456,22 @@ class Indications(EntityBase, Base):
         viewonly=True,
     )
 
+    condition_cui_obj: Mapped[Optional['Conditions']] = sa_relationship(
+        'Conditions',
+        primaryjoin="Indications.condition_cui == foreign(Conditions.condition_cui)",
+        lazy='selectin',
+        viewonly=True,
+    )
 
-class indications_BiomarkerMap(EntityBase, Base):
-    __tablename__ = 'indications_biomarker'
+    regimen_cui_objects: Mapped[list['Regimens']] = sa_relationship(
+        'Regimens',
+        secondary='indications_regimen_cui',
+        primaryjoin="Indications.id == indications_regimen_cui.c.parent_id",
+        secondaryjoin="Regimens.regimen_cui == indications_regimen_cui.c.regimen_cui",
+        lazy='selectin',
+        viewonly=True,
+    )
 
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_items')
 
 class indications_Biomarker2Map(EntityBase, Base):
     __tablename__ = 'indications_biomarker2'
@@ -472,7 +509,7 @@ class indications_Biomarker3_findingMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker3_finding'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker3_finding: Mapped[Indications_Biomarker3_findingEnum] = mapped_column(Enum(Indications_Biomarker3_findingEnum), primary_key=True, nullable=False)
+    biomarker3_finding: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker3_finding_items')
 
@@ -508,14 +545,6 @@ class indications_Biomarker4_typeMap(EntityBase, Base):
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker4_type_items')
 
-class indications_Biomarker_findingMap(EntityBase, Base):
-    __tablename__ = 'indications_biomarker_finding'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    biomarker_finding: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Indications'] = sa_relationship(back_populates='biomarker_finding_items')
-
 class indications_Biomarker_typeMap(EntityBase, Base):
     __tablename__ = 'indications_biomarker_type'
 
@@ -539,22 +568,6 @@ class indications_DemographicsMap(EntityBase, Base):
     demographics: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='demographics_items')
-
-class indications_IneligibilityMap(EntityBase, Base):
-    __tablename__ = 'indications_ineligibility'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    ineligibility: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Indications'] = sa_relationship(back_populates='ineligibility_items')
-
-class indications_Prior_therapyMap(EntityBase, Base):
-    __tablename__ = 'indications_prior_therapy'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    prior_therapy: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
-
-    parent: Mapped['Indications'] = sa_relationship(back_populates='prior_therapy_items')
 
 class indications_Prior_therapy_negationMap(EntityBase, Base):
     __tablename__ = 'indications_prior_therapy_negation'
@@ -584,7 +597,7 @@ class indications_Regimen_cuiMap(EntityBase, Base):
     __tablename__ = 'indications_regimen_cui'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    regimen_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+    regimen_cui: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False)
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='regimen_cui_items')
 
@@ -604,30 +617,14 @@ class indications_Risk_stratificationMap(EntityBase, Base):
 
     parent: Mapped['Indications'] = sa_relationship(back_populates='risk_stratification_items')
 
-class indications_Stage_or_statusMap(EntityBase, Base):
-    __tablename__ = 'indications_stage_or_status'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    stage_or_status: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Indications'] = sa_relationship(back_populates='stage_or_status_items')
-
-class indications_With_fieldMap(EntityBase, Base):
-    __tablename__ = 'indications_with_field'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('indications.id'), primary_key=True)
-    with_field: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Indications'] = sa_relationship(back_populates='with_field_items')
-
 class Persons(EntityBase, Base):
     __tablename__ = 'persons'
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'persons.csv'
     natural_key_columns = ['id']
-    source_defined_keys = ['name', 'person_cui']
-    identity_keys = []
+    source_defined_keys = []
+    identity_keys = ['person_cui']
     denormalised_columns = ['condition_types', 'conditions', 'country', 'location', 'orcid', 'site', 'study_groups', 'study_sponsors']
     derived_columns = ['total_pubs']
 
@@ -651,7 +648,7 @@ class Persons(EntityBase, Base):
     last_active_year: Mapped[str] = mapped_column(String(255), nullable=False)
     multi_site: Mapped[bool] = mapped_column(Boolean, nullable=False)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    person_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    person_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     ph3_studies: Mapped[str] = mapped_column(String(255), nullable=False)
     pivotal_studies: Mapped[str] = mapped_column(String(255), nullable=False)
     senior_pubs: Mapped[int] = mapped_column(BigInteger, nullable=False)
@@ -681,7 +678,7 @@ class persons_ConditionsMap(EntityBase, Base):
     __tablename__ = 'persons_conditions'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    conditions: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    conditions: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='conditions_items')
 
@@ -713,7 +710,7 @@ class persons_SiteMap(EntityBase, Base):
     __tablename__ = 'persons_site'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('persons.id'), primary_key=True)
-    site: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    site: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='site_items')
 
@@ -733,72 +730,6 @@ class persons_Study_sponsorsMap(EntityBase, Base):
 
     parent: Mapped['Persons'] = sa_relationship(back_populates='study_sponsors_items')
 
-class Pointers(EntityBase, Base):
-    __tablename__ = 'pointers'
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-
-    filename = 'pointers.csv'
-    natural_key_columns = ['id']
-    source_defined_keys = []
-    identity_keys = []
-    denormalised_columns = ['biomarker', 'context', 'notes']
-    derived_columns = []
-
-    enum_lookup = {}
-
-    __table_args__ = (
-        sa.UniqueConstraint('h2_html', 'h3_html', 'version', name='uq_pointers_natural_key'),
-    )
-
-    condition: Mapped[str] = mapped_column(String(255), nullable=False)
-    h2_html: Mapped[str] = mapped_column(String(255), nullable=False)
-    h3_html: Mapped[str] = mapped_column(String(255), nullable=False)
-    regimen: Mapped[str] = mapped_column(String(255), nullable=False)
-    regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    tracer: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    version: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-
-    normalisation_groups = [
-    ]
-    biomarker_items: Mapped[list['pointers_BiomarkerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    context_items: Mapped[list['pointers_ContextMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    notes_items: Mapped[list['pointers_NotesMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
-        'Conditions',
-        primaryjoin="Pointers.condition == foreign(Conditions.condition)",
-        lazy='selectin',
-        viewonly=True,
-    )
-
-
-class pointers_BiomarkerMap(EntityBase, Base):
-    __tablename__ = 'pointers_biomarker'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
-    biomarker: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Pointers'] = sa_relationship(back_populates='biomarker_items')
-
-class pointers_ContextMap(EntityBase, Base):
-    __tablename__ = 'pointers_context'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
-    context: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['Pointers'] = sa_relationship(back_populates='context_items')
-
-class pointers_NotesMap(EntityBase, Base):
-    __tablename__ = 'pointers_notes'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('pointers.id'), primary_key=True)
-    notes: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
-
-    parent: Mapped['Pointers'] = sa_relationship(back_populates='notes_items')
-
-
-
-
-
 class Refs(EntityBase, Base):
     __tablename__ = 'refs'
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -807,26 +738,35 @@ class Refs(EntityBase, Base):
     natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
-    denormalised_columns = ['biblio', 'doi', 'reference', 'temp', 'title']
-    derived_columns = []
+    denormalised_columns = ['biblio', 'doi', 'reference', 'study', 'title']
+    derived_columns = ['prop_valid_aff_city', 'prop_valid_aff_country', 'prop_valid_aff_region', 'prop_valid_aff_site']
 
     enum_lookup = {
         'ref_type': Refs_Ref_typeEnum,
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('study', 'condition', 'biomarker', 'pmid', name='uq_refs_natural_key'),
+        sa.UniqueConstraint('study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', 'pmid', name='uq_refs_natural_key'),
     )
 
-    biomarker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    citations: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    citations_as_of: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
+    condition_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    errata: Mapped[bool] = mapped_column(Boolean, nullable=False)
     journal: Mapped[str] = mapped_column(String(255), nullable=False)
+    journal_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     pmcid: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     pmid: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    pubdate: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    ref_type: Mapped[Refs_Ref_typeEnum] = mapped_column(Enum(Refs_Ref_typeEnum), nullable=False)
-    study: Mapped[str] = mapped_column(String(255), nullable=False)
+    pub_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    ref_type: Mapped[str] = mapped_column(String(255), nullable=False)
+    reference_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    study_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    substudy: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    substudy_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     url: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
@@ -834,7 +774,7 @@ class Refs(EntityBase, Base):
     biblio_items: Mapped[list['refs_BiblioMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     doi_items: Mapped[list['refs_DoiMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     reference_items: Mapped[list['refs_ReferenceMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    temp_items: Mapped[list['refs_TempMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    study_items: Mapped[list['refs_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     title_items: Mapped[list['refs_TitleMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     pmid_exclusions_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
@@ -853,6 +793,22 @@ class Refs(EntityBase, Base):
     condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="Refs.condition == foreign(Conditions.condition)",
+        lazy='selectin',
+        viewonly=True,
+    )
+
+    condition_cui_obj: Mapped[Optional['Conditions']] = sa_relationship(
+        'Conditions',
+        primaryjoin="Refs.condition_cui == foreign(Conditions.condition_cui)",
+        lazy='selectin',
+        viewonly=True,
+    )
+
+    study_objects: Mapped[list['Studies']] = sa_relationship(
+        'Studies',
+        secondary='refs_study',
+        primaryjoin="Refs.id == refs_study.c.parent_id",
+        secondaryjoin="Studies.study == refs_study.c.study",
         lazy='selectin',
         viewonly=True,
     )
@@ -882,13 +838,13 @@ class refs_ReferenceMap(EntityBase, Base):
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='reference_items')
 
-class refs_TempMap(EntityBase, Base):
-    __tablename__ = 'refs_temp'
+class refs_StudyMap(EntityBase, Base):
+    __tablename__ = 'refs_study'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('refs.id'), primary_key=True)
-    temp: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    study: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
-    parent: Mapped['Refs'] = sa_relationship(back_populates='temp_items')
+    parent: Mapped['Refs'] = sa_relationship(back_populates='study_items')
 
 class refs_TitleMap(EntityBase, Base):
     __tablename__ = 'refs_title'
@@ -898,6 +854,49 @@ class refs_TitleMap(EntityBase, Base):
 
     parent: Mapped['Refs'] = sa_relationship(back_populates='title_items')
 
+class Regimens(EntityBase, Base):
+    __tablename__ = 'regimens'
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    filename = 'regimens.csv'
+    natural_key_columns = ['id']
+    source_defined_keys = ['regimen_name', 'regimen_cui']
+    identity_keys = []
+    denormalised_columns = []
+    derived_columns = []
+
+    enum_lookup = {
+        'regimen_type': Regimens_Regimen_typeEnum,
+        'highest_evidence': Regimens_Highest_evidenceEnum,
+        'all_sact_fda': Regimens_All_sact_fdaEnum,
+    }
+
+    __table_args__ = (
+        sa.UniqueConstraint('regimen_cui', name='uq_regimens_natural_key'),
+    )
+
+    all_sact_fda: Mapped[Optional[Regimens_All_sact_fdaEnum]] = mapped_column(Enum(Regimens_All_sact_fdaEnum), nullable=True)
+    all_sact_fda_as_of: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    components: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    contains_rt: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    first_studied: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    highest_evidence: Mapped[Regimens_Highest_evidenceEnum] = mapped_column(Enum(Regimens_Highest_evidenceEnum), nullable=False)
+    last_published: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    map_ncit: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    regimen_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    regimen_type: Mapped[Regimens_Regimen_typeEnum] = mapped_column(Enum(Regimens_Regimen_typeEnum), nullable=False)
+    sact: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    sact_modalities: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    studies: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    variantcount: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    variantcountdate: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    normalisation_groups = [
+    ]
+
 class Sigs(EntityBase, Base):
     __tablename__ = 'sigs'
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -906,41 +905,39 @@ class Sigs(EntityBase, Base):
     natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
-    denormalised_columns = ['cyclesigs_note', 'seqrel', 'seqrelwhen', 'seqrelwhenunit', 'timing']
+    denormalised_columns = ['cyclesigs_note', 'inparens', 'seqrel', 'seqrelwhat', 'seqrelwhen', 'seqrelwhenunit', 'study', 'timing']
     derived_columns = []
 
     enum_lookup = {
         'phase': Sigs_PhaseEnum,
+        'subcomponent': Sigs_SubcomponentEnum,
         'component_role': Sigs_Component_roleEnum,
         'cycle_length_unit': Sigs_Cycle_length_unitEnum,
-        'step_number': Sigs_Step_numberEnum,
         'class_field': Sigs_Class_fieldEnum,
-        'doseunit': Sigs_DoseunitEnum,
         'dosecapunit': Sigs_DosecapunitEnum,
         'targetlevelunit': Sigs_TargetlevelunitEnum,
         'targetleveltype': Sigs_TargetleveltypeEnum,
         'route': Sigs_RouteEnum,
         'durationunit': Sigs_DurationunitEnum,
         'frequency': Sigs_FrequencyEnum,
+        'sequence': Sigs_SequenceEnum,
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('regimen_cui', 'variant_cui', 'phase', 'portion', 'component_cui', 'doseminnum', 'route_cui', 'timing_sequence', 'step_number', 'study', 'cyclesigs', 'alldays', 'inparens', 'tail', name='uq_sigs_natural_key'),
+        sa.UniqueConstraint('variant_cui', 'portion', 'component_cui', 'subcomponent_cui', 'frequency_cui', 'timing_sequence', 'step_number', name='uq_sigs_natural_key'),
     )
 
     alldays: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    branch: Mapped[str] = mapped_column(String(255), nullable=False)
-    branch_type: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    class_field: Mapped[Sigs_Class_fieldEnum] = mapped_column(Enum(Sigs_Class_fieldEnum), nullable=False)
+    class_field: Mapped[Optional[Sigs_Class_fieldEnum]] = mapped_column(Enum(Sigs_Class_fieldEnum), nullable=True)
     component: Mapped[str] = mapped_column(String(255), nullable=False)
     component_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
     component_role: Mapped[Sigs_Component_roleEnum] = mapped_column(Enum(Sigs_Component_roleEnum), nullable=False)
-    cycle_length_lb: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    cycle_length_lb: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     cycle_length_ub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     cycle_length_unit: Mapped[Optional[Sigs_Cycle_length_unitEnum]] = mapped_column(Enum(Sigs_Cycle_length_unitEnum), nullable=True)
     cyclesigs: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    divided: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    divided: Mapped[bool] = mapped_column(Boolean, nullable=False)
     dosecapnum: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     dosecapunit: Mapped[Optional[Sigs_DosecapunitEnum]] = mapped_column(Enum(Sigs_DosecapunitEnum), nullable=True)
     dosecapunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
@@ -948,26 +945,26 @@ class Sigs(EntityBase, Base):
     doseminnum: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     doseunit: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     doseunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
-    durationmaxnum: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    durationminnum: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    durationmaxnum: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    durationminnum: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     durationunit: Mapped[Optional[Sigs_DurationunitEnum]] = mapped_column(Enum(Sigs_DurationunitEnum), nullable=True)
     durationunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     frequency: Mapped[Optional[Sigs_FrequencyEnum]] = mapped_column(Enum(Sigs_FrequencyEnum), nullable=True)
     frequency_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
-    inparens: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    phase: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    phase: Mapped[Optional[Sigs_PhaseEnum]] = mapped_column(Enum(Sigs_PhaseEnum), nullable=True)
+    phase_step: Mapped[int] = mapped_column(BigInteger, nullable=False)
     portion: Mapped[str] = mapped_column(String(255), nullable=False)
     regimen: Mapped[str] = mapped_column(String(255), nullable=False)
     regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    route: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    route: Mapped[Optional[Sigs_RouteEnum]] = mapped_column(Enum(Sigs_RouteEnum), nullable=True)
     route_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
-    seqrelwhat: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    sequence: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    sequence: Mapped[Optional[Sigs_SequenceEnum]] = mapped_column(Enum(Sigs_SequenceEnum), nullable=True)
     step_number: Mapped[str] = mapped_column(String(255), nullable=False)
-    study: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    subcomponent: Mapped[Optional[Sigs_SubcomponentEnum]] = mapped_column(Enum(Sigs_SubcomponentEnum), nullable=True)
+    subcomponent_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     tail: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     targetlevel: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    targetleveltype: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    targetleveltype: Mapped[Optional[Sigs_TargetleveltypeEnum]] = mapped_column(Enum(Sigs_TargetleveltypeEnum), nullable=True)
     targetlevelunit: Mapped[Optional[Sigs_TargetlevelunitEnum]] = mapped_column(Enum(Sigs_TargetlevelunitEnum), nullable=True)
     targetlevelunit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -978,10 +975,29 @@ class Sigs(EntityBase, Base):
     normalisation_groups = [
     ]
     cyclesigs_note_items: Mapped[list['sigs_Cyclesigs_noteMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    inparens_items: Mapped[list['sigs_InparensMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     seqrel_items: Mapped[list['sigs_SeqrelMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    seqrelwhat_items: Mapped[list['sigs_SeqrelwhatMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     seqrelwhen_items: Mapped[list['sigs_SeqrelwhenMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     seqrelwhenunit_items: Mapped[list['sigs_SeqrelwhenunitMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    study_items: Mapped[list['sigs_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     timing_items: Mapped[list['sigs_TimingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    regimen_cui_obj: Mapped[Optional['Regimens']] = sa_relationship(
+        'Regimens',
+        primaryjoin="Sigs.regimen_cui == foreign(Regimens.regimen_cui)",
+        lazy='selectin',
+        viewonly=True,
+    )
+
+    study_objects: Mapped[list['Studies']] = sa_relationship(
+        'Studies',
+        secondary='sigs_study',
+        primaryjoin="Sigs.id == sigs_study.c.parent_id",
+        secondaryjoin="Studies.study == sigs_study.c.study",
+        lazy='selectin',
+        viewonly=True,
+    )
+
 
 class sigs_Cyclesigs_noteMap(EntityBase, Base):
     __tablename__ = 'sigs_cyclesigs_note'
@@ -991,6 +1007,14 @@ class sigs_Cyclesigs_noteMap(EntityBase, Base):
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='cyclesigs_note_items')
 
+class sigs_InparensMap(EntityBase, Base):
+    __tablename__ = 'sigs_inparens'
+
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
+    inparens: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='inparens_items')
+
 class sigs_SeqrelMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrel'
 
@@ -998,6 +1022,14 @@ class sigs_SeqrelMap(EntityBase, Base):
     seqrel: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrel_items')
+
+class sigs_SeqrelwhatMap(EntityBase, Base):
+    __tablename__ = 'sigs_seqrelwhat'
+
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
+    seqrelwhat: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrelwhat_items')
 
 class sigs_SeqrelwhenMap(EntityBase, Base):
     __tablename__ = 'sigs_seqrelwhen'
@@ -1015,6 +1047,14 @@ class sigs_SeqrelwhenunitMap(EntityBase, Base):
 
     parent: Mapped['Sigs'] = sa_relationship(back_populates='seqrelwhenunit_items')
 
+class sigs_StudyMap(EntityBase, Base):
+    __tablename__ = 'sigs_study'
+
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sigs.id'), primary_key=True)
+    study: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['Sigs'] = sa_relationship(back_populates='study_items')
+
 class sigs_TimingMap(EntityBase, Base):
     __tablename__ = 'sigs_timing'
 
@@ -1030,43 +1070,50 @@ class Studies(EntityBase, Base):
     filename = 'studies.csv'
     natural_key_columns = ['id']
     source_defined_keys = []
-    identity_keys = []
-    denormalised_columns = ['sponsor', 'study_group']
+    identity_keys = ['study']
+    denormalised_columns = ['intent', 'sponsor', 'study_group']
     derived_columns = []
 
     enum_lookup = {
         'registry': Studies_RegistryEnum,
+        'intent': Studies_IntentEnum,
+        'phase': Studies_PhaseEnum,
         'study_design': Studies_Study_designEnum,
         'sponsor_type': Studies_Sponsor_typeEnum,
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('study', 'condition', 'biomarker', name='uq_studies_natural_key'),
+        sa.UniqueConstraint('study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', name='uq_studies_natural_key'),
     )
 
-    biomarker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
     condition_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    end: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     enrollment: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    phase: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    protocol: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
-    pubs_in_hemonc: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    phase: Mapped[str] = mapped_column(String(255), nullable=False)
+    pubs_in_hemonc: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     reg_study: Mapped[bool] = mapped_column(Boolean, nullable=False)
     registry: Mapped[Optional[Studies_RegistryEnum]] = mapped_column(Enum(Studies_RegistryEnum), nullable=True)
-    sact: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    sact: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    sponsor_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     sponsor_type: Mapped[Optional[Studies_Sponsor_typeEnum]] = mapped_column(Enum(Studies_Sponsor_typeEnum), nullable=True)
-    start: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     study: Mapped[str] = mapped_column(String(255), nullable=False)
-    study_design: Mapped[Studies_Study_designEnum] = mapped_column(Enum(Studies_Study_designEnum), nullable=False)
+    study_arms: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    study_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    study_design: Mapped[Optional[Studies_Study_designEnum]] = mapped_column(Enum(Studies_Study_designEnum), nullable=True)
     study_design_imputed: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    substudy: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    substudy_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     trial_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     unreg_study: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
     normalisation_groups = [
     ]
+    intent_items: Mapped[list['studies_IntentMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     sponsor_items: Mapped[list['studies_SponsorMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     study_group_items: Mapped[list['studies_Study_groupMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
@@ -1084,6 +1131,14 @@ class Studies(EntityBase, Base):
     )
 
 
+class studies_IntentMap(EntityBase, Base):
+    __tablename__ = 'studies_intent'
+
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('studies.id'), primary_key=True)
+    intent: Mapped[Studies_IntentEnum] = mapped_column(Enum(Studies_IntentEnum), primary_key=True, nullable=False)
+
+    parent: Mapped['Studies'] = sa_relationship(back_populates='intent_items')
+
 class studies_SponsorMap(EntityBase, Base):
     __tablename__ = 'studies_sponsor'
 
@@ -1100,8 +1155,6 @@ class studies_Study_groupMap(EntityBase, Base):
 
     parent: Mapped['Studies'] = sa_relationship(back_populates='study_group_items')
 
-
-
 class StudyResults(EntityBase, Base):
     __tablename__ = 'study_results'
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
@@ -1110,53 +1163,73 @@ class StudyResults(EntityBase, Base):
     natural_key_columns = ['id']
     source_defined_keys = []
     identity_keys = []
-    denormalised_columns = ['comparator_code', 'efficacy', 'estci', 'toxicity']
-    derived_columns = []
+    denormalised_columns = ['comparator_code']
+    derived_columns = ['metric_num_that_arm', 'metric_num_this_arm']
 
     enum_lookup = {
+        'intent': StudyResults_IntentEnum,
+        'comparator_code': StudyResults_Comparator_codeEnum,
         'endpoint_class': StudyResults_Endpoint_classEnum,
+        'landmark_unit': StudyResults_Landmark_unitEnum,
         'endpoint_type': StudyResults_Endpoint_typeEnum,
         'arm_type': StudyResults_Arm_typeEnum,
-        'metricunit': StudyResults_MetricunitEnum,
+        'metric_unit': StudyResults_Metric_unitEnum,
         'statistic': StudyResults_StatisticEnum,
+        'p_value': StudyResults_P_valueEnum,
     }
 
     __table_args__ = (
-        sa.UniqueConstraint('study', 'condition', 'biomarker', 'context', 'regimen', 'r_modifier', 'comparator', 'c_modifier', 'endpoint', 'metric', 'metric_version', name='uq_study_results_natural_key'),
+        sa.UniqueConstraint('study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', 'context', 'regimen', 'r_modifier', 'comparator', 'c_modifier', 'endpoint', 'metric', 'metric_version', name='uq_study_results_natural_key'),
     )
 
     arm_type: Mapped[Optional[StudyResults_Arm_typeEnum]] = mapped_column(Enum(StudyResults_Arm_typeEnum), nullable=True)
-    biomarker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    c_modifier: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    c_modifier: Mapped[str] = mapped_column(String(255), nullable=False)
     comparator: Mapped[str] = mapped_column(Text, nullable=False)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
-    condition_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    condition_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     context: Mapped[str] = mapped_column(String(255), nullable=False)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    efficacy: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     endpoint: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     endpoint_class: Mapped[Optional[StudyResults_Endpoint_classEnum]] = mapped_column(Enum(StudyResults_Endpoint_classEnum), nullable=True)
     endpoint_type: Mapped[Optional[StudyResults_Endpoint_typeEnum]] = mapped_column(Enum(StudyResults_Endpoint_typeEnum), nullable=True)
     error: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    est_ci: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    est_lb: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    est_ub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     estimate: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    estlb: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    estub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    intent: Mapped[StudyResults_IntentEnum] = mapped_column(Enum(StudyResults_IntentEnum), nullable=False)
+    landmark_num: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    landmark_unit: Mapped[Optional[StudyResults_Landmark_unitEnum]] = mapped_column(Enum(StudyResults_Landmark_unitEnum), nullable=True)
     metric: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    metric_ci: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    metric_lb: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    metric_ub: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    metric_unit: Mapped[Optional[StudyResults_Metric_unitEnum]] = mapped_column(Enum(StudyResults_Metric_unitEnum), nullable=True)
     metric_version: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
-    metricnumthatarm: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    metricnumthisarm: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    metricunit: Mapped[Optional[StudyResults_MetricunitEnum]] = mapped_column(Enum(StudyResults_MetricunitEnum), nullable=True)
+    p_value: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     r_modifier: Mapped[str] = mapped_column(String(255), nullable=False)
     regimen: Mapped[str] = mapped_column(String(255), nullable=False)
+    regimen_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     statistic: Mapped[Optional[StudyResults_StatisticEnum]] = mapped_column(Enum(StudyResults_StatisticEnum), nullable=True)
     study: Mapped[str] = mapped_column(String(255), nullable=False)
+    study_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    substudy: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    substudy_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    toxicity: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
     ]
     comparator_code_items: Mapped[list['study_results_Comparator_codeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    efficacy_items: Mapped[list['study_results_EfficacyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    estci_items: Mapped[list['study_results_EstciMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    toxicity_items: Mapped[list['study_results_ToxicityMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    regimen_cui_obj: Mapped[Optional['Regimens']] = sa_relationship(
+        'Regimens',
+        primaryjoin="StudyResults.regimen_cui == foreign(Regimens.regimen_cui)",
+        lazy='selectin',
+        viewonly=True,
+    )
+
     condition_obj: Mapped[Optional['Conditions']] = sa_relationship(
         'Conditions',
         primaryjoin="StudyResults.condition == foreign(Conditions.condition)",
@@ -1180,29 +1253,73 @@ class study_results_Comparator_codeMap(EntityBase, Base):
 
     parent: Mapped['StudyResults'] = sa_relationship(back_populates='comparator_code_items')
 
-class study_results_EfficacyMap(EntityBase, Base):
-    __tablename__ = 'study_results_efficacy'
+class VariantEligibility(EntityBase, Base):
+    __tablename__ = 'variant_eligibility'
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    efficacy: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    filename = 'variant_eligibility.csv'
+    natural_key_columns = ['id']
+    source_defined_keys = []
+    identity_keys = []
+    denormalised_columns = ['study']
+    derived_columns = []
 
-    parent: Mapped['StudyResults'] = sa_relationship(back_populates='efficacy_items')
+    enum_lookup = {
+        'subtype': VariantEligibility_SubtypeEnum,
+        'unit': VariantEligibility_UnitEnum,
+    }
 
-class study_results_EstciMap(EntityBase, Base):
-    __tablename__ = 'study_results_estci'
+    __table_args__ = (
+        sa.UniqueConstraint('variant_cui', 'logic_count', name='uq_variant_eligibility_natural_key'),
+    )
 
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    estci: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+    date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    logic: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    logic_count: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    regimen: Mapped[str] = mapped_column(String(255), nullable=False)
+    regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    string: Mapped[str] = mapped_column(String(255), nullable=False)
+    subtype: Mapped[Optional[VariantEligibility_SubtypeEnum]] = mapped_column(Enum(VariantEligibility_SubtypeEnum), nullable=True)
+    temp: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    type: Mapped[str] = mapped_column(String(255), nullable=False)
+    unit: Mapped[Optional[VariantEligibility_UnitEnum]] = mapped_column(Enum(VariantEligibility_UnitEnum), nullable=True)
+    unit_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    variant_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
-    parent: Mapped['StudyResults'] = sa_relationship(back_populates='estci_items')
+    normalisation_groups = [
+    ]
+    study_items: Mapped[list['variant_eligibility_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    regimen_cui_obj: Mapped[Optional['Regimens']] = sa_relationship(
+        'Regimens',
+        primaryjoin="VariantEligibility.regimen_cui == foreign(Regimens.regimen_cui)",
+        lazy='selectin',
+        viewonly=True,
+    )
 
-class study_results_ToxicityMap(EntityBase, Base):
-    __tablename__ = 'study_results_toxicity'
+    unit_obj: Mapped[Optional['Units']] = sa_relationship(
+        'Units',
+        primaryjoin="VariantEligibility.unit == foreign(Units.unit)",
+        lazy='selectin',
+        viewonly=True,
+    )
 
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('study_results.id'), primary_key=True)
-    toxicity: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+    study_objects: Mapped[list['Studies']] = sa_relationship(
+        'Studies',
+        secondary='variant_eligibility_study',
+        primaryjoin="VariantEligibility.id == variant_eligibility_study.c.parent_id",
+        secondaryjoin="Studies.study == variant_eligibility_study.c.study",
+        lazy='selectin',
+        viewonly=True,
+    )
 
-    parent: Mapped['StudyResults'] = sa_relationship(back_populates='toxicity_items')
+
+class variant_eligibility_StudyMap(EntityBase, Base):
+    __tablename__ = 'variant_eligibility_study'
+
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variant_eligibility.id'), primary_key=True)
+    study: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['VariantEligibility'] = sa_relationship(back_populates='study_items')
 
 class Variants(EntityBase, Base):
     __tablename__ = 'variants'
@@ -1211,7 +1328,7 @@ class Variants(EntityBase, Base):
     filename = 'variants.csv'
     natural_key_columns = ['id']
     source_defined_keys = []
-    identity_keys = []
+    identity_keys = ['variant_cui']
     denormalised_columns = ['blob', 'study', 'tracer']
     derived_columns = []
 
@@ -1231,7 +1348,6 @@ class Variants(EntityBase, Base):
     allsigshaveschedule: Mapped[bool] = mapped_column(Boolean, nullable=False)
     allsigshavesequence: Mapped[bool] = mapped_column(Boolean, nullable=False)
     blob_version: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    branches: Mapped[int] = mapped_column(BigInteger, nullable=False)
     components: Mapped[int] = mapped_column(BigInteger, nullable=False)
     cyclesigs: Mapped[int] = mapped_column(BigInteger, nullable=False)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -1240,11 +1356,10 @@ class Variants(EntityBase, Base):
     fullyspecified: Mapped[bool] = mapped_column(Boolean, nullable=False)
     portions: Mapped[int] = mapped_column(BigInteger, nullable=False)
     regimen: Mapped[str] = mapped_column(String(255), nullable=False)
-    regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    regimen_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     routes: Mapped[int] = mapped_column(BigInteger, nullable=False)
     sigs: Mapped[int] = mapped_column(BigInteger, nullable=False)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    timings: Mapped[int] = mapped_column(BigInteger, nullable=False)
     variant: Mapped[str] = mapped_column(String(255), nullable=False)
     variant_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
     version: Mapped[int] = mapped_column(BigInteger, nullable=False)
@@ -1254,6 +1369,22 @@ class Variants(EntityBase, Base):
     blob_items: Mapped[list['variants_BlobMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     study_items: Mapped[list['variants_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     tracer_items: Mapped[list['variants_TracerMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    regimen_cui_obj: Mapped[Optional['Regimens']] = sa_relationship(
+        'Regimens',
+        primaryjoin="Variants.regimen_cui == foreign(Regimens.regimen_cui)",
+        lazy='selectin',
+        viewonly=True,
+    )
+
+    study_objects: Mapped[list['Studies']] = sa_relationship(
+        'Studies',
+        secondary='variants_study',
+        primaryjoin="Variants.id == variants_study.c.parent_id",
+        secondaryjoin="Studies.study == variants_study.c.study",
+        lazy='selectin',
+        viewonly=True,
+    )
+
 
 class variants_BlobMap(EntityBase, Base):
     __tablename__ = 'variants_blob'
@@ -1267,7 +1398,7 @@ class variants_StudyMap(EntityBase, Base):
     __tablename__ = 'variants_study'
 
     parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variants.id'), primary_key=True)
-    study: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
+    study: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['Variants'] = sa_relationship(back_populates='study_items')
 
@@ -1279,56 +1410,9 @@ class variants_TracerMap(EntityBase, Base):
 
     parent: Mapped['Variants'] = sa_relationship(back_populates='tracer_items')
 
-class VariantEligibility(EntityBase, Base):
-    __tablename__ = 'variant_eligibility'
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
-
-    filename = 'variant_eligibility.csv'
-    natural_key_columns = ['id']
-    source_defined_keys = []
-    identity_keys = []
-    denormalised_columns = ['study']
-    derived_columns = []
-
-    enum_lookup = {}
-
-    __table_args__ = (
-        sa.UniqueConstraint('variant_cui', 'logic_count', name='uq_variant_eligibility_natural_key'),
-    )
-
-    date_added: Mapped[str] = mapped_column(String(255), nullable=False)
-    logic: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    logic_count: Mapped[str] = mapped_column(String(255), nullable=False)
-    regimen: Mapped[str] = mapped_column(String(255), nullable=False)
-    regimen_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    string: Mapped[str] = mapped_column(String(255), nullable=False)
-    type: Mapped[str] = mapped_column(String(255), nullable=False)
-    unit: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    unit_cui: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
-    variant_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
-
-    normalisation_groups = [
-    ]
-    study_items: Mapped[list['variant_eligibility_StudyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    unit_obj: Mapped[Optional['Units']] = sa_relationship(
-        'Units',
-        primaryjoin="VariantEligibility.unit == foreign(Units.unit)",
-        lazy='selectin',
-        viewonly=True,
-    )
-
-
-class variant_eligibility_StudyMap(EntityBase, Base):
-    __tablename__ = 'variant_eligibility_study'
-
-    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('variant_eligibility.id'), primary_key=True)
-    study: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
-
-    parent: Mapped['VariantEligibility'] = sa_relationship(back_populates='study_items')
-
 class Canonicaltriples(EntityBase, Base):
     __tablename__ = 'canonicaltriples'
-    filename = 'canonical.triples.csv'
+    filename = 'canonical_triples.csv'
     natural_key_columns = ['class_1', 'relationship', 'class_2']
     source_defined_keys = []
     identity_keys = []
@@ -1343,7 +1427,7 @@ class Canonicaltriples(EntityBase, Base):
     class_2: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
     date_added: Mapped[str] = mapped_column(String(255), nullable=False)
     date_deprecated: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    index: Mapped[str] = mapped_column(String(255), nullable=False)
+    in_ohdsi: Mapped[bool] = mapped_column(Boolean, nullable=False)
     internal: Mapped[bool] = mapped_column(Boolean, nullable=False)
     relationship: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
     used_in: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -1391,6 +1475,7 @@ class HemoncClasses(EntityBase, Base):
     derived_columns = []
 
     enum_lookup = {
+        'domain': HemoncClasses_DomainEnum,
         'omopdomain_id': HemoncClasses_Omopdomain_idEnum,
         'omopstandard_concept': HemoncClasses_Omopstandard_conceptEnum,
         'class_type': HemoncClasses_Class_typeEnum,
@@ -1400,7 +1485,9 @@ class HemoncClasses(EntityBase, Base):
     concept_class_id: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
     date_added: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     date_deprecated: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    description: Mapped[str] = mapped_column(String(255), nullable=False)
+    domain: Mapped[Optional[HemoncClasses_DomainEnum]] = mapped_column(Enum(HemoncClasses_DomainEnum), nullable=True)
+    in_ohdsi: Mapped[bool] = mapped_column(Boolean, nullable=False)
     omopdomain_id: Mapped[Optional[HemoncClasses_Omopdomain_idEnum]] = mapped_column(Enum(HemoncClasses_Omopdomain_idEnum), nullable=True)
     omopstandard_concept: Mapped[Optional[HemoncClasses_Omopstandard_conceptEnum]] = mapped_column(Enum(HemoncClasses_Omopstandard_conceptEnum), nullable=True)
     primary_field: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -1444,12 +1531,15 @@ class HemoncRels(EntityBase, Base):
     denormalised_columns = []
     derived_columns = []
 
-    enum_lookup = {}
+    enum_lookup = {
+        'in_ohdsi': HemoncRels_In_ohdsiEnum,
+    }
 
     date_added: Mapped[str] = mapped_column(String(255), nullable=False)
     date_deprecated: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     heritable: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    in_ohdsi: Mapped[HemoncRels_In_ohdsiEnum] = mapped_column(Enum(HemoncRels_In_ohdsiEnum), nullable=False)
     relationship_id: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
 
     normalisation_groups = [
@@ -1461,16 +1551,17 @@ class Affiliations(EntityBase, Base):
     natural_key_columns = ['pmid', 'sequence', 'aff_no']
     source_defined_keys = []
     identity_keys = []
-    denormalised_columns = ['affiliation_europmc', 'affiliation_hemonc', 'affiliation_journal']
+    denormalised_columns = ['affiliation_europmc', 'affiliation_journal']
     derived_columns = []
 
     enum_lookup = {}
 
     aff_no: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False, default=-1)
+    affiliation_hemonc: Mapped[str] = mapped_column(Text, nullable=False)
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    fullname_europmc: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    fullname_hemonc: Mapped[str] = mapped_column(String(255), nullable=False)
-    person_cui: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    full_name_europmc: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    full_name_hemonc: Mapped[str] = mapped_column(String(255), nullable=False)
+    person_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     pmid: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False, default=-1)
     sequence: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False, default=-1)
     temp: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -1482,7 +1573,6 @@ class Affiliations(EntityBase, Base):
     normalisation_groups = [
     ]
     affiliation_europmc_items: Mapped[list['affiliations_Affiliation_europmcMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    affiliation_hemonc_items: Mapped[list['affiliations_Affiliation_hemoncMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     affiliation_journal_items: Mapped[list['affiliations_Affiliation_journalMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     pmid_exclusions_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
@@ -1494,13 +1584,6 @@ class Affiliations(EntityBase, Base):
     pmid_inclusions_obj: Mapped[Optional['Inclusions']] = sa_relationship(
         'Inclusions',
         primaryjoin="Affiliations.pmid == foreign(Inclusions.pmid)",
-        lazy='selectin',
-        viewonly=True,
-    )
-
-    person_cui_obj: Mapped[Optional['Persons']] = sa_relationship(
-        'Persons',
-        primaryjoin="Affiliations.person_cui == foreign(Persons.person_cui)",
         lazy='selectin',
         viewonly=True,
     )
@@ -1520,20 +1603,6 @@ class affiliations_Affiliation_europmcMap(EntityBase, Base):
 
     parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_europmc_items')
 
-class affiliations_Affiliation_hemoncMap(EntityBase, Base):
-    __tablename__ = 'affiliations_affiliation_hemonc'
-
-    pmid: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    sequence: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    aff_no: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['pmid', 'sequence', 'aff_no'], ['affiliations.pmid', 'affiliations.sequence', 'affiliations.aff_no']),
-    )
-    affiliation_hemonc: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
-
-    parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_hemonc_items')
-
 class affiliations_Affiliation_journalMap(EntityBase, Base):
     __tablename__ = 'affiliations_affiliation_journal'
 
@@ -1548,89 +1617,109 @@ class affiliations_Affiliation_journalMap(EntityBase, Base):
 
     parent: Mapped['Affiliations'] = sa_relationship(back_populates='affiliation_journal_items')
 
-
-
-
-
-class Contexttable(EntityBase, Base):
-    __tablename__ = 'contexttable'
-    filename = 'context.table.csv'
-    natural_key_columns = ['contextraw']
-    source_defined_keys = ['contextraw']
+class Contexts(EntityBase, Base):
+    __tablename__ = 'contexts'
+    filename = 'contexts.csv'
+    natural_key_columns = ['context_raw']
+    source_defined_keys = ['context_raw', 'context_pretty']
     identity_keys = []
-    denormalised_columns = ['contextpretty', 'phenotype', 'setting', 'stage_or_status']
+    denormalised_columns = ['context', 'context_pretty', 'phase', 'phenotype', 'setting', 'stage_or_status']
     derived_columns = []
 
     enum_lookup = {
-        'intent': Contexttable_IntentEnum,
-        'phase': Contexttable_PhaseEnum,
-        'risk_stratification': Contexttable_Risk_stratificationEnum,
-        'therapy_type': Contexttable_Therapy_typeEnum,
+        'intent': Contexts_IntentEnum,
+        'risk_stratification': Contexts_Risk_stratificationEnum,
     }
 
-    contextraw: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    intent: Mapped[Contexttable_IntentEnum] = mapped_column(Enum(Contexttable_IntentEnum), nullable=False)
-    phase: Mapped[Optional[Contexttable_PhaseEnum]] = mapped_column(Enum(Contexttable_PhaseEnum), nullable=True)
+    date_last_used: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    intent: Mapped[Contexts_IntentEnum] = mapped_column(Enum(Contexts_IntentEnum), nullable=False)
     prior_therapy: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     prior_therapy_negation: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
-    risk_stratification: Mapped[Optional[Contexttable_Risk_stratificationEnum]] = mapped_column(Enum(Contexttable_Risk_stratificationEnum), nullable=True)
-    therapy_type: Mapped[Optional[Contexttable_Therapy_typeEnum]] = mapped_column(Enum(Contexttable_Therapy_typeEnum), nullable=True)
+    risk_stratification: Mapped[Optional[Contexts_Risk_stratificationEnum]] = mapped_column(Enum(Contexts_Risk_stratificationEnum), nullable=True)
+    therapy_type: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
     ]
-    contextpretty_items: Mapped[list['contexttable_ContextprettyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    phenotype_items: Mapped[list['contexttable_PhenotypeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    setting_items: Mapped[list['contexttable_SettingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
-    stage_or_status_items: Mapped[list['contexttable_Stage_or_statusMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    context_items: Mapped[list['contexts_ContextMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    context_pretty_items: Mapped[list['contexts_Context_prettyMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    phase_items: Mapped[list['contexts_PhaseMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    phenotype_items: Mapped[list['contexts_PhenotypeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    setting_items: Mapped[list['contexts_SettingMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    stage_or_status_items: Mapped[list['contexts_Stage_or_statusMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
 
-class contexttable_ContextprettyMap(EntityBase, Base):
-    __tablename__ = 'contexttable_contextpretty'
+class contexts_ContextMap(EntityBase, Base):
+    __tablename__ = 'contexts_context'
 
-    contextraw: Mapped[str] = mapped_column(String(255), primary_key=True)
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True)
 
     __table_args__ = (
-        ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
+        ForeignKeyConstraint(['context_raw'], ['contexts.context_raw']),
     )
-    contextpretty: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+    context: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
-    parent: Mapped['Contexttable'] = sa_relationship(back_populates='contextpretty_items')
+    parent: Mapped['Contexts'] = sa_relationship(back_populates='context_items')
 
-class contexttable_PhenotypeMap(EntityBase, Base):
-    __tablename__ = 'contexttable_phenotype'
+class contexts_Context_prettyMap(EntityBase, Base):
+    __tablename__ = 'contexts_context_pretty'
 
-    contextraw: Mapped[str] = mapped_column(String(255), primary_key=True)
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True)
 
     __table_args__ = (
-        ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
+        ForeignKeyConstraint(['context_raw'], ['contexts.context_raw']),
+    )
+    context_pretty: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['Contexts'] = sa_relationship(back_populates='context_pretty_items')
+
+class contexts_PhaseMap(EntityBase, Base):
+    __tablename__ = 'contexts_phase'
+
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True)
+
+    __table_args__ = (
+        ForeignKeyConstraint(['context_raw'], ['contexts.context_raw']),
+    )
+    phase: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
+
+    parent: Mapped['Contexts'] = sa_relationship(back_populates='phase_items')
+
+class contexts_PhenotypeMap(EntityBase, Base):
+    __tablename__ = 'contexts_phenotype'
+
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True)
+
+    __table_args__ = (
+        ForeignKeyConstraint(['context_raw'], ['contexts.context_raw']),
     )
     phenotype: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
-    parent: Mapped['Contexttable'] = sa_relationship(back_populates='phenotype_items')
+    parent: Mapped['Contexts'] = sa_relationship(back_populates='phenotype_items')
 
-class contexttable_SettingMap(EntityBase, Base):
-    __tablename__ = 'contexttable_setting'
+class contexts_SettingMap(EntityBase, Base):
+    __tablename__ = 'contexts_setting'
 
-    contextraw: Mapped[str] = mapped_column(String(255), primary_key=True)
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True)
 
     __table_args__ = (
-        ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
+        ForeignKeyConstraint(['context_raw'], ['contexts.context_raw']),
     )
     setting: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
-    parent: Mapped['Contexttable'] = sa_relationship(back_populates='setting_items')
+    parent: Mapped['Contexts'] = sa_relationship(back_populates='setting_items')
 
-class contexttable_Stage_or_statusMap(EntityBase, Base):
-    __tablename__ = 'contexttable_stage_or_status'
+class contexts_Stage_or_statusMap(EntityBase, Base):
+    __tablename__ = 'contexts_stage_or_status'
 
-    contextraw: Mapped[str] = mapped_column(String(255), primary_key=True)
+    context_raw: Mapped[str] = mapped_column(String(255), primary_key=True)
 
     __table_args__ = (
-        ForeignKeyConstraint(['contextraw'], ['contexttable.contextraw']),
+        ForeignKeyConstraint(['context_raw'], ['contexts.context_raw']),
     )
     stage_or_status: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
-    parent: Mapped['Contexttable'] = sa_relationship(back_populates='stage_or_status_items')
+    parent: Mapped['Contexts'] = sa_relationship(back_populates='stage_or_status_items')
 
 class Exclusions(EntityBase, Base):
     __tablename__ = 'exclusions'
@@ -1643,14 +1732,15 @@ class Exclusions(EntityBase, Base):
 
     enum_lookup = {
         'rev1': Exclusions_Rev1Enum,
+        'rev2': Exclusions_Rev2Enum,
     }
 
     date_added: Mapped[str] = mapped_column(String(255), nullable=False)
     pmid: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
     reason: Mapped[str] = mapped_column(String(255), nullable=False)
     rev1: Mapped[Exclusions_Rev1Enum] = mapped_column(Enum(Exclusions_Rev1Enum), nullable=False)
-    rev2: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    rev3: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    rev2: Mapped[Optional[Exclusions_Rev2Enum]] = mapped_column(Enum(Exclusions_Rev2Enum), nullable=True)
+    rev3: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     year: Mapped[str] = mapped_column(String(255), nullable=False)
 
     normalisation_groups = [
@@ -1676,30 +1766,27 @@ class exclusions_TitleMap(EntityBase, Base):
 
     parent: Mapped['Exclusions'] = sa_relationship(back_populates='title_items')
 
-
-
 class Inclusions(EntityBase, Base):
     __tablename__ = 'inclusions'
     filename = 'inclusions.csv'
     natural_key_columns = ['pmid']
     source_defined_keys = ['pmid']
     identity_keys = []
-    denormalised_columns = ['reason_note']
+    denormalised_columns = ['reason_note', 'ref_type']
     derived_columns = []
 
     enum_lookup = {
-        'ref_type': Inclusions_Ref_typeEnum,
         'reason': Inclusions_ReasonEnum,
     }
 
     date_added: Mapped[str] = mapped_column(String(255), nullable=False)
     pmid: Mapped[int] = mapped_column(BigInteger, primary_key=True, nullable=False, default=-1)
     reason: Mapped[Inclusions_ReasonEnum] = mapped_column(Enum(Inclusions_ReasonEnum), nullable=False)
-    ref_type: Mapped[Inclusions_Ref_typeEnum] = mapped_column(Enum(Inclusions_Ref_typeEnum), nullable=False)
 
     normalisation_groups = [
     ]
     reason_note_items: Mapped[list['inclusions_Reason_noteMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
+    ref_type_items: Mapped[list['inclusions_Ref_typeMap']] = sa_relationship(back_populates='parent', lazy='selectin', cascade='all, delete-orphan')
     pmid_obj: Mapped[Optional['Exclusions']] = sa_relationship(
         'Exclusions',
         primaryjoin="Inclusions.pmid == foreign(Exclusions.pmid)",
@@ -1720,13 +1807,17 @@ class inclusions_Reason_noteMap(EntityBase, Base):
 
     parent: Mapped['Inclusions'] = sa_relationship(back_populates='reason_note_items')
 
+class inclusions_Ref_typeMap(EntityBase, Base):
+    __tablename__ = 'inclusions_ref_type'
 
+    pmid: Mapped[int] = mapped_column(BigInteger, primary_key=True)
 
+    __table_args__ = (
+        ForeignKeyConstraint(['pmid'], ['inclusions.pmid']),
+    )
+    ref_type: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
-
-
-
-
+    parent: Mapped['Inclusions'] = sa_relationship(back_populates='ref_type_items')
 
 class SigBranchTypes(EntityBase, Base):
     __tablename__ = 'sig_branch_types'
@@ -1757,32 +1848,31 @@ class sig_branch_types_DescriptionMap(EntityBase, Base):
 
     parent: Mapped['SigBranchTypes'] = sa_relationship(back_populates='description_items')
 
-
-
 class Units(EntityBase, Base):
     __tablename__ = 'units'
     filename = 'units.csv'
     natural_key_columns = ['unit']
-    source_defined_keys = ['unit']
+    source_defined_keys = ['unit', 'concept_code']
     identity_keys = []
     denormalised_columns = []
     derived_columns = []
 
-    enum_lookup = {
-        'unit_type': Units_Unit_typeEnum,
-    }
+    enum_lookup = {}
 
-    concept_code: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
+    concept_code: Mapped[int] = mapped_column(BigInteger, nullable=False)
     date_added: Mapped[str] = mapped_column(String(255), nullable=False)
+    fixed: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    parameterbased: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    timebased: Mapped[bool] = mapped_column(Boolean, nullable=False)
     unit: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
-    unit_type: Mapped[Units_Unit_typeEnum] = mapped_column(Enum(Units_Unit_typeEnum), nullable=False)
+    unit_type: Mapped[str] = mapped_column(String(255), nullable=False)
 
     normalisation_groups = [
     ]
 
 class Variantblob(EntityBase, Base):
     __tablename__ = 'variantblob'
-    filename = 'variant.blob.csv'
+    filename = 'variant_blob.csv'
     natural_key_columns = ['version', 'chunk']
     source_defined_keys = []
     identity_keys = []
@@ -1805,3 +1895,102 @@ class Variantblob(EntityBase, Base):
     normalisation_groups = [
     ]
 
+__all__ = [
+    'Affiliations',
+    'Authors',
+    'Canonicaltriples',
+    'Conditions',
+    'Contexts',
+    'Drugs',
+    'Exclusions',
+    'HemoncClasses',
+    'HemoncRels',
+    'Inclusions',
+    'Indications',
+    'Persons',
+    'Refs',
+    'Regimens',
+    'SigBranchTypes',
+    'Sigs',
+    'Studies',
+    'StudyResults',
+    'Units',
+    'VariantEligibility',
+    'Variantblob',
+    'Variants',
+    'affiliations_Affiliation_europmcMap',
+    'affiliations_Affiliation_journalMap',
+    'canonicaltriples_Class_1_provenanceMap',
+    'canonicaltriples_Class_2_provenanceMap',
+    'conditions_Map_icd10cmMap',
+    'conditions_Map_icd9cmMap',
+    'conditions_Map_icdo3Map',
+    'conditions_Map_icdo3_morphMap',
+    'conditions_Map_oncotreeMap',
+    'conditions_Map_seerMap',
+    'conditions_Map_type_icdo3_morphMap',
+    'contexts_ContextMap',
+    'contexts_Context_prettyMap',
+    'contexts_PhaseMap',
+    'contexts_PhenotypeMap',
+    'contexts_SettingMap',
+    'contexts_Stage_or_statusMap',
+    'drugs_AtcMap',
+    'drugs_Canmed_major_classMap',
+    'drugs_Canmed_major_class_cuiMap',
+    'drugs_Canmed_minor_classMap',
+    'drugs_Canmed_minor_class_cuiMap',
+    'exclusions_TitleMap',
+    'hemonc_classes_Secondary_home_as_cuiMap',
+    'hemonc_classes_Secondary_home_as_stringMap',
+    'inclusions_Reason_noteMap',
+    'inclusions_Ref_typeMap',
+    'indications_Biomarker2Map',
+    'indications_Biomarker2_findingMap',
+    'indications_Biomarker2_typeMap',
+    'indications_Biomarker3Map',
+    'indications_Biomarker3_findingMap',
+    'indications_Biomarker3_typeMap',
+    'indications_Biomarker4Map',
+    'indications_Biomarker4_findingMap',
+    'indications_Biomarker4_typeMap',
+    'indications_Biomarker_typeMap',
+    'indications_ContextMap',
+    'indications_DemographicsMap',
+    'indications_Prior_therapy_negationMap',
+    'indications_Prior_therapy_settingMap',
+    'indications_RegimenMap',
+    'indications_Regimen_cuiMap',
+    'indications_Response_contingencyMap',
+    'indications_Risk_stratificationMap',
+    'persons_Condition_typesMap',
+    'persons_ConditionsMap',
+    'persons_CountryMap',
+    'persons_LocationMap',
+    'persons_OrcidMap',
+    'persons_SiteMap',
+    'persons_Study_groupsMap',
+    'persons_Study_sponsorsMap',
+    'refs_BiblioMap',
+    'refs_DoiMap',
+    'refs_ReferenceMap',
+    'refs_StudyMap',
+    'refs_TitleMap',
+    'sig_branch_types_DescriptionMap',
+    'sigs_Cyclesigs_noteMap',
+    'sigs_InparensMap',
+    'sigs_SeqrelMap',
+    'sigs_SeqrelwhatMap',
+    'sigs_SeqrelwhenMap',
+    'sigs_SeqrelwhenunitMap',
+    'sigs_StudyMap',
+    'sigs_TimingMap',
+    'studies_IntentMap',
+    'studies_SponsorMap',
+    'studies_Study_groupMap',
+    'study_results_Comparator_codeMap',
+    'variant_eligibility_StudyMap',
+    'variants_BlobMap',
+    'variants_StudyMap',
+    'variants_TracerMap',
+]

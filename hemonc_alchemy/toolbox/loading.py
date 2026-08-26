@@ -1,33 +1,26 @@
-"""
-Load a generated entity's primary rows from a real HemOnc data directory.
+"""Loading a HemOnc CSV extract into the database.
 
-`EntityBase.load_csv()` (via orm-loader's `CSVLoadableTableInterface`,
-already composed onto every generated entity) does the actual staged
-ingestion.
+`load_all` is usually what you want: it loads an entity's own rows and then
+its child tables, in that order.
 
-HemOnc's own filenames don't always agree with the table name they belong
-to requiring `naming.resolve_source_csv` compile-time workaround.
-This module reuses the same resolver at load time, and satisfies 
-orm-loader's filename check with a throwaway symlink rather than 
-weakening the check itself.
+Two things about the extract need handling before the rows go in. Filenames
+don't always match the table they hold (`canonical_triples.csv` for the
+`canonicaltriples` table), and neither do column headers (`parameter-based`
+for `parameterbased`, `class` for `class_field`). Both are reconciled here so
+the source files can stay exactly as HemOnc ships them.
 
-`load_denormalised` handles pipe-delimited HemOnc columns that the 
-compiler explodes into their own generated map tables (e.g. `Sigs.timing` 
--> `sigs_timing`, one row per pipe-delimited value) rather than a plain 
-scalar column. `load_csv()` only ever populates an entity's own scalar 
-columns -- it has no idea these child tables exist, since they're a 
-HemOnc-specific convention with no orm-loader equivalent. This
-must run *after* `load_entity` for the same entity: surrogate-PK ("content")
-tables have no `id` in the source CSV at all (it's assigned on insert), so
-resolving which parent row a denormalised value belongs to means looking
-its declared natural key back up against the now-loaded parent table.
+Columns holding several pipe-delimited values in one cell live in their own
+child tables rather than as a single string, and `load_denormalised` fills
+those. It has to run after the parent rows exist, because a child row is
+matched back to its parent by the parent's natural key.
 """
 
 from __future__ import annotations
 
+import csv
 import logging
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -41,13 +34,35 @@ from ..naming import resolve_source_csv, safe_identifier
 logger = logging.getLogger(__name__)
 
 
-@contextmanager
-def _resolved_csv_path(data_dir: Path, table_name: str) -> Iterator[Path]:
-    """Yield a path whose stem is guaranteed to equal `table_name`.
+def _header_renames(path: Path) -> dict[str, str]:
+    """Source headers that don't already match their generated column name.
 
-    Returns the real file directly when its own stem already matches
-    (the common case). Otherwise symlinks it under a throwaway temp
-    directory for the duration of the `with` block only.
+    Six extracts need this, `sigs` and `indications` among them: a header may
+    contain dots or hyphens (`seq.rel.when`, `parameter-based`) or be a Python
+    keyword (`class`, `with`), none of which survive into a column name.
+
+    Case-only differences are excluded, since those already match.
+    """
+    with path.open(newline="", encoding="utf-8-sig") as handle:
+        header = next(csv.reader(handle), [])
+
+    renames: dict[str, str] = {}
+    for raw in header:
+        normalised = safe_identifier(raw).lower()
+        if raw.strip().lower() != normalised:
+            renames[raw] = normalised
+    return renames
+
+
+@contextmanager
+def _resolved_csv_path(data_dir: Path, table_name: str) -> Generator[Path, None, None]:
+    """Yield a CSV whose filename and headers both match the model.
+
+    The real file is used untouched when it already matches. Otherwise it is
+    presented through a temporary directory for the duration of the `with`
+    block, as a symlink if only the name differs or a rewritten copy if the
+    headers do too. The original is never modified, and rewriting streams row
+    by row so extract size doesn't matter.
     """
     real_path, ambiguous = resolve_source_csv(data_dir, table_name)
     if ambiguous:
@@ -55,14 +70,35 @@ def _resolved_csv_path(data_dir: Path, table_name: str) -> Iterator[Path]:
     if real_path is None:
         raise FileNotFoundError(f"No CSV found for table '{table_name}' in {data_dir}")
 
-    if real_path.stem == table_name:
+    renames = _header_renames(real_path)
+
+    if real_path.stem == table_name and not renames:
         yield real_path
         return
 
     with tempfile.TemporaryDirectory(prefix="hemonc_alchemy_load_") as tmp_dir:
-        aliased = Path(tmp_dir) / f"{table_name}.csv"
-        aliased.symlink_to(real_path.resolve())
-        yield aliased
+        staged = Path(tmp_dir) / f"{table_name}.csv"
+
+        if not renames:
+            staged.symlink_to(real_path.resolve())
+            yield staged
+            return
+
+        logger.debug(
+            "%s: normalising %d source header(s) for load: %s",
+            table_name, len(renames), ", ".join(f"{k!r}->{v!r}" for k, v in renames.items()),
+        )
+        with (
+            real_path.open(newline="", encoding="utf-8-sig") as source,
+            staged.open("w", newline="", encoding="utf-8") as target,
+        ):
+            reader = csv.reader(source)
+            writer = csv.writer(target)
+            header = next(reader, [])
+            writer.writerow([renames.get(col, col.strip()) for col in header])
+            writer.writerows(reader)
+
+        yield staged
 
 
 def load_entity(
@@ -71,13 +107,10 @@ def load_entity(
     data_dir: Path,
     **load_csv_kwargs,
 ) -> int:
-    """Load one generated entity's primary rows from `data_dir`.
+    """Load one entity's own rows, without its child tables.
 
-    Resolves the real source CSV (tolerating HemOnc's filename
-    irregularities), then delegates entirely to `entity_cls.load_csv()` --
-    staging, casting, merge strategy, everything -- without reimplementing
-    any of it. `load_csv_kwargs` passes through unchanged (`merge_strategy`,
-    `chunksize`, `dedupe`, etc.).
+    Extra keyword arguments (`merge_strategy`, `chunksize`, `dedupe`, ...) are
+    passed through to the underlying loader.
     """
     register_enum_casts()
     with _resolved_csv_path(data_dir, entity_cls.__tablename__) as path:
@@ -90,17 +123,11 @@ def load_all(
     data_dir: Path,
     **load_csv_kwargs,
 ) -> dict[str, int]:
-    """Load one entity fully: primary rows, then its denormalised children.
+    """Load one entity completely: its own rows, then its child tables.
 
-    `load_denormalised` must run after the primary rows exist (surrogate-PK
-    tables resolve each denormalised row back to a generated `id`), so this
-    is the one call most callers actually want -- `load_entity`/
-    `load_denormalised` stay available separately for callers that need
-    finer-grained control (e.g. loading primary rows for every table first,
-    then denormalised children in a second pass, to avoid FK-ordering
-    surprises across entities).
-
-    Returns `{"<tablename>": primary_row_count, **denorm_column_counts}`.
+    Returns a count per table loaded. Use `load_entity` and
+    `load_denormalised` separately if you need every entity's own rows in
+    place before any child tables are filled.
     """
     primary_total = load_entity(session, entity_cls, data_dir, **load_csv_kwargs)
     session.flush()
@@ -153,18 +180,14 @@ def load_denormalised(
     entity_cls: type,
     data_dir: Path,
 ) -> dict[str, int]:
-    """Explode every denormalised column of `entity_cls` into its generated
-    map tables, from the real HemOnc CSV -- must run after `load_entity`
-    for the same entity and data_dir.
+    """Fill the child tables holding an entity's pipe-delimited columns.
 
-    Returns a dict of `{column_name: rows_loaded}`.
+    Must run after `load_entity` for the same entity. Returns a count per
+    column loaded.
 
-    Scalar casting reuses `perform_cast` (the same mechanism `load_csv`
-    itself uses), so a bad value in a denormalised column is dropped with
-    a warning rather than defaulted to a sentinel -- consistent with
-    US-20. Enum-typed denormalised columns (several map tables have them,
-    e.g. `indications_biomarker2.biomarker2`) get the same validated
-    casting as any other enum column, via `register_enum_casts` (US-22).
+    Values are cast the same way `load_csv` casts them, so a bad value is
+    dropped with a warning rather than replaced by a sentinel, and an enum
+    column in a map table is validated like any other.
     """
     from orm_loader.loaders.data.converters import perform_cast
     from orm_loader.loaders.data_classes import TableCastingStats

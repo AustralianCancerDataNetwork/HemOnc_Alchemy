@@ -38,18 +38,44 @@ DataDirOption = Annotated[
 def regen(
     data_dir: DataDirOption,
     force: Annotated[bool, typer.Option(help="Proceed even if the schema diff shows unacknowledged changes.")] = False,
+    accept_source_loss: Annotated[
+        bool,
+        typer.Option(
+            help="Proceed even if a table that previously generated an entity class no longer resolves to a source file.",
+        ),
+    ] = False,
 ) -> None:
     """
     Regenerate model/entities.py, model/enums.py, and schema/registry.json
     from the HemOnc data dictionary.
 
-    Runs generate -> validate -> diff as one gated pipeline (US-8): a
-    validation failure or an un-acknowledged schema diff stops the command
-    before anything is left in a half-updated state relative to what's
-    committed. Pass --force to accept the diff (e.g. after reviewing it
-    with `hemonc-alchemy diff`).
+    Validates and diffs as part of the same command, so a broken model or an
+    unreviewed schema change stops it rather than leaving the model
+    half-updated. Review a diff with `hemonc-alchemy diff`, then pass --force
+    to accept it.
+
+    A table losing its source file is gated by --accept-source-loss instead,
+    separately from --force: a content update produces a large diff that gets
+    forced routinely, which is how three tables once dropped out of the model
+    unnoticed.
     """
     registry = generate_module.regenerate(data_dir, _MODEL_DIR)
+
+    previous = diff_module.load_previous_registry_from_git(_REGISTRY_JSON)
+
+    source_losses = validate_module.validate_source_regressions(registry, previous)
+    if source_losses and not accept_source_loss:
+        typer.secho(
+            f"{len(source_losses)} table(s) no longer resolve to a source file:",
+            fg=typer.colors.RED,
+            bold=True,
+        )
+        for loss in source_losses:
+            typer.echo(f"  - {loss}")
+        typer.secho(
+            "Re-run with --accept-source-loss once this is intended.", fg=typer.colors.YELLOW
+        )
+        raise typer.Exit(code=1)
 
     errors = validate_module.validate_all(registry, _MODEL_DIR / "entities.py", _MODEL_DIR / "enums.py")
     if errors:
@@ -90,11 +116,30 @@ def regen(
     for warning in warnings:
         typer.secho(f"Warning: {warning}", fg=typer.colors.YELLOW)
 
+    generated = sorted(name for name, t in registry.tables.items() if t.columns)
+    sourceless = sorted(name for name, t in registry.tables.items() if not t.columns)
+
     typer.secho(
-        f"Regenerated {len(registry.tables)} tables "
-        f"({sum(1 for t in registry.tables.values() if t.columns)} produced an entity class).",
+        f"Regenerated {len(registry.tables)} tables: "
+        f"{len(generated)} produced an entity class, {len(sourceless)} had no source file.",
         fg=typer.colors.GREEN,
     )
+    if sourceless:
+        previously_backed = (
+            {name for name, t in previous.tables.items() if t.columns} if previous else set()
+        )
+        newly = [name for name in sourceless if name in previously_backed]
+        long_standing = [name for name in sourceless if name not in previously_backed]
+        if newly:
+            typer.secho(
+                f"  newly without a source ({len(newly)}): {', '.join(newly)}",
+                fg=typer.colors.YELLOW,
+            )
+        if long_standing:
+            typer.echo(
+                f"  no source in the previous run either ({len(long_standing)}): "
+                f"{', '.join(long_standing)}"
+            )
 
 
 @app.command()

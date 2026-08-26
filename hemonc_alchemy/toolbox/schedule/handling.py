@@ -1,5 +1,8 @@
-"""
-Dosing-schedule string parsing and resolution.
+"""Reading a sig's dosing schedule.
+
+`resolve_all_days` is the entry point; the `parse_*`/`tokenize_*` functions
+below it handle one piece of the notation each. See tokens.py for the notation
+itself.
 """
 
 from __future__ import annotations
@@ -15,8 +18,11 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class ResolvedSchedule:
-    """Result of resolving an `alldays` string: explicit days, plus whether
-    the schedule continues indefinitely beyond them.
+    """The days a drug is given on, as resolved from one `alldays` expression.
+
+    `indefinite` is set when the schedule carries on past the days listed —
+    until progression, say. When it is set, `days` is only the part that was
+    written down explicitly, not the full course.
     """
 
     days: tuple[Day, ...] = ()
@@ -38,8 +44,12 @@ def apply_sig_to_series(
     decay_days: int = 2,
     decay_factor: float = 0.5,
 ):
-    """
-    Mutates series in place.
+    """Mark `days` on a per-day intensity series, tapering off afterwards.
+
+    Each dosing day is scored 1.0 (0.5 if optional) and the following
+    `decay_days` are scored progressively lower, so a treatment day and its
+    immediate aftermath both register. Used to build the administration
+    matrices in properties.py. Mutates `series` in place.
     """
     for day in days:
         base = 0.5 if day.optional else 1.0
@@ -148,6 +158,16 @@ def expand(parsed) -> ResolvedSchedule:
 
 
 def resolve_all_days(all_days: str | None) -> ResolvedSchedule:
+    """Turn a sig's `alldays` expression into explicit cycle days.
+
+        >>> resolve_all_days("1,8,15").days
+        (Day(value=1, optional=False), Day(value=8, optional=False), Day(value=15, optional=False))
+
+    See tokens.py for the notation. Check the result's `indefinite` before
+    treating `days` as the whole schedule, and note that an unparseable or
+    open-ended expression yields no days rather than raising -- anything
+    dropped is logged.
+    """
     parsed = []
     for token in tokenize_all_days(all_days):
         parsed.extend(parse_token(token))

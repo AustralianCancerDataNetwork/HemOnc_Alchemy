@@ -1,42 +1,20 @@
+"""The HemOnc entity classes.
+
+Every entity generated from the data dictionary is importable from here. The
+list is declared by the generated module itself, so a table added in a HemOnc
+release becomes importable as soon as the model is regenerated.
+"""
+
 from .base import Base, EntityBase
-from .entities import (
-    Conditions,
-    Drugs,
-    Sigs,
-    Studies,
-    StudyResults,
-    VariantEligibility,
-    Variants,
-    drugs_Canmed_major_classMap,
-    drugs_Canmed_minor_classMap,
-    variants_StudyMap,
-)
+from .entities import *
+from .entities import __all__ as _entity_names
 
-__all__ = [
-    "Base",
-    "Conditions",
-    "Drugs",
-    "EntityBase",
-    "Sigs",
-    "Studies",
-    "StudyResults",
-    "VariantEligibility",
-    "Variants",
-    "drugs_Canmed_major_classMap",
-    "drugs_Canmed_minor_classMap",
-    "variants_StudyMap",
-]
+# Names come from the generated module, so they are strings at runtime
+# even though a checker can't see inside the list.
+__all__ = ["Base", "EntityBase", *_entity_names]  # noqa: PLE0604
 
-# Import order matters and must come after the block above
-# 
-# relationships.py attaches soft relationships onto the entity classes 
-# via post-hoc assignment (`Variants.component_sigs = relationship(...)`), 
-# so entities must already be imported first. 
-# 
-# Importing `hemonc_alchemy.model` (or the top-level `hemonc_alchemy` package) 
-# is what guarantees this; reaching directly into `hemonc_alchemy.model.entities` 
-# without going through here would skip it. 
-#
-# Kept as its own statement (not merged into the block above) specifically 
-# so an import-sorter can't reorder it earlier.
+# Must stay below the imports above, and separate from them so an import
+# sorter can't move it: relationships are assigned onto the entity classes,
+# which have to exist first. Importing `hemonc_alchemy.model` is what puts
+# them there -- importing `hemonc_alchemy.model.entities` directly does not.
 from . import relationships  # noqa: F401

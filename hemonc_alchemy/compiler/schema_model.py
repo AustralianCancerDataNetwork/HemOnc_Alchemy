@@ -36,7 +36,7 @@ Maturity = Literal["dev", "prod", "prod-"]
 # the same words are genuine categorical values elsewhere, e.g. 
 # Authors_Site_typeEnum has a real "TBD" member, so this must not become 
 # a blanket na_values addition.
-_IDENTIFIER_PLACEHOLDER_TOKENS = {"tba", "tbd", "pending"}
+_IDENTIFIER_PLACEHOLDER_TOKENS = {"tba", "tbd", "cbd", "pending"}
 
 
 def _clean_identifier_placeholders(series: pd.Series, col_name: str) -> pd.Series:
@@ -157,7 +157,7 @@ class EnumSpec:
         enum_name = self.enum_type(table)
         lines = [f"class {enum_name}(str, Enum):"]
         for key, val in value_map.items():
-            lines.append(f"    {key} = '{val}'")
+            lines.append(f"    {key} = {val!r}")
         return "\n".join(lines)
 
 
@@ -168,15 +168,12 @@ class ColumnSpec:
     name: str
     type: ColumnType
     nullable: bool = True
-    length: int | None = None
     enum: str | None = None
 
     def __repr__(self) -> str:
         extras: list[str] = []
         if not self.nullable:
             extras.append("nullable=False")
-        if self.length is not None:
-            extras.append(f"length={self.length}")
         if self.enum is not None:
             extras.append(f"enum={self.enum!r}")
         extra_str = ", " + ", ".join(extras) if extras else ""
@@ -184,12 +181,16 @@ class ColumnSpec:
 
     @classmethod
     def from_dict(cls, raw: dict) -> ColumnSpec:
-        return cls(**raw)
+        """Load a column spec, ignoring keys this version no longer carries."""
+        return cls(
+            name=raw["name"],
+            type=raw["type"],
+            nullable=raw.get("nullable", True),
+            enum=raw.get("enum"),
+        )
 
     def _repr_html_(self) -> str:
         flags: list[str] = ["NULL" if self.nullable else "<b style='color:#b00'>NOT NULL</b>"]
-        if self.length:
-            flags.append(f"len={self.length}")
         if self.enum:
             flags.append(f"enum=<code>{escape(self.enum)}</code>")
         return (
@@ -267,8 +268,6 @@ class ColumnSpec:
         if t.startswith(("float", "double", "decimal")):
             return "Float"
         if t.startswith("string"):
-            if self.length:
-                return f"String({self.length})"
             return "String(255)"
         if t == "text":
             return "Text"
@@ -393,9 +392,14 @@ class TableMeta:
     soft_m2m_relationships: list[SoftManyToManyRef] = field(default_factory=list)
     use_surrogate_pk: bool = True
 
-    # Set by Registry.finalise_table_metadata_from_data once the real source
-    # file is located (may differ from f"{name}.csv" — see infer.py's
-    # resolve_source_csv and this module's docstring, US-13).
+    # The table's raw spelling in the data dictionary, before safe_identifier
+    # flattened it into `name` (e.g. "canonical.triples" -> "canonicaltriples").
+    # Retained so source-file resolution can match against what the dictionary
+    # actually says rather than only against the derived identifier.
+    source_name: str | None = None
+
+    # The extract file this table's data came from, once located. Often not
+    # f"{name}.csv" -- see naming.resolve_source_csv.
     source_filename: str | None = None
 
     @property
@@ -408,9 +412,8 @@ class TableMeta:
 
     @property
     def filename(self) -> str:
-        """Fallback naive filename — overridden by `source_filename` once
-        Registry.finalise_table_metadata_from_data resolves the real file
-        via infer.py's resolve_source_csv (US-13 fix)."""
+        """The extract file for this table, guessed from its name if the
+        real one hasn't been located yet."""
         return self.source_filename or f"{self.name}.csv"
 
     @classmethod
@@ -438,6 +441,7 @@ class TableMeta:
                 SoftManyToManyRef(**r) for r in raw.get("soft_m2m_relationships", [])
             ],
             use_surrogate_pk=raw.get("use_surrogate_pk", True),
+            source_name=raw.get("source_name"),
             source_filename=raw.get("source_filename"),
         )
 
@@ -458,25 +462,30 @@ class TableMeta:
 
     def enrich_field_metadata(self, df_dict: pd.DataFrame) -> None:
         df_dict = norm_cols(df_dict)
+        dictionary_columns = {str(column).strip().casefold(): column for column in df_dict.columns}
+        variable_column = dictionary_columns.get("variable")
+        type_column = dictionary_columns.get("type")
+        multival_column = dictionary_columns.get("multiple values allowed")
+        allowed_values_column = dictionary_columns.get("allowed values/format")
 
         for _, row in df_dict.iterrows():
-            val = row["Variable"] if "Variable" in row and pd.notna(row["Variable"]) else ""
+            val = row[variable_column] if variable_column and pd.notna(row[variable_column]) else ""
             r = str(val).strip()
 
             if not r or r.lower().startswith("note:") or r.lower().startswith("note "):
                 continue
 
             col_name = safe_identifier(r).lower()
-            type_str = get_data_type(str(row.get("Type", "")))
-            multival = str(row.get("Multiple Values Allowed", "")).lower()
-            allowed_fmt = str(row.get("Allowed Values/Format", "")).strip().lower()
+            type_str = get_data_type(str(row.get(type_column, "")))
+            multival = str(row.get(multival_column, "")).lower()
+            allowed_fmt = str(row.get(allowed_values_column, "")).strip().lower()
 
             if col_name not in self.columns:
                 self.columns[col_name] = ColumnSpec(name=col_name, type=type_str, nullable=True)
 
             enum_values: list[str] = []
             if "enum" in type_str.lower():
-                raw = str(row.get("Allowed Values/Format", ""))
+                raw = str(row.get(allowed_values_column, ""))
                 if ";" in raw and "Any" not in raw:
                     enum_values = [v.strip() for v in raw.split(";") if v.strip()]
 
@@ -520,7 +529,7 @@ class TableMeta:
                 inferred_type = num
             else:
                 mn = max_string_length(s_typed)
-                inferred_type = "Text" if mn > 255 else f"String({mn})"
+                inferred_type = "Text" if mn > 255 else "String"
 
             is_nullable = bool(s_typed.isna().any())
 
@@ -554,6 +563,8 @@ class TableMeta:
 
         self.denormalised_columns = sorted(set(self.denormalised_columns))
 
+        self._retype_denormalised_columns(df_data)
+
         groups = infer_pipe_groups(df_data, self.denormalised_columns)
 
         flattened_multi = {c for g in groups if len(g) > 1 for c in g}
@@ -567,6 +578,50 @@ class TableMeta:
         self.normalised_tables = [
             NormalisedTable(parent=self.name, column=c) for c in self.denormalised_columns
         ]
+
+    def _retype_denormalised_columns(self, df_data: pd.DataFrame) -> None:
+        """
+        Re-infer a denormalised column's type from its exploded values.
+
+        The first pass types every column from the raw series, where a
+        denormalised cell is still `"12460|1354"` -- not numeric, so the column
+        lands on String. But the generated map table stores one exploded value
+        per row, and `normalised_table_class` takes that column's type
+        verbatim, so the map column inherited a type describing the delimited
+        cell rather than what it actually holds. `indications.regimen_cui` came
+        out `String` against `Regimens.regimen_cui`'s `BigInteger`, which fails
+        on Postgres with `operator does not exist: bigint = character varying`.
+
+        This runs after `denormalised_columns` is settled, which is why it is a
+        second pass rather than part of the loop above. Enum columns are left
+        alone: `detect_enum` makes its own decision from the raw series.
+        """
+        for col_name in self.denormalised_columns:
+            spec = self.columns.get(col_name)
+            if spec is None or spec.type == "Enum":
+                continue
+
+            matching = [c for c in df_data.columns if safe_identifier(c).lower() == col_name]
+            if not matching:
+                continue
+
+            raw = df_data[matching[0]].dropna().astype(str)
+            exploded = pd.Series(
+                [part.strip() for value in raw for part in value.split("|")], dtype="object"
+            )
+            if exploded.empty:
+                continue
+
+            exploded = _clean_identifier_placeholders(exploded, col_name)
+
+            if detect_boolean(exploded):
+                spec.type = "Boolean"
+            elif detect_datetime(exploded):
+                spec.type = "DateTime"
+            elif (numeric := detect_numeric(exploded)) is not None:
+                spec.type = numeric
+            else:
+                spec.type = "Text" if max_string_length(exploded) > 255 else "String"
 
     def normalised_table_class(self, nt: NormalisedTable) -> str:
         """Render the SQLAlchemy class for one generated exploded child table."""
@@ -795,7 +850,9 @@ class Registry:
             else:
                 print(f"Warning: no dictionary sheet for table '{table_name}'")
 
-    def finalise_table_metadata_from_data(self, data_dir: str | Path) -> None:
+    def finalise_table_metadata_from_data(
+        self, data_dir: str | Path, source_aliases: dict[str, str] | None = None
+    ) -> None:
         """
         Finalise metadata by introspecting the current CSV extracts.
 
@@ -803,20 +860,26 @@ class Registry:
         unique single-column candidates, and normalisation groups are
         derived from the live data.
 
-        Uses infer.py's `resolve_source_csv` to find the real backing file
-        even when it doesn't match the naive `f"{name}.csv"` convention
-        (US-13 fix) -- the original used a direct path-exists check here,
-        which is why 4 tables with real, available data were silently
-        skipped.
+        Finds each table's file via `naming.resolve_source_csv`, which
+        tolerates HemOnc's filename conventions rather than assuming
+        f"{name}.csv". `source_aliases` supplies an explicit filename for a
+        table that was renamed upstream, from the dictionary's SourceAliases
+        sheet.
         """
         from .infer import (
             resolve_source_csv,  # local import: avoids a cycle at module load
         )
 
         data_dir = Path(data_dir)
+        source_aliases = source_aliases or {}
 
         for table_name, meta in self.tables.items():
-            data_path, ambiguous = resolve_source_csv(data_dir, table_name)
+            data_path, ambiguous = resolve_source_csv(
+                data_dir,
+                table_name,
+                source_name=meta.source_name,
+                alias=source_aliases.get(table_name),
+            )
 
             if ambiguous:
                 print(f"Warning: ambiguous CSV matches for table '{table_name}': {', '.join(ambiguous)}")
@@ -849,12 +912,65 @@ class Registry:
         self.infer_soft_relationships()
         enum_classes, enum_import = self.render_enum_classes()
         f = f"{sa_import_block()}\n\n{enum_import}\n\n"
+        rendered: list[str] = []
         for table in self.tables.values():
+            if not table.columns:
+                continue
             f += f"{table.table_class(self)}\n\n"
+            rendered.append(table.classname)
             for nt in table.normalised_tables:
                 f += table.normalised_table_class(nt) + "\n\n"
+                rendered.append(nt.classname)
+
+        # Declared here so `model/__init__.py` can re-export the entities
+        # without a hand-maintained list that silently omits tables added in a
+        # later HemOnc release, while staying visible to static analysis.
+        names = "".join(f"    {name!r},\n" for name in sorted(rendered))
+        f += f"__all__ = [\n{names}]\n"
 
         return f, enum_classes
+
+    def apply_multival_overrides(self, overrides: dict[str, set[str]]) -> None:
+        """Remove hard-excluded columns from generated normalised maps.
+
+        Overrides are applied after dictionary and data-driven inference, so
+        they suppress both delimiter-only false positives and inferred
+        co-variation. They do not remove the underlying scalar column.
+        """
+        unknown: list[str] = []
+        for table_name, columns in overrides.items():
+            table = self.tables.get(table_name)
+            if table is None:
+                unknown.extend(f"{table_name}.{column}" for column in sorted(columns))
+                continue
+            unknown.extend(
+                f"{table_name}.{column}"
+                for column in sorted(columns)
+                if column not in table.columns
+            )
+
+        if unknown:
+            raise ValueError(
+                "MultivalOverrides references unknown table/column(s): "
+                + ", ".join(unknown)
+            )
+
+        for table_name, hard_no_columns in overrides.items():
+            table = self.tables[table_name]
+            table.denormalised_columns = [
+                column for column in table.denormalised_columns if column not in hard_no_columns
+            ]
+            table.normalisation_groups = [
+                NormalisationGroup(
+                    columns=[column for column in group.columns if column not in hard_no_columns]
+                )
+                for group in table.normalisation_groups
+                if len([column for column in group.columns if column not in hard_no_columns]) > 1
+            ]
+            table.normalised_tables = [
+                NormalisedTable(parent=table.name, column=column)
+                for column in table.denormalised_columns
+            ]
 
     def infer_soft_relationships(self) -> None:
         """Infer view-only business-key relationships across the registry.
@@ -879,7 +995,18 @@ class Registry:
                 relationship_index[(t.name, key)] = t.name
 
         for table in self.tables.values():
+            # A denormalised column keeps its scalar ColumnSpec (see
+            # apply_multival_overrides) but table_class() never renders it as a
+            # mapped_column -- its values live in the generated map table. A
+            # direct soft relationship joining on it would therefore reference
+            # a column that does not exist on the mapped class, failing at
+            # mapper configuration. The m2m loop below is what covers these:
+            # one indication can cite several regimens, so the relationship has
+            # to hop through the map table rather than pretend to be scalar.
+            denormalised = set(table.denormalised_columns)
             for col in table.columns:
+                if col in denormalised:
+                    continue
                 for (target_table, target_key) in unique_index:
                     if col == target_key and table.name != target_table:
                         table.soft_relationships.append(

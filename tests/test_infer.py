@@ -1,5 +1,5 @@
-"""Regression tests for compiler/infer.py's confirmed bug fixes (US-9, US-10,
-US-13, US-18) and compiler/schema_model.py's identifier-placeholder handling.
+"""Type, enum and multi-value inference from the CSV extract, plus locating
+each table's source file.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ from hemonc_alchemy.compiler.schema_model import _clean_identifier_placeholders
 
 
 class TestParseUniqueKey:
-    """The two real, confirmed cases from hemonc_import's data dictionary."""
+    """Both of these appear in the real data dictionary."""
 
     def test_strips_parenthetical_annotation(self):
         assert parse_unique_key("study_id (see note)") == ["study_id"]
@@ -38,6 +38,9 @@ class TestParseUniqueKey:
     def test_or_becomes_alternate_candidates(self):
         assert parse_unique_key("name or person_cui") == ["name", "person_cui"]
 
+    def test_normalises_python_keyword_column_names(self):
+        assert parse_unique_key("component + with") == ["component", "with_field"]
+
 
 class TestInferPipeGroups:
     def test_deterministic_column_order(self):
@@ -50,9 +53,8 @@ class TestInferPipeGroups:
         groups = infer_pipe_groups(df, ["biomarker4", "biomarker4_finding"])
         assert groups == [sorted(["biomarker4", "biomarker4_finding"])]
         # sorted(...), not set(...) -- must be identical every call, not
-        # just consistent within one process (that's what the original
-        # set()-based bug got wrong: order depended on hash randomization
-        # across *different* processes, not within one).
+        # Must be identical across processes, not merely within one --
+        # a set() here made the order depend on hash randomisation.
         assert infer_pipe_groups(df, ["biomarker4", "biomarker4_finding"]) == groups
 
     def test_missing_values_are_handled(self):
@@ -68,11 +70,12 @@ class TestInferPipeGroups:
 
 
 class TestDetectNumeric:
-    """detect_numeric's float64-with-NaN fix (US-18)."""
+    """pandas upcasts an integer column to float the moment it has a missing
+    value; the inferred type must still be Integer."""
 
     def test_integer_with_missing_values_is_integer_not_float(self):
         # pandas upcasts to float64 the moment an int column has any NaN --
-        # confirmed real case: sigs.variant_cui, studies.condition_cui,
+        # Real cases: sigs.variant_cui, studies.condition_cui,
         # indications.component_cui.
         s = pd.Series([1.0, 2.0, None, 4.0])
         assert s.dtype == "float64"
@@ -87,7 +90,9 @@ class TestDetectNumeric:
 
 
 class TestCleanIdentifierPlaceholders:
-    """US-18: variant_eligibility.variant_cui's "TBA" placeholder."""
+    """Some identifier columns carry "not yet assigned" markers instead of a
+    number -- `TBA` in variant_eligibility.variant_cui, `CBD` in
+    indications.regimen_cui."""
 
     def test_tba_nulled_on_cui_column(self):
         s = pd.Series(["129497", "144834", "TBA"])
@@ -102,6 +107,19 @@ class TestCleanIdentifierPlaceholders:
         s = pd.Series(["Academic Medical Center", "TBD", "Government"])
         cleaned = _clean_identifier_placeholders(s, "site_type")
         assert cleaned.equals(s)
+
+    def test_cbd_nulled_on_cui_column(self):
+        """indications.regimen_cui carries "CBD" 212 times and "TBA" 19
+        times; both are "not yet assigned" markers, not real identifiers.
+        """
+        s = pd.Series(["12460", "CBD", "TBA", "47679"])
+        cleaned = _clean_identifier_placeholders(s, "regimen_cui")
+        assert cleaned.isna().sum() == 2
+        assert detect_numeric(cleaned) == "Integer"
+
+    def test_cbd_outside_a_cui_column_is_untouched(self):
+        s = pd.Series(["CBD", "THC", "CBD"])
+        assert _clean_identifier_placeholders(s, "compound").equals(s)
 
     def test_genuinely_alphanumeric_cui_column_stays_textual(self):
         # If a _cui column doesn't cleanly coerce even after removing
@@ -129,6 +147,75 @@ class TestResolveSourceCsv:
 
     def test_no_match_returns_none(self, tmp_path: Path):
         path, ambiguous = resolve_source_csv(tmp_path, "nonexistent_table")
+        assert path is None
+        assert ambiguous == []
+
+
+class TestSeparatorInsensitiveResolution:
+    """The 2026-08-17 regression: upstream re-spelled dotted extract
+    filenames with underscores, which safe_identifier preserves, so
+    `canonical_triples` no longer normalised onto `canonicaltriples`.
+    """
+
+    def test_underscored_filename_resolves_against_dotted_dictionary_name(self, tmp_path: Path):
+        (tmp_path / "canonical_triples.csv").write_text("a,b\n1,2\n")
+        path, ambiguous = resolve_source_csv(
+            tmp_path, "canonicaltriples", source_name="canonical.triples"
+        )
+        assert path is not None
+        assert path.name == "canonical_triples.csv"
+        assert ambiguous == []
+
+    def test_dotted_filename_still_resolves(self, tmp_path: Path):
+        """The previous drop's convention must keep working."""
+        (tmp_path / "variant.blob.csv").write_text("a,b\n1,2\n")
+        path, _ = resolve_source_csv(tmp_path, "variantblob", source_name="variant.blob")
+        assert path is not None and path.name == "variant.blob.csv"
+
+    def test_collapse_does_not_reach_a_genuine_rename(self, tmp_path: Path):
+        """`contexttable` -> `contexts` is a content decision, not a
+        separator change; no heuristic should silently bridge it."""
+        (tmp_path / "contexts.csv").write_text("a,b\n1,2\n")
+        path, ambiguous = resolve_source_csv(
+            tmp_path, "contexttable", source_name="context.table"
+        )
+        assert path is None
+        assert ambiguous == []
+
+    def test_declared_alias_resolves_a_genuine_rename(self, tmp_path: Path):
+        (tmp_path / "contexts.csv").write_text("a,b\n1,2\n")
+        path, _ = resolve_source_csv(
+            tmp_path, "contexttable", source_name="context.table", alias="contexts"
+        )
+        assert path is not None and path.name == "contexts.csv"
+
+    def test_ambiguous_collapse_is_reported_not_guessed(self, tmp_path: Path):
+        # Neither stem matches at the tighter safe_identifier tier (which
+        # preserves underscores), so both reach the collapse tier and tie.
+        (tmp_path / "canonical_triples.csv").write_text("a,b\n1,2\n")
+        (tmp_path / "canonical__triples.csv").write_text("a,b\n1,2\n")
+        path, ambiguous = resolve_source_csv(
+            tmp_path, "canonicaltriples", source_name="canonical.triples"
+        )
+        assert path is None
+        assert sorted(ambiguous) == ["canonical__triples.csv", "canonical_triples.csv"]
+
+    def test_a_tighter_tier_wins_over_an_ambiguous_looser_one(self, tmp_path: Path):
+        """Precedence matters: an unambiguous dotted match must be taken
+        rather than declaring a tie against an underscored sibling."""
+        (tmp_path / "canonical.triples.csv").write_text("a,b\n1,2\n")
+        (tmp_path / "canonical_triples.csv").write_text("a,b\n1,2\n")
+        path, ambiguous = resolve_source_csv(
+            tmp_path, "canonicaltriples", source_name="canonical.triples"
+        )
+        assert path is not None and path.name == "canonical.triples.csv"
+        assert ambiguous == []
+
+    def test_beta_exclusion_still_applies_to_the_collapse_tier(self, tmp_path: Path):
+        (tmp_path / "variant_blob beta.csv").write_text("a,b\n1,2\n")
+        path, ambiguous = resolve_source_csv(
+            tmp_path, "variantblob", source_name="variant.blob"
+        )
         assert path is None
         assert ambiguous == []
 

@@ -1,3 +1,5 @@
 # fixtures/
 
-Reserved for the golden-fixture compiler tests (US-26, `_design/hemonc-alchemy-spec.md` TS-4): a toy data dictionary workbook + a handful of toy CSVs, with a known-correct expected `schema/hemonc.linkml.yaml` and generated `model/entities.py` checked in alongside them. Not yet populated — depends on `compiler/` being ported first.
+Empty for now.
+
+Intended for a small self-contained data dictionary and CSV set, with the model they should generate checked in beside them, so the compiler can be tested without a real HemOnc extract. Until then the compiler tests either build metadata in code or run against the real extract in `data/Tables`.

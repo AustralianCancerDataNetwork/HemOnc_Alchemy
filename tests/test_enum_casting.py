@@ -1,16 +1,9 @@
-"""Proves US-22 (enum-from-CSV casting) is closed via composition, using
-`orm-loader`'s new per-column cast-rule hook rather than reimplementing
-casting logic here.
+"""Values loaded into an enum column must match a real member of it.
 
-`orm_loader.loaders.data.converters.perform_cast` has no `CastRule` for
-`sa.Enum` at all -- confirmed in `test_casting.py` -- because `sa.Enum` is
-itself a subclass of `sa.String`, so an unrecognised value used to pass
-straight through as a plain string instead of being caught (silently wrong
-on SQLite; an immediate `InvalidTextRepresentation` on Postgres, whose
-native enum type rejects it). `register_enum_casts` (`model/base.py`)
-closes this by registering a validating rule for every generated `sa.Enum`
-column via `orm_loader.loaders.data.converters.register_column_cast_rule`
-(https://github.com/AustralianCancerDataNetwork/orm-loader/issues/36).
+Because SQLAlchemy's Enum is a String subclass, an unrecognised value would
+otherwise pass straight through -- silently wrong on SQLite, and rejected
+outright by Postgres. `register_enum_casts` validates every enum column
+against its members instead.
 
 The one non-obvious piece this suite exists to prove: `compiler/schema_model.py`'s
 `EnumSpec.enum_class` builds every member's `.value` from `v.strip().lower()`
@@ -27,8 +20,10 @@ actually generated.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
+import pandas as pd
 import pytest
 import sqlalchemy as sa
 import sqlalchemy.orm as so
@@ -41,7 +36,11 @@ from hemonc_alchemy.model.enums import (
 )
 from hemonc_alchemy.toolbox.loading import load_entity
 
-_REAL_DATA_DIR = Path("/Users/georgie/Documents/unsw/sidequest/hemonc_import/hemonc_import/data")
+# Resolved the same way the CLI does (`HEMONC_DATA_DIR`), falling back to the
+# in-repo extract directory. This was previously hardcoded to one machine's
+# absolute path, which only went unnoticed because the module failed to import
+# at all while the generated model was stale.
+_REAL_DATA_DIR = Path(os.environ.get("HEMONC_DATA_DIR", "data/Tables"))
 
 pytestmark = pytest.mark.skipif(
     len(Base.metadata.tables) == 0,
@@ -88,16 +87,33 @@ def sqlite_session():
         yield s
 
 
+def _real_csv_path() -> Path:
+    """The canonicaltriples extract, via the resolver the loader itself uses."""
+    from hemonc_alchemy.naming import resolve_source_csv
+
+    path, _ = resolve_source_csv(_REAL_DATA_DIR, "canonicaltriples")
+    assert path is not None, f"no canonicaltriples CSV under {_REAL_DATA_DIR}"
+    return path
+
+
+@pytest.mark.skipif(
+    not _REAL_DATA_DIR.is_dir(),
+    reason=f"real HemOnc extracts not found at {_REAL_DATA_DIR} (set HEMONC_DATA_DIR)",
+)
 class TestLoadEntityEndToEnd:
     def test_real_lookup_table_enum_column_casts_correctly(self, sqlite_session):
         # Canonicaltriples has no surrogate id, so this runs cleanly on
         # SQLite (the surrogate-PK autoincrement limitation doesn't apply).
+        # Derived from the extract rather than hardcoded: this was `199` and
+        # broke on the 2026-08 drop, which brought the table to 228 rows.
+        expected = len(pd.read_csv(_real_csv_path()))
+
         total = load_entity(sqlite_session, Canonicaltriples, _REAL_DATA_DIR)
         sqlite_session.commit()
 
-        assert total == 199
+        assert total == expected
         rows = sqlite_session.execute(sa.select(Canonicaltriples.class_1)).scalars().all()
-        assert len(rows) == 199
+        assert len(rows) == expected
         assert all(isinstance(v, Canonicaltriples_Class_1Enum) for v in rows)
         # Confirms real, differently-cased source values ("Procedure") did
         # resolve, not just that nothing crashed.
@@ -107,10 +123,10 @@ class TestLoadEntityEndToEnd:
     def test_unknown_value_is_dropped_not_crashed(self, sqlite_session, tmp_path):
         csv_path = tmp_path / "canonicaltriples.csv"
         csv_path.write_text(
-            "class_1,relationship,class_2,date_added,index,internal,used_in\n"
-            "Procedure,is_a,thing,2020-01-01,1,0,x\n"
-            "BOGUS_CLASS,is_a,other,2020-01-01,2,0,y\n"
-            "Regimen,is_a,third,2020-01-01,3,0,z\n"
+            "class_1,relationship,class_2,date_added,in_ohdsi,internal,used_in\n"
+            "Procedure,is_a,thing,2020-01-01,0,0,x\n"
+            "BOGUS_CLASS,is_a,other,2020-01-01,0,0,y\n"
+            "Regimen,is_a,third,2020-01-01,0,0,z\n"
         )
 
         register_enum_casts()

@@ -1,30 +1,15 @@
-"""Proves the runtime primary-CSV loader (toolbox/loading.py) actually loads
-real HemOnc data, including tables whose real filename doesn't match their
-table name -- `load_csv()` (from orm-loader's `CSVLoadableTableInterface`,
-already composed onto every entity) requires `path.stem == cls.__tablename__`
-as a safety check, but HemOnc's own filenames don't always agree
-(`canonical.triples.csv` for `canonicaltriples`). `toolbox.loading.load_entity`
-resolves the real file via the same `naming.resolve_source_csv` the compiler
-already uses, and satisfies the check with a throwaway symlink rather than
-weakening it.
+"""Loading the real HemOnc extract, filename and header quirks included.
 
-Run against the real data directory (skipped if it isn't present -- this
-suite intentionally isn't fixture-driven, since the whole point is proving
-the filename-mismatch fix against HemOnc's actual, irregular filenames, not
-a synthetic stand-in for them).
-
-Deliberately queries only non-enum columns: `canonicaltriples.class_1` is a
-required Enum column, and orm_loader's `perform_cast` has no CastRule for
-`sa.Enum` at all (confirmed in tests/test_casting.py) -- reading a loaded
-row back through the ORM fails on enum hydration today. That's the
-enum-from-CSV casting gap (US-22), tracked separately; this suite only
-proves the primary-load/filename-resolution path, which is fully
-independent of it (confirmed directly: the row lands in the table with the
-right values -- the failure is read-side ORM hydration, not the load).
+Runs against the actual extract rather than fixtures, because the point is
+that HemOnc's own irregular filenames and headers load -- a synthetic
+stand-in would not exercise that. Skipped if the extract isn't present; set
+HEMONC_DATA_DIR if it lives outside the repo.
 """
 
 from __future__ import annotations
 
+import csv
+import os
 from pathlib import Path
 
 import pytest
@@ -33,9 +18,19 @@ import sqlalchemy.orm as so
 
 from hemonc_alchemy.model.base import Base
 from hemonc_alchemy.model.entities import Canonicaltriples, Units, Variants
-from hemonc_alchemy.toolbox.loading import load_all, load_denormalised, load_entity
+from hemonc_alchemy.toolbox.loading import (
+    _header_renames,
+    _resolved_csv_path,
+    load_all,
+    load_denormalised,
+    load_entity,
+)
 
-_REAL_DATA_DIR = Path("/Users/georgie/Documents/unsw/sidequest/hemonc_import/hemonc_import/data")
+# Resolved the same way the CLI does (`HEMONC_DATA_DIR`), falling back to the
+# in-repo extract directory. The hardcoded absolute path this replaces meant
+# all five real-data tests below skipped silently on any other machine --
+# indistinguishable, in the summary, from an intentional skip.
+_REAL_DATA_DIR = Path(os.environ.get("HEMONC_DATA_DIR", "data/Tables"))
 
 pytestmark = [
     pytest.mark.skipif(
@@ -58,10 +53,7 @@ def session():
 
 class TestFilenameResolution:
     def test_loads_table_whose_real_filename_does_not_match_tablename(self, session):
-        # canonicaltriples' real file is canonical.triples.csv -- confirms
-        # this table has 0 entity classes silently missing data, which is
-        # exactly the class of bug the compiler-side resolver was built for
-        # (US-13); this proves the same fix applies at load time.
+        # canonicaltriples is backed by canonical_triples.csv.
         Base.metadata.create_all(session.get_bind(), tables=[Canonicaltriples.__table__])
 
         total = load_entity(session, Canonicaltriples, _REAL_DATA_DIR)
@@ -84,6 +76,62 @@ class TestFilenameResolution:
 
         count = session.execute(sa.text("SELECT COUNT(*) FROM units")).scalar()
         assert count == total
+
+
+class TestHeaderNormalisation:
+    """Headers containing dots, hyphens or Python keywords have to be
+    reconciled with the generated column names before a load, or real columns
+    are reported missing. Six extracts need it, `sigs` and `indications`
+    included.
+    """
+
+    def test_dots_hyphens_and_keywords_are_renamed(self, tmp_path):
+        csv_path = tmp_path / "sample.csv"
+        csv_path.write_text(
+            "class,seq.rel.when,parameter-based,already_fine\n1,2,3,4\n"
+        )
+        assert _header_renames(csv_path) == {
+            "class": "class_field",          # Python keyword
+            "seq.rel.when": "seqrelwhen",
+            "parameter-based": "parameterbased",
+        }
+
+    def test_case_only_differences_are_left_alone(self, tmp_path):
+        """Case already matches, so rewriting the file would cost a full copy
+        for nothing."""
+        csv_path = tmp_path / "sample.csv"
+        csv_path.write_text("in_OHDSI,doseMinNum\n1,2\n")
+        assert _header_renames(csv_path) == {}
+
+    def test_resolved_csv_has_model_ready_headers_and_all_rows(self, tmp_path):
+        source = tmp_path / "weird.csv"
+        source.write_text("class,seq.rel,ok\na,b,c\nd,e,f\n")
+
+        with (
+            _resolved_csv_path(tmp_path, "weird") as resolved,
+            resolved.open(newline="") as handle,
+        ):
+            rows = list(csv.reader(handle))
+
+        assert rows[0] == ["class_field", "seqrel", "ok"]
+        assert rows[1:] == [["a", "b", "c"], ["d", "e", "f"]]
+
+    def test_a_clean_csv_is_passed_through_untouched(self, tmp_path):
+        source = tmp_path / "clean.csv"
+        source.write_text("unit,concept_code\nmg,1\n")
+        with _resolved_csv_path(tmp_path, "clean") as resolved:
+            assert resolved == source          # no copy, no symlink
+
+    def test_units_loads_with_its_hyphenated_headers(self, session):
+        """The original failure, end to end on the real extract."""
+        Base.metadata.create_all(session.get_bind(), tables=[Units.__table__])
+
+        total = load_entity(session, Units, _REAL_DATA_DIR)
+        session.commit()
+        assert total > 0
+        loaded = session.execute(sa.select(Units)).scalars().all()
+        assert all(row.parameterbased is not None for row in loaded)
+        assert all(row.timebased is not None for row in loaded)
 
 
 class TestDenormalisedLoadingNaturalKey:
@@ -140,13 +188,11 @@ class TestSurrogatePkEndToEnd:
     """`Variants` is a surrogate-PK ("content") table with real
     denormalised columns and, deliberately, zero enum columns -- so this
     exercises the natural-key-to-id parent lookup on real data without
-    also hitting the separate, tracked enum-casting gap (US-22).
+    also hitting the separate, tracked enum-casting gap.
 
-    Requires real Postgres: SQLite's rowid-aliasing autoincrement doesn't
-    apply here (a real `INSERT ... SELECT id FROM staging` carries the
-    staging table's all-NULL `id` column straight through, since `id` is
-    never in the source CSV) -- a known, pre-existing, separate limitation
-    (see migration-status.md), not something this test works around.
+    Needs real Postgres. Surrogate ids are assigned on insert and aren't in
+    the source CSV, and SQLite won't fill them in on an INSERT..SELECT the way
+    Postgres does.
     """
 
     def test_primary_and_denorm_load_with_correct_linkage(self, pg_session):

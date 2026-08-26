@@ -1,23 +1,17 @@
-"""
-Declarative ORM relationships ONLY 
+"""Hand-written relationships between entities.
 
-Tiers 2, 3, and 4 live in ../../toolbox/ (linking.py, classification.py, 
-schedule/). 
+HemOnc's tables are linked by shared concept identifiers rather than by
+declared foreign keys. Where a column name happens to match another table's
+unique key, the generated `*_obj`/`*_objects` relationships in entities.py
+already follow it. The ones defined here are the links that pattern can't
+reach, because the columns are named differently on each side
+(`Sigs.component_cui` to `Drugs.drug_cui`), because the target column repeats
+across rows (`Variants.variant_cui`, `Studies.study`), or because the useful
+direction is one-to-many (`Conditions.studies`).
 
-These are NOT redundant with the compiler's auto-inferred soft
-relationships (the `*_obj`/`*_objects` viewonly relationships already
-declared directly on the generated classes in entities.py, e.g.
-`Studies.condition_cui_obj`). That inference will only fire when a column name
-matches another table's *unique* `source_defined_keys` exactly. 
-
-It deliberately does not cover:
-- differently-named FK-like columns (`Sigs.component_cui` -> `Drugs.drug_cui`,
-  `Sigs.variant_cui` -> `Variants.variant_cui`)
-- joins onto a non-unique column (`Variants.variant_cui` isn't globally
-  unique per row so it can never appear in any table's `source_defined_keys`, 
-  and the same is true of `Studies.study`)
-- the reverse (one-to-many) direction of an auto-inferred relationship
-  (`Conditions.studies`, the reverse of `Studies.condition_cui_obj`)
+All of them are read-only. Because they are assigned onto the entity classes
+here rather than declared in entities.py, they only exist once
+`hemonc_alchemy.model` has been imported.
 """
 
 from __future__ import annotations

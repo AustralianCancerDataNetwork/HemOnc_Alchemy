@@ -831,7 +831,7 @@ requires-dist = [
     { name = "oa-configurator", extras = ["dev", "postgres"], marker = "extra == 'dev'", specifier = ">=1.1.0,<2.0.0" },
     { name = "openpyxl", marker = "extra == 'author'", specifier = ">=3.1.5" },
     { name = "openpyxl", marker = "extra == 'dev'", specifier = ">=3.1.5" },
-    { name = "orm-loader", git = "https://github.com/AustralianCancerDataNetwork/orm-loader?branch=register_cast_rule" },
+    { name = "orm-loader", specifier = ">=1.1.0,<2.0.0" },
     { name = "pandas", specifier = ">=2.0" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'dev'", specifier = ">=3.2" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'postgres'", specifier = ">=3.2" },
@@ -1649,14 +1649,18 @@ wheels = [
 
 [[package]]
 name = "orm-loader"
-version = "1.0.2.dev2+g2aa8321dd"
-source = { git = "https://github.com/AustralianCancerDataNetwork/orm-loader?branch=register_cast_rule#2aa8321ddf3be5811d45071aa7d55ba633b75fd6" }
+version = "1.1.0"
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "chardet" },
     { name = "oa-configurator" },
     { name = "pandas" },
     { name = "pyarrow" },
     { name = "sqlalchemy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c5/d2/05ba5177ea18213e5960217e70545ec1ce6c044a8b5d6916f4784f9c3bd7/orm_loader-1.1.0.tar.gz", hash = "sha256:939e816ef33ed62c094ab837eaeb262c6d665089f4999bf68018ccd2430b2678", size = 147655, upload-time = "2026-08-17T23:26:37.95Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a6/76/6eddf01f48617c838f0d66765c25fdd168f871e75c830aac95641937fd97/orm_loader-1.1.0-py3-none-any.whl", hash = "sha256:5ac26de3f447b8ffb0a4e2569866874a2892daab26f98e8fc52a3a86527b0221", size = 63950, upload-time = "2026-08-17T23:26:36.769Z" },
 ]
 
 [[package]]

@@ -1,7 +1,4 @@
-"""Regression tests for toolbox/schedule/ — the one module ported end-to-end
-so far. Covers the two behavioural fixes applied during porting: route
-classification (US-6) and indefinite-dosing handling (US-5).
-"""
+"""Reading dosing schedules: route grouping and `alldays` resolution."""
 
 from __future__ import annotations
 
@@ -15,38 +12,52 @@ from hemonc_alchemy.toolbox.schedule import (
 
 
 class TestRouteGroup:
-    """Cases confirmed against the real `route` column in
-    hemonc_import/data/sigs.csv (~23,500 rows) — see routes.py's module
-    docstring for the exact counts. Each of these previously fell through to
-    None under the old hemonc_import CANCER_SERVICES_ADMINISTERED /
-    HOME_ADMINISTRATION_ROUTES sets.
+    """Cases confirmed against the real `route` column in the current
+    data/Tables/sigs.csv (~23,300 rows).
+
+    The 2026-08 drop normalised this column onto OMOP Route concept names and
+    deduplicated it from 22 distinct values to 13: `IV`/`Intravenous`,
+    `PO`/`Oral`, `SC`/`Subcutaneous`, `IT`/`Intrathecal`, `IM`/`Intramuscular`,
+    `IA`/`Intra-arterial` and `intravesicularly`/`Intravesical` had all been
+    recording the same route two ways, and `nebulized` + `inhaled` collapsed
+    into `Inhalation`. The abbreviations no longer appear in the data or the
+    generated enum, so they no longer classify -- see routes.py.
     """
 
-    def test_common_abbreviations_still_classify(self):
-        assert route_group("IV") == "IV"
-        assert route_group("PO") == "PO"
-        assert route_group("SC") == "IV"
-        assert route_group(Sigs_RouteEnum.IV) == "IV"
+    def test_concept_names_classify(self):
+        assert route_group("Intravenous") == "IV"
+        assert route_group("Oral") == "PO"
+        assert route_group("Subcutaneous") == "IV"
+        assert route_group(Sigs_RouteEnum.INTRAVENOUS) == "IV"
 
-    def test_intravesicularly_now_classifies_as_iv(self):
-        # 23 real rows in sigs.csv used this exact wording; the old
-        # "Intravesical" entry never matched it (different word, not just
-        # different case).
-        assert route_group("intravesicularly") == "IV"
+    def test_the_full_spellings_now_classify_at_all(self):
+        """These were the silent data loss the old enum caused: 806 of 23,275
+        rows carried a full concept name that the abbreviation-only enum had
+        no member for, so they cast to None and never reached route_group.
+        """
+        for route in ("Intravenous", "Oral", "Subcutaneous", "Intracavitary",
+                      "Intrathecal", "Intramuscular", "Intra-arterial",
+                      "Intravesical", "Topical", "by scarification"):
+            assert route_group(route) is not None, route
 
-    def test_inhaled_and_nebulized_case_insensitive(self):
-        # 3 and 4 real rows respectively used lowercase; the old sets had
-        # "Inhaled"/"Nebulized" and never matched.
-        assert route_group("inhaled") == "PO"
-        assert route_group("nebulized") == "PO"
+    def test_case_insensitive(self):
+        assert route_group("intravenous") == "IV"
+        assert route_group("inhalation") == "PO"
 
-    def test_not_specified_and_none_are_unclassified(self):
-        assert route_group("Not specified") is None
+    def test_ns_and_none_are_unclassified(self):
+        # "Not specified" became "NS" in this drop; both are ungrouped.
+        assert route_group("NS") is None
         assert route_group(None) is None
+
+    def test_retired_abbreviations_no_longer_classify(self):
+        """Not a regression: these spellings are absent from the current data
+        and from the generated enum, so an unclassified result is correct.
+        """
+        for retired in ("IV", "PO", "SC", "IT", "nebulized", "intravesicularly"):
+            assert route_group(retired) is None, retired
 
     def test_unknown_route_is_unclassified(self):
         assert route_group("some future route nobody has seen yet") is None
-        assert route_group("intravenous") is None
 
 
 class TestResolveAllDays:

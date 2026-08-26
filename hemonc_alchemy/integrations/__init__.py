@@ -1,9 +1,7 @@
-"""Optional bridges to other libraries — the only place hemonc-alchemy is
-allowed to depend on them. Not part of the base install.
+"""Optional bridges to other libraries. Empty for now.
 
-Reserved for the HemOnc<->OMOP concept-resolution bridge - the rest of 
-hemonc-alchemy deliberately does not import omop_alchemy 
-
-the mapping from a HemOnc concept to an OMOP concept is consumer-specific, 
-not a fact this library should assert once for everyone.
+Reserved for mapping HemOnc concepts onto OMOP ones. That mapping is kept out
+of the rest of the package on purpose: which OMOP concept a HemOnc concept
+should become depends on the vocabulary version and the question being asked,
+so it isn't something this library should decide on everyone's behalf.
 """

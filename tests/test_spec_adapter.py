@@ -1,17 +1,10 @@
-"""Tests for compiler/spec_adapter.py (US-21).
+"""Describing the generated model to orm-loader's validators.
 
-Two levels: unit tests against synthetic TableMeta (no regen required), and
-an end-to-end run of orm_loader's always-on validators against the real
-generated model -- the same check `hemonc-alchemy validate` runs, kept as a
-permanent regression test rather than only an ad hoc CLI check.
-
-That end-to-end run is what caught a real bug while building this module:
-every generated map/child table's value column was declared
-`primary_key=True` but nullable (`Optional[...]`, no `nullable=False`) --
-`ColumnSpec.sa_python_type`/`normalised_table_class` computed nullability
-relative to the *parent* table's key, not the map table's own composite
-key. Fixed in compiler/schema_model.py; this test would fail again if that
-regressed.
+Unit tests against synthetic metadata, plus a run of those validators over
+the real generated model -- the same check `hemonc-alchemy validate` makes,
+kept here so it can't regress unnoticed. It has already caught one: every
+child table's value column was a nullable primary key, because nullability
+was computed against the parent's key rather than the child's own.
 """
 
 from __future__ import annotations

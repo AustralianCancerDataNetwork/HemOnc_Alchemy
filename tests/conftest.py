@@ -1,17 +1,16 @@
 """Shared pytest fixtures.
 
-Marker convention mirrors omop-alchemy (US-27): unmarked tests run on
-sqlite with no external dependencies; `@pytest.mark.postgres` tests require
-a docker-compose Postgres instance and are skipped by default.
+Unmarked tests run on sqlite and need nothing external. Tests marked
+`@pytest.mark.postgres` need a real Postgres and are skipped otherwise --
+surrogate-key loading can't be exercised on sqlite.
 
-`tests/docker-compose.yaml` brings up that instance (`docker compose -p
-hemonc_alchemy_tests up -d` from this directory, port 55433 -- distinct
-from orm-loader's own equivalent test stack on 55432, since both compose
-files live in a directory literally named `tests` and share a container
-name unless given explicit, distinct `-p` project names). Configure the
-`test_hemonc_db` field `HemOncAlchemyConfig` already declares against it
-once, via `omop-config connections add`/`omop-config databases add`
-(see migration-status.md for the exact commands used to set this up).
+To run those too, bring up the test database and configure it once:
+
+    docker compose -p hemonc_alchemy_tests up -d   # from tests/, port 55433
+    omop-config configure hemonc_alchemy           # set test_hemonc_db
+
+The project name and port are deliberately distinct from orm-loader's own
+test stack, which otherwise collides with this one.
 """
 
 import time

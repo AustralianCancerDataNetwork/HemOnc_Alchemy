@@ -67,7 +67,7 @@ class TestLoadPreviousRegistryFromGit:
 
 class TestDiffRegistriesMetadataCoverage:
     """A synthetic enum-member change, denormalisation change, or soft-
-    relationship change must not produce an empty diff -- CONFIRMED the
+    relationship change must not produce an empty diff. In practice the
     original column-presence/type/nullability-only comparison missed all
     three.
     """

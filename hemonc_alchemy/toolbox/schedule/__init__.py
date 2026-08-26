@@ -1,13 +1,14 @@
+"""Reading and summarising dosing schedules."""
+
 from .handling import ResolvedSchedule, resolve_all_days
 from .properties import (
     ScheduleEvent,
-    administration_matrices,
+    administration_frame,
+    administration_matrix,
     cancer_services_drugs,
     cancer_services_sigs_by_drug,
-    compute_administration_matrices,
     home_administered_drugs,
     home_administered_sigs_by_drug,
-    resolved_days,
     schedule_events,
 )
 from .routes import route_group
@@ -20,14 +21,13 @@ __all__ = [
     "Range",
     "ResolvedSchedule",
     "ScheduleEvent",
-    "administration_matrices",
+    "administration_frame",
+    "administration_matrix",
     "cancer_services_drugs",
     "cancer_services_sigs_by_drug",
-    "compute_administration_matrices",
     "home_administered_drugs",
     "home_administered_sigs_by_drug",
     "resolve_all_days",
-    "resolved_days",
     "route_group",
     "schedule_events",
 ]

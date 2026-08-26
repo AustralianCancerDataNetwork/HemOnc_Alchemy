@@ -30,7 +30,12 @@ from pandas.api.types import (
     is_integer_dtype,
 )
 
-from ..naming import PY_KEYWORDS, resolve_source_csv, safe_identifier  # noqa: F401
+from ..naming import (  # noqa: F401
+    PY_KEYWORDS,
+    resolve_source_csv,
+    safe_enum_key,
+    safe_identifier,
+)
 
 MAX_ENUM_UNIQUE = 20
 MAX_STRING_INLINE = 100
@@ -165,31 +170,6 @@ def detect_enum(col_name: str, series: pd.Series) -> EnumInfo | None:
     return EnumInfo(kind="normal", values=uniques)
 
 
-def safe_enum_key(raw: str) -> str:
-    """Convert an arbitrary display value into a safe enum member name."""
-    s = raw.strip()
-
-    s = s.replace("<", "LT_")
-    s = s.replace(">", "GT_")
-    s = s.replace("≤", "LE_")
-    s = s.replace("≥", "GE_")
-
-    s = s.replace(" to ", "_TO_")
-    s = s.replace("-", "_TO_")
-    s = s.replace("–", "_TO_")
-    s = s.replace("/", "_")
-
-    if re.match(r"^\d", s):
-        s = "I_" + s
-
-    s = re.sub(r"[^0-9a-zA-Z_]", "_", s)
-    s = re.sub(r"_+", "_", s)
-    s = s.upper()[:60]
-
-    if s == "":
-        s = "VALUE"
-
-    return s.strip("_")
 
 
 def parse_unique_key(value: str) -> list[str]:
@@ -230,7 +210,11 @@ def parse_unique_key(value: str) -> list[str]:
             seen.add(c)
             uniq.append(c)
 
-    return [u.strip().lower() for u in uniq]
+    # Keys refer to source column names, which are normalised before they are
+    # rendered as model attributes. Apply the same normalisation here so a
+    # Python keyword such as ``with`` resolves to its generated column name
+    # (``with_field``) instead of producing an invalid constraint.
+    return [safe_identifier(u) for u in uniq]
 
 
 def infer_pipe_groups(

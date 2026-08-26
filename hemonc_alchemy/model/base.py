@@ -8,10 +8,6 @@ This class does NOT provide pipe-delimited denormalisation / explode handling
 FK resolution at load time for surrogate-PK tables 
 
 This is handled in `toolbox/loading.py` (`load_denormalised`).
-
-Note that enumerator casting below is currently pre-release functionality 
-from a branch in orm-lader - it is not yet part of the main orm-loader release, 
-and may change in future.
 """
 
 from __future__ import annotations
@@ -24,6 +20,8 @@ from typing import Any
 import sqlalchemy as sa
 import sqlalchemy.orm as so
 from orm_loader.tables import CSVLoadableTableInterface, SerialisableTableInterface
+
+from ..naming import safe_enum_key
 
 
 class Base(so.DeclarativeBase):
@@ -63,7 +61,28 @@ def register_enum_casts() -> None:
             s = str(value).strip().lower()
             if not s:
                 return None
-            return enum_type(s).name  # raises on no matching member
+            try:
+                return enum_type(s).name  # exact value match
+            except ValueError:
+                # Fall back to the member *name*, because that is the
+                # equivalence the compiler actually asserted. Where two source
+                # spellings normalise to one `safe_enum_key`, only one of them
+                # survives as a member value (the last seen, so effectively
+                # decided by CSV row order), and an exact-value lookup nulls
+                # every row carrying the other. 'CPS at least 10%' x3 lost to
+                # 'CPS at least 10' x1; plain 'RMST' x12 lost to 'RMST:' x1.
+                # Both spellings map to the same member here instead.
+                try:
+                    return enum_type[safe_enum_key(s)].name
+                except KeyError as exc:
+                    # Re-raised as ValueError so this rule has one failure
+                    # type regardless of which lookup missed. orm-loader
+                    # catches Exception and routes it to on_error either way,
+                    # but callers testing the rule directly shouldn't have to
+                    # know which of the two paths ran.
+                    raise ValueError(
+                        f"{value!r} matches no member of {enum_type.__name__}"
+                    ) from exc
         return _scalar
 
     for table in Base.metadata.tables.values():

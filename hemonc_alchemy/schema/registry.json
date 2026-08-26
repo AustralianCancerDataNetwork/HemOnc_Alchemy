@@ -4,105 +4,90 @@
       "columns": {
         "aff_no": {
           "enum": null,
-          "length": null,
           "name": "aff_no",
           "nullable": false,
           "type": "Integer"
         },
         "affiliation_europmc": {
           "enum": null,
-          "length": null,
           "name": "affiliation_europmc",
           "nullable": true,
           "type": "Text"
         },
         "affiliation_hemonc": {
           "enum": null,
-          "length": null,
           "name": "affiliation_hemonc",
-          "nullable": true,
+          "nullable": false,
           "type": "Text"
         },
         "affiliation_journal": {
           "enum": null,
-          "length": null,
           "name": "affiliation_journal",
           "nullable": true,
           "type": "Text"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
-        "fullname_europmc": {
+        "full_name_europmc": {
           "enum": null,
-          "length": null,
-          "name": "fullname_europmc",
+          "name": "full_name_europmc",
           "nullable": true,
-          "type": "String(32)"
+          "type": "String"
         },
-        "fullname_hemonc": {
+        "full_name_hemonc": {
           "enum": null,
-          "length": null,
-          "name": "fullname_hemonc",
+          "name": "full_name_hemonc",
           "nullable": false,
-          "type": "String(39)"
+          "type": "String"
         },
         "person_cui": {
           "enum": null,
-          "length": null,
           "name": "person_cui",
-          "nullable": false,
+          "nullable": true,
           "type": "Integer"
         },
         "pmid": {
           "enum": null,
-          "length": null,
           "name": "pmid",
           "nullable": false,
           "type": "Integer"
         },
         "sequence": {
           "enum": null,
-          "length": null,
           "name": "sequence",
           "nullable": false,
           "type": "Integer"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
         },
         "valid_city": {
           "enum": null,
-          "length": null,
           "name": "valid_city",
           "nullable": true,
           "type": "Boolean"
         },
         "valid_country": {
           "enum": null,
-          "length": null,
           "name": "valid_country",
           "nullable": true,
           "type": "Boolean"
         },
         "valid_region": {
           "enum": null,
-          "length": null,
           "name": "valid_region",
           "nullable": true,
           "type": "Boolean"
         },
         "valid_site": {
           "enum": null,
-          "length": null,
           "name": "valid_site",
           "nullable": true,
           "type": "Boolean"
@@ -110,7 +95,6 @@
       },
       "denormalised_columns": [
         "affiliation_europmc",
-        "affiliation_hemonc",
         "affiliation_journal"
       ],
       "derived_columns": [],
@@ -124,10 +108,6 @@
       "normalised_tables": [
         {
           "column": "affiliation_europmc",
-          "parent": "affiliations"
-        },
-        {
-          "column": "affiliation_hemonc",
           "parent": "affiliations"
         },
         {
@@ -151,186 +131,170 @@
           "local_column": "pmid",
           "target_column": "pmid",
           "target_table": "inclusions"
-        },
-        {
-          "local_column": "person_cui",
-          "target_column": "person_cui",
-          "target_table": "persons"
         }
       ],
       "source_defined_keys": [],
       "source_filename": "affiliations.csv",
+      "source_name": "affiliations",
       "use_surrogate_pk": true
     },
     "authors": {
       "columns": {
         "aff_no": {
           "enum": null,
-          "length": null,
           "name": "aff_no",
           "nullable": false,
           "type": "Integer"
         },
         "city": {
           "enum": null,
-          "length": null,
           "name": "city",
           "nullable": false,
-          "type": "String(25)"
+          "type": "String"
+        },
+        "city_cui": {
+          "enum": null,
+          "name": "city_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "country": {
           "enum": null,
-          "length": null,
           "name": "country",
           "nullable": false,
-          "type": "String(22)"
+          "type": "String"
+        },
+        "country_cui": {
+          "enum": null,
+          "name": "country_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
-          "nullable": false,
+          "nullable": true,
           "type": "DateTime"
         },
         "department": {
           "enum": null,
-          "length": null,
           "name": "department",
           "nullable": false,
-          "type": "String(150)"
+          "type": "String"
         },
         "flag": {
           "enum": null,
-          "length": null,
           "name": "flag",
           "nullable": true,
           "type": "Float"
         },
-        "forename": {
+        "fore_name_europmc": {
           "enum": null,
-          "length": null,
-          "name": "forename",
+          "name": "fore_name_europmc",
           "nullable": true,
-          "type": "String(31)"
+          "type": "String"
         },
-        "fullname_europmc": {
+        "fore_name_hemonc": {
           "enum": null,
-          "length": null,
-          "name": "fullname_europmc",
+          "name": "fore_name_hemonc",
+          "nullable": false,
+          "type": "String"
+        },
+        "full_name_europmc": {
+          "enum": null,
+          "name": "full_name_europmc",
           "nullable": true,
-          "type": "String(32)"
+          "type": "String"
+        },
+        "full_name_hemonc": {
+          "enum": null,
+          "name": "full_name_hemonc",
+          "nullable": false,
+          "type": "String"
         },
         "imputed": {
           "enum": null,
-          "length": null,
           "name": "imputed",
           "nullable": false,
           "type": "Boolean"
         },
         "initials": {
           "enum": null,
-          "length": null,
           "name": "initials",
           "nullable": true,
-          "type": "String(14)"
+          "type": "String"
         },
-        "lastname": {
+        "last_name_europmc": {
           "enum": null,
-          "length": null,
-          "name": "lastname",
+          "name": "last_name_europmc",
           "nullable": true,
-          "type": "String(30)"
+          "type": "String"
+        },
+        "last_name_hemonc": {
+          "enum": null,
+          "name": "last_name_hemonc",
+          "nullable": false,
+          "type": "String"
         },
         "orcid": {
           "enum": null,
-          "length": null,
           "name": "orcid",
           "nullable": true,
-          "type": "String(25)"
+          "type": "String"
         },
         "person_cui": {
           "enum": null,
-          "length": null,
           "name": "person_cui",
-          "nullable": false,
+          "nullable": true,
           "type": "Integer"
         },
         "pmid": {
           "enum": null,
-          "length": null,
           "name": "pmid",
           "nullable": false,
           "type": "Integer"
         },
         "region": {
           "enum": null,
-          "length": null,
           "name": "region",
           "nullable": false,
-          "type": "String(28)"
+          "type": "String"
         },
         "role": {
           "enum": "role",
-          "length": null,
           "name": "role",
           "nullable": true,
           "type": "Enum"
         },
         "sequence": {
           "enum": null,
-          "length": null,
           "name": "sequence",
           "nullable": false,
           "type": "Integer"
         },
         "site": {
           "enum": null,
-          "length": null,
           "name": "site",
           "nullable": false,
-          "type": "String(75)"
+          "type": "String"
         },
-        "site_type": {
-          "enum": "site_type",
-          "length": null,
-          "name": "site_type",
+        "site_cui": {
+          "enum": null,
+          "name": "site_cui",
           "nullable": true,
-          "type": "Enum"
+          "type": "Integer"
         },
         "suffix": {
           "enum": null,
-          "length": null,
           "name": "suffix",
           "nullable": true,
-          "type": "String(3)"
+          "type": "String"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
-        },
-        "tforename": {
-          "enum": null,
-          "length": null,
-          "name": "tforename",
-          "nullable": false,
-          "type": "String(24)"
-        },
-        "tfullname": {
-          "enum": null,
-          "length": null,
-          "name": "tfullname",
-          "nullable": false,
-          "type": "String(39)"
-        },
-        "tlastname": {
-          "enum": null,
-          "length": null,
-          "name": "tlastname",
-          "nullable": false,
-          "type": "String(33)"
         }
       },
       "denormalised_columns": [],
@@ -348,26 +312,11 @@
             "co-First author",
             "co-Last author"
           ]
-        },
-        "site_type": {
-          "name": "site_type",
-          "tablename": "authors",
-          "values": [
-            "No data",
-            "TBD",
-            "Academic medical center",
-            "NCI-CCC",
-            "Government",
-            "NCI-CC",
-            "Cooperative group",
-            "Community practice",
-            "Pharmaceutical industry"
-          ]
         }
       },
       "identity_keys": [],
       "kind": "content",
-      "maturity": "prod",
+      "maturity": "prod-",
       "name": "authors",
       "normalisation_groups": [],
       "normalised_tables": [],
@@ -387,88 +336,74 @@
           "local_column": "pmid",
           "target_column": "pmid",
           "target_table": "inclusions"
-        },
-        {
-          "local_column": "person_cui",
-          "target_column": "person_cui",
-          "target_table": "persons"
         }
       ],
       "source_defined_keys": [],
       "source_filename": "authors.csv",
+      "source_name": "authors",
       "use_surrogate_pk": true
     },
     "canonicaltriples": {
       "columns": {
         "class_1": {
           "enum": "class_1",
-          "length": null,
           "name": "class_1",
           "nullable": false,
           "type": "Enum"
         },
         "class_1_provenance": {
           "enum": null,
-          "length": null,
           "name": "class_1_provenance",
           "nullable": true,
-          "type": "String(61)"
+          "type": "String"
         },
         "class_2": {
           "enum": null,
-          "length": null,
           "name": "class_2",
           "nullable": false,
-          "type": "String(19)"
+          "type": "String"
         },
         "class_2_provenance": {
           "enum": null,
-          "length": null,
           "name": "class_2_provenance",
           "nullable": true,
-          "type": "String(49)"
+          "type": "String"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
-          "type": "String(12)"
+          "type": "String"
         },
         "date_deprecated": {
           "enum": null,
-          "length": null,
           "name": "date_deprecated",
           "nullable": true,
-          "type": "String(12)"
+          "type": "String"
         },
-        "index": {
+        "in_ohdsi": {
           "enum": null,
-          "length": null,
-          "name": "index",
+          "name": "in_ohdsi",
           "nullable": false,
-          "type": "String(5)"
+          "type": "Boolean"
         },
         "internal": {
           "enum": null,
-          "length": null,
           "name": "internal",
           "nullable": false,
           "type": "Boolean"
         },
         "relationship": {
           "enum": null,
-          "length": null,
           "name": "relationship",
           "nullable": false,
-          "type": "String(26)"
+          "type": "String"
         },
         "used_in": {
           "enum": null,
-          "length": null,
           "name": "used_in",
           "nullable": false,
-          "type": "String(33)"
+          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -482,11 +417,12 @@
           "name": "class_1",
           "tablename": "canonicaltriples",
           "values": [
-            "Procedure",
             "Regimen",
+            "Procedure",
             "Any concept",
             "Component",
             "Study",
+            "Substudy",
             "Synthetic Regimen",
             "Regimen Class",
             "Reference",
@@ -521,7 +457,8 @@
       "soft_m2m_relationships": [],
       "soft_relationships": [],
       "source_defined_keys": [],
-      "source_filename": "canonical.triples.csv",
+      "source_filename": "canonical_triples.csv",
+      "source_name": "canonical.triples",
       "use_surrogate_pk": true
     },
     "changelog": {
@@ -546,6 +483,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "change.log",
       "use_surrogate_pk": true
     },
     "cities": {
@@ -567,6 +505,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "cities",
       "use_surrogate_pk": true
     },
     "concept_relationship_stage": {
@@ -591,6 +530,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "concept_relationship_stage",
       "use_surrogate_pk": true
     },
     "concept_stage": {
@@ -612,6 +552,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "concept_stage",
       "use_surrogate_pk": true
     },
     "concept_synonym_stage": {
@@ -634,149 +575,184 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "concept_synonym_stage",
       "use_surrogate_pk": true
     },
     "conditions": {
       "columns": {
         "age_focus": {
           "enum": "age_focus",
-          "length": null,
           "name": "age_focus",
           "nullable": false,
           "type": "Enum"
         },
         "condition": {
           "enum": null,
-          "length": null,
           "name": "condition",
           "nullable": false,
-          "type": "String(57)"
+          "type": "String"
         },
         "condition_cui": {
           "enum": null,
-          "length": null,
           "name": "condition_cui",
           "nullable": false,
           "type": "Integer"
         },
         "condition_type": {
           "enum": "condition_type",
-          "length": null,
           "name": "condition_type",
           "nullable": false,
           "type": "Enum"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "map_icd10cm": {
           "enum": null,
-          "length": null,
           "name": "map_icd10cm",
           "nullable": true,
-          "type": "Text"
+          "type": "String"
         },
         "map_icd9cm": {
           "enum": null,
-          "length": null,
           "name": "map_icd9cm",
           "nullable": true,
-          "type": "Text"
+          "type": "String"
         },
         "map_icdo3": {
           "enum": null,
-          "length": null,
           "name": "map_icdo3",
           "nullable": true,
-          "type": "Text"
+          "type": "String"
         },
         "map_icdo3_morph": {
           "enum": null,
-          "length": null,
           "name": "map_icdo3_morph",
           "nullable": true,
-          "type": "String(99)"
+          "type": "String"
         },
         "map_ncit": {
           "enum": null,
-          "length": null,
           "name": "map_ncit",
           "nullable": false,
-          "type": "String(7)"
+          "type": "String"
         },
         "map_oncotree": {
           "enum": null,
-          "length": null,
           "name": "map_oncotree",
           "nullable": true,
-          "type": "String(16)"
+          "type": "String"
+        },
+        "map_seer": {
+          "enum": null,
+          "name": "map_seer",
+          "nullable": true,
+          "type": "String"
+        },
+        "map_snomed": {
+          "enum": null,
+          "name": "map_snomed",
+          "nullable": true,
+          "type": "Integer"
         },
         "map_type_icd10cm": {
-          "enum": null,
-          "length": null,
+          "enum": "map_type_icd10cm",
           "name": "map_type_icd10cm",
-          "nullable": false,
-          "type": "String(3)"
+          "nullable": true,
+          "type": "Enum"
         },
         "map_type_icd9cm": {
           "enum": null,
-          "length": null,
           "name": "map_type_icd9cm",
-          "nullable": false,
-          "type": "String(3)"
+          "nullable": true,
+          "type": "String"
         },
         "map_type_icdo3": {
           "enum": null,
-          "length": null,
           "name": "map_type_icdo3",
-          "nullable": false,
-          "type": "String(3)"
+          "nullable": true,
+          "type": "String"
         },
         "map_type_icdo3_morph": {
           "enum": null,
-          "length": null,
           "name": "map_type_icdo3_morph",
           "nullable": true,
-          "type": "String(100)"
+          "type": "String"
         },
         "map_type_ncit": {
           "enum": "map_type_ncit",
-          "length": null,
           "name": "map_type_ncit",
           "nullable": false,
           "type": "Enum"
         },
         "map_type_oncotree": {
           "enum": "map_type_oncotree",
-          "length": null,
           "name": "map_type_oncotree",
           "nullable": true,
           "type": "Enum"
         },
+        "map_type_seer": {
+          "enum": null,
+          "name": "map_type_seer",
+          "nullable": true,
+          "type": "Float"
+        },
+        "map_type_snomed": {
+          "enum": "map_type_snomed",
+          "name": "map_type_snomed",
+          "nullable": true,
+          "type": "Enum"
+        },
+        "regimens_count": {
+          "enum": null,
+          "name": "regimens_count",
+          "nullable": false,
+          "type": "String"
+        },
         "regimenscount": {
           "enum": null,
-          "length": null,
           "name": "regimenscount",
           "nullable": false,
-          "type": "Integer"
+          "type": "String"
+        },
+        "regimenscountdate": {
+          "enum": null,
+          "name": "regimenscountdate",
+          "nullable": true,
+          "type": "DateTime"
         },
         "section": {
           "enum": null,
-          "length": null,
           "name": "section",
-          "nullable": true,
-          "type": "String(58)"
+          "nullable": false,
+          "type": "String"
+        },
+        "variants_count": {
+          "enum": null,
+          "name": "variants_count",
+          "nullable": false,
+          "type": "String"
         },
         "variantscount": {
           "enum": null,
-          "length": null,
           "name": "variantscount",
           "nullable": false,
-          "type": "Integer"
+          "type": "String"
+        },
+        "variantscountdate": {
+          "enum": null,
+          "name": "variantscountdate",
+          "nullable": true,
+          "type": "DateTime"
+        },
+        "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes": {
+          "enum": null,
+          "name": "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes",
+          "nullable": true,
+          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -785,6 +761,7 @@
         "map_icdo3",
         "map_icdo3_morph",
         "map_oncotree",
+        "map_seer",
         "map_type_icdo3_morph"
       ],
       "derived_columns": [],
@@ -802,35 +779,33 @@
           "name": "condition_type",
           "tablename": "conditions",
           "values": [
+            "Breast",
             "Classical hematology",
-            "Other hematologic neoplasm",
+            "CNS",
+            "Dermatologic",
+            "Endocrine",
+            "Gastrointestinal",
+            "Genitourinary",
+            "Gynecologic",
+            "Head & Neck",
             "Lymphoid",
             "Myeloid",
-            "Endocrine",
-            "Thoracic",
+            "NET",
             "Other",
-            "Sarcoma",
-            "Gastrointestinal",
-            "CNS",
-            "Genitourinary",
-            "Other solid neoplasm",
-            "Dermatologic",
-            "Breast",
-            "Gynecologic",
+            "Other hematologic neoplasm",
             "Other neoplasm",
-            "Head & Neck",
+            "Other solid neoplasm",
             "Plasma cell",
-            "NET"
+            "Sarcoma",
+            "Thoracic"
           ]
         },
         "map_type_icd10cm": {
           "name": "map_type_icd10cm",
           "tablename": "conditions",
           "values": [
-            "exact",
-            "down (less-to-more granular)",
-            "up (more-to-less granular)",
-            "sideways (semantic equivalence but not exact)"
+            "TBD",
+            "exact"
           ]
         },
         "map_type_icd9cm": {
@@ -840,7 +815,8 @@
             "exact",
             "down (less-to-more granular)",
             "up (more-to-less granular)",
-            "sideways (semantic equivalence but not exact)"
+            "sideways (semantic equivalence but not exact)",
+            "(blank)"
           ]
         },
         "map_type_icdo3": {
@@ -850,7 +826,8 @@
             "exact",
             "down (less-to-more granular)",
             "up (more-to-less granular)",
-            "sideways (semantic equivalence but not exact)"
+            "sideways (semantic equivalence but not exact)",
+            "(blank)"
           ]
         },
         "map_type_icdo3_morph": {
@@ -860,7 +837,8 @@
             "exact",
             "down (less-to-more granular)",
             "up (more-to-less granular)",
-            "sideways (semantic equivalence but not exact)"
+            "sideways (semantic equivalence but not exact)",
+            "(blank)"
           ]
         },
         "map_type_ncit": {
@@ -869,11 +847,32 @@
           "values": [
             "exact",
             "up",
+            "sideways",
             "down"
           ]
         },
         "map_type_oncotree": {
           "name": "map_type_oncotree",
+          "tablename": "conditions",
+          "values": [
+            "up",
+            "exact",
+            "down"
+          ]
+        },
+        "map_type_seer": {
+          "name": "map_type_seer",
+          "tablename": "conditions",
+          "values": [
+            "exact",
+            "down (less-to-more granular)",
+            "up (more-to-less granular)",
+            "sideways (semantic equivalence but not exact)",
+            "(blank)"
+          ]
+        },
+        "map_type_snomed": {
+          "name": "map_type_snomed",
           "tablename": "conditions",
           "values": [
             "up",
@@ -893,15 +892,14 @@
             "Disease-agnostic",
             "Endocrine Oncology",
             "Genitorurinary Oncology",
-            "GI Oncology, extraintestinal",
-            "GI Oncology, intestinal",
+            "GI Oncology",
             "Gynecologic Oncology",
             "Head & Neck Oncology",
-            "Hemoglobinopathies",
-            "Hemolytic disorders",
+            "Hemolytic disorders and Hemoglobinopathies",
             "Hemostasis and thrombosis",
             "Histiocyte disorders",
             "Indolent lymphoma",
+            "Infectious complications",
             "Lymphoproliferative disorders",
             "Mesothelioma",
             "Myeloproliferative neoplasms and myelodysplastic syndromes",
@@ -911,16 +909,20 @@
             "Pediatric solid tumors",
             "Plasma cell dyscrasias",
             "Sarcoma",
+            "Supportive Oncology",
             "T-cell and NK-cell neoplasms",
             "Thoracic Oncology",
             "Transplant and IEC",
-            "blank (no editorial board mapping)"
+            "Treatment complications",
+            "Undefined (no editorial board section mapping)"
           ]
         }
       },
-      "identity_keys": [],
+      "identity_keys": [
+        "condition_cui"
+      ],
       "kind": "content",
-      "maturity": "prod",
+      "maturity": "prod-",
       "name": "conditions",
       "normalisation_groups": [],
       "normalised_tables": [
@@ -945,12 +947,15 @@
           "parent": "conditions"
         },
         {
+          "column": "map_seer",
+          "parent": "conditions"
+        },
+        {
           "column": "map_type_icdo3_morph",
           "parent": "conditions"
         }
       ],
       "pk_columns": [
-        "condition",
         "condition_cui"
       ],
       "soft_m2m_relationships": [],
@@ -960,97 +965,100 @@
         "condition_cui"
       ],
       "source_filename": "conditions.csv",
+      "source_name": "conditions",
       "use_surrogate_pk": true
     },
-    "contexttable": {
+    "contexts": {
       "columns": {
-        "contextpretty": {
+        "context": {
           "enum": null,
-          "length": null,
-          "name": "contextpretty",
+          "name": "context",
           "nullable": false,
-          "type": "String(120)"
+          "type": "String"
         },
-        "contextraw": {
+        "context_pretty": {
           "enum": null,
-          "length": null,
-          "name": "contextraw",
+          "name": "context_pretty",
           "nullable": false,
-          "type": "String(120)"
+          "type": "String"
+        },
+        "context_raw": {
+          "enum": null,
+          "name": "context_raw",
+          "nullable": false,
+          "type": "String"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
+        "date_last_used": {
+          "enum": null,
+          "name": "date_last_used",
+          "nullable": true,
+          "type": "DateTime"
+        },
         "intent": {
           "enum": "intent",
-          "length": null,
           "name": "intent",
           "nullable": false,
           "type": "Enum"
         },
         "phase": {
-          "enum": "phase",
-          "length": null,
+          "enum": null,
           "name": "phase",
           "nullable": true,
-          "type": "Enum"
+          "type": "String"
         },
         "phenotype": {
           "enum": null,
-          "length": null,
           "name": "phenotype",
           "nullable": true,
-          "type": "String(52)"
+          "type": "String"
         },
         "prior_therapy": {
           "enum": null,
-          "length": null,
           "name": "prior_therapy",
           "nullable": true,
-          "type": "String(20)"
+          "type": "String"
         },
         "prior_therapy_negation": {
           "enum": null,
-          "length": null,
           "name": "prior_therapy_negation",
           "nullable": true,
           "type": "Boolean"
         },
         "risk_stratification": {
           "enum": "risk_stratification",
-          "length": null,
           "name": "risk_stratification",
           "nullable": true,
           "type": "Enum"
         },
         "setting": {
           "enum": null,
-          "length": null,
           "name": "setting",
           "nullable": false,
-          "type": "String(20)"
+          "type": "String"
         },
         "stage_or_status": {
           "enum": null,
-          "length": null,
           "name": "stage_or_status",
           "nullable": true,
-          "type": "String(37)"
+          "type": "String"
         },
         "therapy_type": {
-          "enum": "therapy_type",
-          "length": null,
+          "enum": null,
           "name": "therapy_type",
           "nullable": true,
-          "type": "Enum"
+          "type": "String"
         }
       },
       "denormalised_columns": [
-        "contextpretty",
+        "context",
+        "context_pretty",
+        "phase",
         "phenotype",
         "setting",
         "stage_or_status"
@@ -1060,195 +1068,159 @@
       "enums": {
         "intent": {
           "name": "intent",
-          "tablename": "contexttable",
+          "tablename": "contexts",
           "values": [
-            "non-curative",
-            "not applicable",
-            "curative",
-            "unspecified",
-            "prevention"
-          ]
-        },
-        "phase": {
-          "name": "phase",
-          "tablename": "contexttable",
-          "values": [
-            "Adjuvant",
-            "Consolidation",
-            "Definitive",
-            "Delayed intensification",
-            "Early Intensification",
-            "Induction",
-            "Maintenance",
-            "Intensification",
-            "Pre-phase",
-            "Interim Maintenance",
-            "Late Intensification",
-            "Neoadjuvant",
-            "Perioperative"
+            "Non-curative intent",
+            "Curative intent",
+            "Unspecified intent",
+            "Not applicable",
+            "Preventive intent"
           ]
         },
         "risk_stratification": {
           "name": "risk_stratification",
-          "tablename": "contexttable",
+          "tablename": "contexts",
           "values": [
             "high-risk",
             "intermediate-risk",
             "low-risk",
-            "unstratified",
-            "favorable",
-            "unfavorable",
+            "lower-risk",
+            "early-stage favorable",
             "standard-risk",
-            "very high-risk"
-          ]
-        },
-        "therapy_type": {
-          "name": "therapy_type",
-          "tablename": "contexttable",
-          "values": [
-            "chemoradiotherapy",
-            "chemotherapy",
-            "anticoagulation",
-            "local",
-            "systemic",
-            "radiotherapy",
-            "endocrine therapy",
-            "Replacement products",
-            "immunotherapy",
-            "Chemotherapy",
-            "Intraperitoneal",
-            "antibiotic",
-            "ADT and Radiotherapy",
-            "perioperative therapy and hyperthermic intra-peritoneal chemotherapy"
+            "very high-risk",
+            "unstratified-risk"
           ]
         }
       },
       "identity_keys": [],
       "kind": "lookup",
       "maturity": "dev",
-      "name": "contexttable",
+      "name": "contexts",
       "normalisation_groups": [],
       "normalised_tables": [
         {
-          "column": "contextpretty",
-          "parent": "contexttable"
+          "column": "context",
+          "parent": "contexts"
+        },
+        {
+          "column": "context_pretty",
+          "parent": "contexts"
+        },
+        {
+          "column": "phase",
+          "parent": "contexts"
         },
         {
           "column": "phenotype",
-          "parent": "contexttable"
+          "parent": "contexts"
         },
         {
           "column": "setting",
-          "parent": "contexttable"
+          "parent": "contexts"
         },
         {
           "column": "stage_or_status",
-          "parent": "contexttable"
+          "parent": "contexts"
         }
       ],
       "pk_columns": [
-        "contextraw"
+        "context_raw"
       ],
       "soft_m2m_relationships": [],
       "soft_relationships": [],
       "source_defined_keys": [
-        "contextraw"
+        "context_raw",
+        "context_pretty"
       ],
-      "source_filename": "context.table.csv",
+      "source_filename": "contexts.csv",
+      "source_name": "contexts",
       "use_surrogate_pk": true
     },
     "drugs": {
       "columns": {
         "atc": {
           "enum": null,
-          "length": null,
           "name": "atc",
           "nullable": false,
-          "type": "String(55)"
+          "type": "String"
         },
         "canmed_major_class": {
           "enum": null,
-          "length": null,
           "name": "canmed_major_class",
           "nullable": true,
-          "type": "String(59)"
+          "type": "String"
         },
         "canmed_major_class_cui": {
           "enum": null,
-          "length": null,
           "name": "canmed_major_class_cui",
           "nullable": true,
-          "type": "String(11)"
+          "type": "Integer"
         },
         "canmed_minor_class": {
           "enum": null,
-          "length": null,
           "name": "canmed_minor_class",
           "nullable": true,
-          "type": "String(90)"
+          "type": "String"
         },
         "canmed_minor_class_cui": {
           "enum": null,
-          "length": null,
           "name": "canmed_minor_class_cui",
           "nullable": true,
-          "type": "String(35)"
+          "type": "Integer"
         },
         "class_type": {
           "enum": "class_type",
-          "length": null,
           "name": "class_type",
           "nullable": true,
           "type": "Enum"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "drug": {
           "enum": null,
-          "length": null,
           "name": "drug",
           "nullable": false,
-          "type": "String(51)"
+          "type": "String"
         },
         "drug_cui": {
           "enum": null,
-          "length": null,
           "name": "drug_cui",
           "nullable": false,
           "type": "Integer"
         },
         "drug_inn": {
           "enum": null,
-          "length": null,
           "name": "drug_inn",
           "nullable": true,
-          "type": "String(59)"
+          "type": "String"
         },
         "investigational": {
           "enum": null,
-          "length": null,
           "name": "investigational",
           "nullable": false,
           "type": "Boolean"
         },
         "main_class": {
           "enum": null,
-          "length": null,
           "name": "main_class",
           "nullable": true,
-          "type": "String(56)"
+          "type": "String"
         },
         "multiagent": {
           "enum": null,
-          "length": null,
           "name": "multiagent",
           "nullable": false,
           "type": "Boolean"
+        },
+        "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes": {
+          "enum": null,
+          "name": "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes",
+          "nullable": true,
+          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -1272,7 +1244,9 @@
           ]
         }
       },
-      "identity_keys": [],
+      "identity_keys": [
+        "drug_cui"
+      ],
       "kind": "content",
       "maturity": "prod",
       "name": "drugs",
@@ -1281,12 +1255,6 @@
           "columns": [
             "canmed_major_class",
             "canmed_major_class_cui"
-          ]
-        },
-        {
-          "columns": [
-            "canmed_minor_class",
-            "canmed_minor_class_cui"
           ]
         }
       ],
@@ -1313,7 +1281,6 @@
         }
       ],
       "pk_columns": [
-        "drug",
         "drug_cui"
       ],
       "soft_m2m_relationships": [],
@@ -1323,65 +1290,58 @@
         "drug_cui"
       ],
       "source_filename": "drugs.csv",
+      "source_name": "drugs",
       "use_surrogate_pk": true
     },
     "exclusions": {
       "columns": {
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
-          "type": "String(12)"
+          "type": "String"
         },
         "pmid": {
           "enum": null,
-          "length": null,
           "name": "pmid",
           "nullable": false,
-          "type": "String(11)"
+          "type": "String"
         },
         "reason": {
           "enum": null,
-          "length": null,
           "name": "reason",
           "nullable": false,
-          "type": "String(51)"
+          "type": "String"
         },
         "rev1": {
           "enum": "rev1",
-          "length": null,
           "name": "rev1",
           "nullable": false,
           "type": "Enum"
         },
         "rev2": {
-          "enum": null,
-          "length": null,
+          "enum": "rev2",
           "name": "rev2",
           "nullable": true,
-          "type": "String(7)"
+          "type": "Enum"
         },
         "rev3": {
           "enum": null,
-          "length": null,
           "name": "rev3",
           "nullable": true,
-          "type": "Float"
+          "type": "String"
         },
         "title": {
           "enum": null,
-          "length": null,
           "name": "title",
           "nullable": true,
           "type": "Text"
         },
         "year": {
           "enum": null,
-          "length": null,
           "name": "year",
           "nullable": false,
-          "type": "String(13)"
+          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -1396,6 +1356,14 @@
           "values": [
             "Jeremy",
             "Aleenah"
+          ]
+        },
+        "rev2": {
+          "name": "rev2",
+          "tablename": "exclusions",
+          "values": [
+            "Aleenah",
+            "Jeremy"
           ]
         }
       },
@@ -1425,6 +1393,7 @@
         "pmid"
       ],
       "source_filename": "exclusions.csv",
+      "source_name": "exclusions",
       "use_surrogate_pk": true
     },
     "h4types": {
@@ -1446,83 +1415,85 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "h4.types",
       "use_surrogate_pk": true
     },
     "hemonc_classes": {
       "columns": {
         "class_type": {
           "enum": "class_type",
-          "length": null,
           "name": "class_type",
           "nullable": false,
           "type": "Enum"
         },
         "concept_class_id": {
           "enum": null,
-          "length": null,
           "name": "concept_class_id",
           "nullable": true,
-          "type": "String(50)"
+          "type": "String"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": true,
-          "type": "String(12)"
+          "type": "String"
         },
         "date_deprecated": {
           "enum": null,
-          "length": null,
           "name": "date_deprecated",
           "nullable": true,
-          "type": "String(12)"
+          "type": "String"
         },
         "description": {
           "enum": null,
-          "length": null,
           "name": "description",
+          "nullable": false,
+          "type": "String"
+        },
+        "domain": {
+          "enum": "domain",
+          "name": "domain",
           "nullable": true,
-          "type": "String(132)"
+          "type": "Enum"
+        },
+        "in_ohdsi": {
+          "enum": null,
+          "name": "in_ohdsi",
+          "nullable": false,
+          "type": "Boolean"
         },
         "omopdomain_id": {
           "enum": "omopdomain_id",
-          "length": null,
           "name": "omopdomain_id",
           "nullable": true,
           "type": "Enum"
         },
         "omopstandard_concept": {
           "enum": "omopstandard_concept",
-          "length": null,
           "name": "omopstandard_concept",
           "nullable": true,
           "type": "Enum"
         },
         "primary_field": {
           "enum": null,
-          "length": null,
           "name": "primary_field",
           "nullable": true,
-          "type": "String(38)"
+          "type": "String"
         },
         "primary_table": {
           "enum": null,
-          "length": null,
           "name": "primary_table",
           "nullable": false,
-          "type": "String(24)"
+          "type": "String"
         },
         "secondary_home_as_cui": {
           "enum": null,
-          "length": null,
           "name": "secondary_home_as_cui",
           "nullable": true,
-          "type": "String(78)"
+          "type": "String"
         },
         "secondary_home_as_string": {
           "enum": null,
-          "length": null,
           "name": "secondary_home_as_string",
           "nullable": true,
           "type": "Text"
@@ -1540,21 +1511,44 @@
           "tablename": "hemonc_classes",
           "values": [
             "core",
+            "ready for core",
             "extension",
             "intermediate",
-            "numeric",
-            "ready for core"
+            "numeric"
+          ]
+        },
+        "domain": {
+          "name": "domain",
+          "tablename": "hemonc_classes",
+          "values": [
+            "person",
+            "condition",
+            "clinical trial",
+            "drug",
+            "geographic",
+            "clinical trial design",
+            "clinical trial results",
+            "regimen",
+            "context",
+            "measurement",
+            "publication",
+            "linkage",
+            "procedure",
+            "observation",
+            "organization",
+            "other"
           ]
         },
         "omopdomain_id": {
           "name": "omopdomain_id",
           "tablename": "hemonc_classes",
           "values": [
-            "drug",
             "condition",
-            "procedure",
+            "drug",
             "measurement",
-            "regimen"
+            "procedure",
+            "regimen",
+            "observation"
           ]
         },
         "omopstandard_concept": {
@@ -1590,50 +1584,67 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": "hemonc_classes.csv",
+      "source_name": "hemonc_classes",
       "use_surrogate_pk": true
     },
     "hemonc_rels": {
       "columns": {
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
-          "type": "String(12)"
+          "type": "String"
         },
         "date_deprecated": {
           "enum": null,
-          "length": null,
           "name": "date_deprecated",
           "nullable": true,
-          "type": "String(12)"
+          "type": "String"
         },
         "description": {
           "enum": null,
-          "length": null,
           "name": "description",
           "nullable": true,
-          "type": "String(78)"
+          "type": "String"
         },
         "heritable": {
           "enum": null,
-          "length": null,
           "name": "heritable",
           "nullable": false,
           "type": "Boolean"
         },
+        "in_ohdsi": {
+          "enum": "in_ohdsi",
+          "name": "in_ohdsi",
+          "nullable": false,
+          "type": "Enum"
+        },
         "relationship_id": {
           "enum": null,
-          "length": null,
           "name": "relationship_id",
           "nullable": false,
-          "type": "String(26)"
+          "type": "String"
         }
       },
       "denormalised_columns": [],
       "derived_columns": [],
       "description": "Table of allowed relationships in the concept_relationship_stage table",
-      "enums": {},
+      "enums": {
+        "in_ohdsi": {
+          "name": "in_ohdsi",
+          "tablename": "hemonc_rels",
+          "values": [
+            "FALSE",
+            "TRUE",
+            "Renamed: Has investig use",
+            "Renamed: Has synth regimen",
+            "Renamed: Is curr in adult",
+            "Renamed: Is curr in ped",
+            "Renamed: Is hist in adult",
+            "Renamed: Is hist in ped"
+          ]
+        }
+      },
       "identity_keys": [],
       "kind": "lookup",
       "maturity": "prod",
@@ -1649,48 +1660,45 @@
         "relationship_id"
       ],
       "source_filename": "hemonc_rels.csv",
+      "source_name": "hemonc_rels",
       "use_surrogate_pk": true
     },
     "inclusions": {
       "columns": {
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
-          "type": "String(12)"
+          "type": "String"
         },
         "pmid": {
           "enum": null,
-          "length": null,
           "name": "pmid",
           "nullable": false,
           "type": "Integer"
         },
         "reason": {
           "enum": "reason",
-          "length": null,
           "name": "reason",
           "nullable": false,
           "type": "Enum"
         },
         "reason_note": {
           "enum": null,
-          "length": null,
           "name": "reason_note",
           "nullable": true,
           "type": "Text"
         },
         "ref_type": {
-          "enum": "ref_type",
-          "length": null,
+          "enum": null,
           "name": "ref_type",
           "nullable": false,
-          "type": "Enum"
+          "type": "String"
         }
       },
       "denormalised_columns": [
-        "reason_note"
+        "reason_note",
+        "ref_type"
       ],
       "derived_columns": [],
       "description": "Table of publications that have been reviewed and accepted for inclusion on HemOnc.org",
@@ -1699,25 +1707,13 @@
           "name": "reason",
           "tablename": "inclusions",
           "values": [
-            "non-Phase 3 with primary publication in high-impact journal",
-            "Phase 3 SACT",
             "Exception",
-            "non-Phase 3 pivotal study",
+            "Phase 3 SACT",
+            "non-Phase 3 registrational study",
+            "Phase 3 LRACT",
             "Phase 3 classical hematology",
-            "non-Phase 3 with update in high-impact journal",
             "Clinical practice guideline",
             "Phase 3 GVHD"
-          ]
-        },
-        "ref_type": {
-          "name": "ref_type",
-          "tablename": "inclusions",
-          "values": [
-            "Primary",
-            "Efficacy update",
-            "Undetermined",
-            "Safety update",
-            "Other update"
           ]
         }
       },
@@ -1729,6 +1725,10 @@
       "normalised_tables": [
         {
           "column": "reason_note",
+          "parent": "inclusions"
+        },
+        {
+          "column": "ref_type",
           "parent": "inclusions"
         }
       ],
@@ -1747,314 +1747,319 @@
         "pmid"
       ],
       "source_filename": "inclusions.csv",
+      "source_name": "inclusions",
       "use_surrogate_pk": true
     },
     "indications": {
       "columns": {
         "accelerated": {
           "enum": null,
-          "length": null,
           "name": "accelerated",
           "nullable": false,
           "type": "Boolean"
         },
         "age": {
           "enum": null,
-          "length": null,
           "name": "age",
           "nullable": true,
-          "type": "String(10)"
+          "type": "String"
         },
         "age_unit": {
           "enum": "age_unit",
-          "length": null,
           "name": "age_unit",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker": {
           "enum": null,
-          "length": null,
           "name": "biomarker",
           "nullable": true,
-          "type": "String(48)"
+          "type": "String"
         },
         "biomarker2": {
           "enum": "biomarker2",
-          "length": null,
           "name": "biomarker2",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker2_finding": {
           "enum": "biomarker2_finding",
-          "length": null,
           "name": "biomarker2_finding",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker2_type": {
           "enum": "biomarker2_type",
-          "length": null,
           "name": "biomarker2_type",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker3": {
           "enum": null,
-          "length": null,
           "name": "biomarker3",
           "nullable": true,
-          "type": "String(16)"
+          "type": "String"
         },
         "biomarker3_finding": {
-          "enum": "biomarker3_finding",
-          "length": null,
+          "enum": null,
           "name": "biomarker3_finding",
           "nullable": true,
-          "type": "Enum"
+          "type": "String"
         },
         "biomarker3_type": {
           "enum": "biomarker3_type",
-          "length": null,
           "name": "biomarker3_type",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker4": {
           "enum": "biomarker4",
-          "length": null,
           "name": "biomarker4",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker4_finding": {
           "enum": "biomarker4_finding",
-          "length": null,
           "name": "biomarker4_finding",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker4_type": {
           "enum": "biomarker4_type",
-          "length": null,
           "name": "biomarker4_type",
           "nullable": true,
           "type": "Enum"
         },
         "biomarker_finding": {
           "enum": null,
-          "length": null,
           "name": "biomarker_finding",
           "nullable": true,
-          "type": "String(58)"
+          "type": "String"
         },
         "biomarker_type": {
           "enum": "biomarker_type",
-          "length": null,
           "name": "biomarker_type",
           "nullable": true,
           "type": "Enum"
         },
         "component": {
           "enum": null,
-          "length": null,
           "name": "component",
           "nullable": false,
-          "type": "String(47)"
+          "type": "String"
         },
         "component_cui": {
           "enum": null,
-          "length": null,
           "name": "component_cui",
           "nullable": true,
           "type": "Integer"
         },
         "condition": {
           "enum": null,
-          "length": null,
           "name": "condition",
           "nullable": false,
-          "type": "String(46)"
+          "type": "String"
+        },
+        "condition_cui": {
+          "enum": null,
+          "name": "condition_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "context": {
           "enum": null,
-          "length": null,
           "name": "context",
           "nullable": true,
-          "type": "String(42)"
+          "type": "String"
         },
         "date": {
           "enum": null,
-          "length": null,
           "name": "date",
           "nullable": true,
           "type": "DateTime"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "demographics": {
           "enum": null,
-          "length": null,
           "name": "demographics",
           "nullable": true,
-          "type": "String(93)"
+          "type": "String"
+        },
+        "exposure_phenotype": {
+          "enum": "exposure_phenotype",
+          "name": "exposure_phenotype",
+          "nullable": true,
+          "type": "Enum"
         },
         "first_in_class": {
           "enum": null,
-          "length": null,
           "name": "first_in_class",
           "nullable": false,
           "type": "Boolean"
         },
         "ineligibility": {
           "enum": null,
-          "length": null,
           "name": "ineligibility",
           "nullable": true,
-          "type": "String(125)"
+          "type": "String"
         },
         "note": {
           "enum": "note",
-          "length": null,
           "name": "note",
           "nullable": true,
           "type": "Enum"
         },
         "prior_biomarker": {
           "enum": null,
-          "length": null,
           "name": "prior_biomarker",
           "nullable": true,
-          "type": "String(129)"
+          "type": "String"
         },
         "prior_therapy": {
           "enum": null,
-          "length": null,
           "name": "prior_therapy",
           "nullable": true,
           "type": "Text"
         },
         "prior_therapy_negation": {
           "enum": null,
-          "length": null,
           "name": "prior_therapy_negation",
           "nullable": true,
-          "type": "String(55)"
+          "type": "String"
         },
         "prior_therapy_setting": {
           "enum": null,
-          "length": null,
           "name": "prior_therapy_setting",
           "nullable": true,
-          "type": "String(66)"
+          "type": "String"
         },
         "regimen": {
           "enum": null,
-          "length": null,
           "name": "regimen",
           "nullable": true,
-          "type": "String(110)"
+          "type": "String"
         },
         "regimen_cui": {
           "enum": null,
-          "length": null,
           "name": "regimen_cui",
           "nullable": true,
-          "type": "String(14)"
+          "type": "Integer"
         },
         "regulator": {
           "enum": "regulator",
-          "length": null,
           "name": "regulator",
           "nullable": false,
           "type": "Enum"
         },
         "response_contingency": {
           "enum": null,
-          "length": null,
           "name": "response_contingency",
           "nullable": true,
-          "type": "String(58)"
+          "type": "String"
         },
         "risk_stratification": {
           "enum": null,
-          "length": null,
           "name": "risk_stratification",
           "nullable": true,
-          "type": "String(93)"
+          "type": "String"
         },
         "sex": {
           "enum": "sex",
-          "length": null,
           "name": "sex",
           "nullable": true,
           "type": "Enum"
         },
+        "stage": {
+          "enum": null,
+          "name": "stage",
+          "nullable": true,
+          "type": "String"
+        },
         "stage_or_status": {
           "enum": null,
-          "length": null,
           "name": "stage_or_status",
           "nullable": true,
-          "type": "String(228)"
+          "type": "String"
+        },
+        "status": {
+          "enum": null,
+          "name": "status",
+          "nullable": true,
+          "type": "String"
         },
         "string": {
           "enum": null,
-          "length": null,
           "name": "string",
           "nullable": true,
           "type": "Text"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": true,
-          "type": "String(32)"
+          "type": "String"
         },
         "study_cui": {
           "enum": null,
-          "length": null,
           "name": "study_cui",
           "nullable": true,
-          "type": "Integer"
+          "type": "String"
         },
         "study_yn": {
           "enum": null,
-          "length": null,
           "name": "study_yn",
           "nullable": true,
           "type": "Boolean"
         },
+        "substudy": {
+          "enum": null,
+          "name": "substudy",
+          "nullable": true,
+          "type": "String"
+        },
+        "substudy_cui": {
+          "enum": null,
+          "name": "substudy_cui",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "temp": {
+          "enum": null,
+          "name": "temp",
+          "nullable": true,
+          "type": "String"
+        },
         "time_contingency": {
           "enum": null,
-          "length": null,
           "name": "time_contingency",
           "nullable": true,
-          "type": "String(135)"
+          "type": "String"
+        },
+        "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes": {
+          "enum": null,
+          "name": "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes",
+          "nullable": true,
+          "type": "String"
         },
         "with_field": {
           "enum": null,
-          "length": null,
           "name": "with_field",
           "nullable": true,
-          "type": "String(77)"
+          "type": "String"
         },
         "withdrawn": {
           "enum": null,
-          "length": null,
           "name": "withdrawn",
           "nullable": false,
-          "type": "String(10)"
+          "type": "String"
         }
       },
       "denormalised_columns": [
-        "biomarker",
         "biomarker2",
         "biomarker2_finding",
         "biomarker2_type",
@@ -2064,20 +2069,15 @@
         "biomarker4",
         "biomarker4_finding",
         "biomarker4_type",
-        "biomarker_finding",
         "biomarker_type",
         "context",
         "demographics",
-        "ineligibility",
-        "prior_therapy",
         "prior_therapy_negation",
         "prior_therapy_setting",
         "regimen",
         "regimen_cui",
         "response_contingency",
-        "risk_stratification",
-        "stage_or_status",
-        "with_field"
+        "risk_stratification"
       ],
       "derived_columns": [],
       "description": "Table of regulatory indications",
@@ -2087,8 +2087,8 @@
           "tablename": "indications",
           "values": [
             "unspecified",
-            "month",
-            "year"
+            "year",
+            "month"
           ]
         },
         "biomarker2": {
@@ -2102,6 +2102,7 @@
             "ALK",
             "CD19",
             "KRAS",
+            "BCL2",
             "PD-L1",
             "CLDN18.2"
           ]
@@ -2131,10 +2132,10 @@
           "name": "biomarker3_finding",
           "tablename": "indications",
           "values": [
-            "mutation",
-            "negative",
-            "wild-type",
-            "activating mutation"
+            "Positive",
+            "Negative",
+            "HGVS nomenclature",
+            "[more to come]"
           ]
         },
         "biomarker3_type": {
@@ -2178,6 +2179,7 @@
           "values": [
             "Positive",
             "Negative",
+            "HGVS nomenclature",
             "[more to come]"
           ]
         },
@@ -2185,11 +2187,26 @@
           "name": "biomarker_type",
           "tablename": "indications",
           "values": [
-            "Protein",
+            "Protein family",
             "Gene",
+            "Protein",
             "Chromosome",
             "Tracer",
             "Virus"
+          ]
+        },
+        "exposure_phenotype": {
+          "name": "exposure_phenotype",
+          "tablename": "indications",
+          "values": [
+            "Castrate-resistant",
+            "Castrate-sensitive",
+            "Platinum-resistant",
+            "Platinum-sensitive",
+            "castrate-sensitive",
+            "Recurrent",
+            "Metastatic",
+            "Chemotherapy-sensitive"
           ]
         },
         "note": {
@@ -2197,8 +2214,8 @@
           "tablename": "indications",
           "values": [
             "No linked condition",
-            "No month/year information",
-            "To be dissected"
+            "To be dissected",
+            "No month/year information"
           ]
         },
         "regulator": {
@@ -2209,22 +2226,24 @@
             "PMDA",
             "EMA",
             "HC",
-            "NMPA",
-            "MFDS"
+            "MFDS",
+            "NMPA"
           ]
         },
         "sex": {
           "name": "sex",
           "tablename": "indications",
           "values": [
-            "men",
-            "women"
+            "male",
+            "female"
           ]
         }
       },
-      "identity_keys": [],
+      "identity_keys": [
+        "component_cui"
+      ],
       "kind": "content",
-      "maturity": "prod",
+      "maturity": "prod-",
       "name": "indications",
       "normalisation_groups": [
         {
@@ -2235,16 +2254,18 @@
         },
         {
           "columns": [
+            "biomarker3",
+            "biomarker3_finding"
+          ]
+        },
+        {
+          "columns": [
             "biomarker4",
             "biomarker4_finding"
           ]
         }
       ],
       "normalised_tables": [
-        {
-          "column": "biomarker",
-          "parent": "indications"
-        },
         {
           "column": "biomarker2",
           "parent": "indications"
@@ -2282,10 +2303,6 @@
           "parent": "indications"
         },
         {
-          "column": "biomarker_finding",
-          "parent": "indications"
-        },
-        {
           "column": "biomarker_type",
           "parent": "indications"
         },
@@ -2295,14 +2312,6 @@
         },
         {
           "column": "demographics",
-          "parent": "indications"
-        },
-        {
-          "column": "ineligibility",
-          "parent": "indications"
-        },
-        {
-          "column": "prior_therapy",
           "parent": "indications"
         },
         {
@@ -2328,33 +2337,49 @@
         {
           "column": "risk_stratification",
           "parent": "indications"
-        },
-        {
-          "column": "stage_or_status",
-          "parent": "indications"
-        },
-        {
-          "column": "with_field",
-          "parent": "indications"
         }
       ],
       "pk_columns": [
         "component_cui",
-        "condition",
+        "condition_cui",
         "regulator",
+        "withdrawn",
+        "stage",
+        "status",
+        "stage_or_status",
+        "age",
+        "ineligibility",
+        "prior_therapy",
+        "with_field",
+        "biomarker",
+        "biomarker_finding",
         "study",
-        "string"
+        "substudy"
       ],
-      "soft_m2m_relationships": [],
+      "soft_m2m_relationships": [
+        {
+          "local_table": "indications",
+          "map_column": "regimen_cui",
+          "map_table": "indications_regimen_cui",
+          "target_column": "regimen_cui",
+          "target_table": "regimens"
+        }
+      ],
       "soft_relationships": [
         {
           "local_column": "condition",
           "target_column": "condition",
           "target_table": "conditions"
+        },
+        {
+          "local_column": "condition_cui",
+          "target_column": "condition_cui",
+          "target_table": "conditions"
         }
       ],
       "source_defined_keys": [],
       "source_filename": "indications.csv",
+      "source_name": "indications",
       "use_surrogate_pk": true
     },
     "pagelookup": {
@@ -2376,6 +2401,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "page.lookup",
       "use_surrogate_pk": true
     },
     "pagetable": {
@@ -2397,181 +2423,157 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "page.table",
       "use_surrogate_pk": true
     },
     "persons": {
       "columns": {
         "co_authors": {
           "enum": null,
-          "length": null,
           "name": "co_authors",
           "nullable": false,
           "type": "Integer"
         },
         "co_authorships": {
           "enum": null,
-          "length": null,
           "name": "co_authorships",
           "nullable": false,
           "type": "Integer"
         },
         "condition_types": {
           "enum": null,
-          "length": null,
           "name": "condition_types",
           "nullable": true,
-          "type": "String(122)"
+          "type": "String"
         },
         "conditions": {
           "enum": null,
-          "length": null,
           "name": "conditions",
           "nullable": false,
-          "type": "Text"
+          "type": "String"
         },
         "country": {
           "enum": null,
-          "length": null,
           "name": "country",
           "nullable": true,
-          "type": "String(52)"
+          "type": "String"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "first_active_year": {
           "enum": null,
-          "length": null,
           "name": "first_active_year",
           "nullable": false,
-          "type": "String(4)"
+          "type": "String"
         },
         "gender": {
           "enum": "gender",
-          "length": null,
           "name": "gender",
           "nullable": false,
           "type": "Enum"
         },
         "guideline_pubs": {
           "enum": null,
-          "length": null,
           "name": "guideline_pubs",
           "nullable": false,
-          "type": "String(3)"
+          "type": "String"
         },
         "hyphen_type": {
           "enum": "hyphen_type",
-          "length": null,
           "name": "hyphen_type",
           "nullable": true,
           "type": "Enum"
         },
         "last_active_year": {
           "enum": null,
-          "length": null,
           "name": "last_active_year",
           "nullable": false,
-          "type": "String(4)"
+          "type": "String"
         },
         "location": {
           "enum": null,
-          "length": null,
           "name": "location",
           "nullable": false,
-          "type": "String(214)"
+          "type": "String"
         },
         "multi_site": {
           "enum": null,
-          "length": null,
           "name": "multi_site",
           "nullable": false,
           "type": "Boolean"
         },
         "name": {
           "enum": null,
-          "length": null,
           "name": "name",
           "nullable": false,
-          "type": "String(39)"
+          "type": "String"
         },
         "orcid": {
           "enum": null,
-          "length": null,
           "name": "orcid",
           "nullable": true,
-          "type": "String(77)"
+          "type": "String"
         },
         "person_cui": {
           "enum": null,
-          "length": null,
           "name": "person_cui",
-          "nullable": false,
+          "nullable": true,
           "type": "Integer"
         },
         "ph3_studies": {
           "enum": null,
-          "length": null,
           "name": "ph3_studies",
           "nullable": false,
-          "type": "String(3)"
+          "type": "String"
         },
         "pivotal_studies": {
           "enum": null,
-          "length": null,
           "name": "pivotal_studies",
           "nullable": false,
-          "type": "String(3)"
+          "type": "String"
         },
         "senior_pubs": {
           "enum": null,
-          "length": null,
           "name": "senior_pubs",
           "nullable": false,
           "type": "Integer"
         },
         "site": {
           "enum": null,
-          "length": null,
           "name": "site",
           "nullable": false,
-          "type": "Text"
+          "type": "String"
         },
         "study_groups": {
           "enum": null,
-          "length": null,
           "name": "study_groups",
           "nullable": true,
           "type": "Text"
         },
         "study_sponsors": {
           "enum": null,
-          "length": null,
           "name": "study_sponsors",
           "nullable": true,
           "type": "Text"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
         },
         "total_pubs": {
           "enum": null,
-          "length": null,
           "name": "total_pubs",
           "nullable": false,
           "type": "Integer"
         },
         "vital_status": {
           "enum": null,
-          "length": null,
           "name": "vital_status",
           "nullable": false,
           "type": "Integer"
@@ -2607,9 +2609,9 @@
           "name": "hyphen_type",
           "tablename": "persons",
           "values": [
-            "Eastern",
+            "MENA",
             "Western",
-            "MENA"
+            "Eastern"
           ]
         },
         "vital_status": {
@@ -2622,9 +2624,11 @@
           ]
         }
       },
-      "identity_keys": [],
+      "identity_keys": [
+        "person_cui"
+      ],
       "kind": "content",
-      "maturity": "prod",
+      "maturity": "prod-",
       "name": "persons",
       "normalisation_groups": [],
       "normalised_tables": [
@@ -2667,128 +2671,9 @@
       ],
       "soft_m2m_relationships": [],
       "soft_relationships": [],
-      "source_defined_keys": [
-        "name",
-        "person_cui"
-      ],
-      "source_filename": "persons.csv",
-      "use_surrogate_pk": true
-    },
-    "pointers": {
-      "columns": {
-        "biomarker": {
-          "enum": null,
-          "length": null,
-          "name": "biomarker",
-          "nullable": true,
-          "type": "String(33)"
-        },
-        "condition": {
-          "enum": null,
-          "length": null,
-          "name": "condition",
-          "nullable": false,
-          "type": "String(65)"
-        },
-        "context": {
-          "enum": null,
-          "length": null,
-          "name": "context",
-          "nullable": false,
-          "type": "String(121)"
-        },
-        "h2_html": {
-          "enum": null,
-          "length": null,
-          "name": "h2_html",
-          "nullable": false,
-          "type": "String(161)"
-        },
-        "h3_html": {
-          "enum": null,
-          "length": null,
-          "name": "h3_html",
-          "nullable": false,
-          "type": "String(236)"
-        },
-        "notes": {
-          "enum": null,
-          "length": null,
-          "name": "notes",
-          "nullable": true,
-          "type": "Text"
-        },
-        "regimen": {
-          "enum": null,
-          "length": null,
-          "name": "regimen",
-          "nullable": false,
-          "type": "String(111)"
-        },
-        "regimen_cui": {
-          "enum": null,
-          "length": null,
-          "name": "regimen_cui",
-          "nullable": false,
-          "type": "Integer"
-        },
-        "tracer": {
-          "enum": null,
-          "length": null,
-          "name": "tracer",
-          "nullable": true,
-          "type": "String(12)"
-        },
-        "version": {
-          "enum": null,
-          "length": null,
-          "name": "version",
-          "nullable": false,
-          "type": "DateTime"
-        }
-      },
-      "denormalised_columns": [
-        "biomarker",
-        "context",
-        "notes"
-      ],
-      "derived_columns": [],
-      "description": "Table of regimens/variants/protocol chunks with links back to HemOnc.org",
-      "enums": {},
-      "identity_keys": [],
-      "kind": "content",
-      "maturity": "prod-",
-      "name": "pointers",
-      "normalisation_groups": [],
-      "normalised_tables": [
-        {
-          "column": "biomarker",
-          "parent": "pointers"
-        },
-        {
-          "column": "context",
-          "parent": "pointers"
-        },
-        {
-          "column": "notes",
-          "parent": "pointers"
-        }
-      ],
-      "pk_columns": [
-        "h2_html",
-        "h3_html",
-        "version"
-      ],
-      "soft_m2m_relationships": [],
-      "soft_relationships": [
-        {
-          "local_column": "condition",
-          "target_column": "condition",
-          "target_table": "conditions"
-        }
-      ],
       "source_defined_keys": [],
-      "source_filename": "pointers.csv",
+      "source_filename": "persons.csv",
+      "source_name": "persons",
       "use_surrogate_pk": true
     },
     "protocols": {
@@ -2808,6 +2693,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "protocols",
       "use_surrogate_pk": true
     },
     "rct_design": {
@@ -2833,142 +2719,217 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "rct_design",
       "use_surrogate_pk": true
     },
     "refs": {
       "columns": {
         "biblio": {
           "enum": null,
-          "length": null,
           "name": "biblio",
           "nullable": false,
-          "type": "String(54)"
+          "type": "String"
         },
-        "biomarker": {
+        "biomarker_finding": {
           "enum": null,
-          "length": null,
-          "name": "biomarker",
+          "name": "biomarker_finding",
           "nullable": true,
-          "type": "String(25)"
+          "type": "String"
+        },
+        "citations": {
+          "enum": null,
+          "name": "citations",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "citations_as_of": {
+          "enum": null,
+          "name": "citations_as_of",
+          "nullable": true,
+          "type": "DateTime"
         },
         "condition": {
           "enum": null,
-          "length": null,
           "name": "condition",
           "nullable": false,
-          "type": "String(64)"
+          "type": "String"
+        },
+        "condition_cui": {
+          "enum": null,
+          "name": "condition_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "doi": {
           "enum": null,
-          "length": null,
           "name": "doi",
           "nullable": false,
-          "type": "String(84)"
+          "type": "String"
+        },
+        "errata": {
+          "enum": null,
+          "name": "errata",
+          "nullable": false,
+          "type": "Boolean"
         },
         "journal": {
           "enum": null,
-          "length": null,
           "name": "journal",
           "nullable": false,
-          "type": "String(36)"
+          "type": "String"
+        },
+        "journal_cui": {
+          "enum": null,
+          "name": "journal_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "pmcid": {
           "enum": null,
-          "length": null,
           "name": "pmcid",
           "nullable": true,
-          "type": "String(11)"
+          "type": "String"
         },
         "pmid": {
           "enum": null,
-          "length": null,
           "name": "pmid",
           "nullable": false,
           "type": "Integer"
         },
-        "pubdate": {
+        "prop_valid_aff_city": {
           "enum": null,
-          "length": null,
-          "name": "pubdate",
+          "name": "prop_valid_aff_city",
           "nullable": true,
+          "type": "Float"
+        },
+        "prop_valid_aff_country": {
+          "enum": null,
+          "name": "prop_valid_aff_country",
+          "nullable": true,
+          "type": "Float"
+        },
+        "prop_valid_aff_region": {
+          "enum": null,
+          "name": "prop_valid_aff_region",
+          "nullable": true,
+          "type": "Float"
+        },
+        "prop_valid_aff_site": {
+          "enum": null,
+          "name": "prop_valid_aff_site",
+          "nullable": true,
+          "type": "Float"
+        },
+        "pub_date": {
+          "enum": null,
+          "name": "pub_date",
+          "nullable": false,
           "type": "DateTime"
         },
         "ref_type": {
-          "enum": "ref_type",
-          "length": null,
+          "enum": null,
           "name": "ref_type",
           "nullable": false,
-          "type": "Enum"
+          "type": "String"
         },
         "reference": {
           "enum": null,
-          "length": null,
           "name": "reference",
           "nullable": false,
-          "type": "String(52)"
+          "type": "String"
+        },
+        "reference_cui": {
+          "enum": null,
+          "name": "reference_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": false,
-          "type": "String(48)"
+          "type": "String"
+        },
+        "study_cui": {
+          "enum": null,
+          "name": "study_cui",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "substudy": {
+          "enum": null,
+          "name": "substudy",
+          "nullable": true,
+          "type": "String"
+        },
+        "substudy_cui": {
+          "enum": null,
+          "name": "substudy_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
-          "type": "Text"
+          "type": "Float"
         },
         "title": {
           "enum": null,
-          "length": null,
           "name": "title",
           "nullable": false,
           "type": "Text"
         },
         "url": {
           "enum": null,
-          "length": null,
           "name": "url",
           "nullable": true,
-          "type": "String(214)"
+          "type": "String"
         }
       },
       "denormalised_columns": [
         "biblio",
         "doi",
         "reference",
-        "temp",
+        "study",
         "title"
       ],
-      "derived_columns": [],
-      "description": "Table of published references of prospective studies included on HemOnc.org",
+      "derived_columns": [
+        "prop_valid_aff_city",
+        "prop_valid_aff_country",
+        "prop_valid_aff_region",
+        "prop_valid_aff_site"
+      ],
+      "description": "Table of published references included on HemOnc.org",
       "enums": {
         "ref_type": {
           "name": "ref_type",
           "tablename": "refs",
           "values": [
-            "Primary",
-            "Update",
-            "Guideline",
-            "Pooled update",
-            "HRQoL analysis",
-            "Subgroup analysis",
-            "Pooled subgroup analysis",
-            "PRO analysis",
             "Biomarker analysis",
+            "Guideline",
+            "HRQoL analysis",
+            "Pooled HRQoL analysis",
+            "Pooled PRO analysis",
+            "Pooled subgroup analysis",
+            "Pooled update",
+            "Post-hoc analysis",
+            "Primary",
+            "PRO analysis",
+            "Propensity score analysis",
             "Q-TWiST analysis",
+            "Review",
+            "Safety analysis",
+            "Subgroup analysis",
+            "Toxicity analysis",
             "TWiST analysis",
-            "Safety analysis"
+            "Update"
           ]
         }
       },
@@ -2991,7 +2952,7 @@
           "parent": "refs"
         },
         {
-          "column": "temp",
+          "column": "study",
           "parent": "refs"
         },
         {
@@ -3000,12 +2961,21 @@
         }
       ],
       "pk_columns": [
-        "study",
-        "condition",
-        "biomarker",
+        "study_cui",
+        "substudy_cui",
+        "condition_cui",
+        "biomarker_finding",
         "pmid"
       ],
-      "soft_m2m_relationships": [],
+      "soft_m2m_relationships": [
+        {
+          "local_table": "refs",
+          "map_column": "study",
+          "map_table": "refs_study",
+          "target_column": "study",
+          "target_table": "studies"
+        }
+      ],
       "soft_relationships": [
         {
           "local_column": "pmid",
@@ -3021,10 +2991,191 @@
           "local_column": "condition",
           "target_column": "condition",
           "target_table": "conditions"
+        },
+        {
+          "local_column": "condition_cui",
+          "target_column": "condition_cui",
+          "target_table": "conditions"
         }
       ],
       "source_defined_keys": [],
       "source_filename": "refs.csv",
+      "source_name": "refs",
+      "use_surrogate_pk": true
+    },
+    "regimens": {
+      "columns": {
+        "all_sact_fda": {
+          "enum": "all_sact_fda",
+          "name": "all_sact_fda",
+          "nullable": true,
+          "type": "Enum"
+        },
+        "all_sact_fda_as_of": {
+          "enum": null,
+          "name": "all_sact_fda_as_of",
+          "nullable": true,
+          "type": "DateTime"
+        },
+        "components": {
+          "enum": null,
+          "name": "components",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "contains_rt": {
+          "enum": null,
+          "name": "contains_rt",
+          "nullable": false,
+          "type": "Boolean"
+        },
+        "date_added": {
+          "enum": null,
+          "name": "date_added",
+          "nullable": false,
+          "type": "DateTime"
+        },
+        "first_studied": {
+          "enum": null,
+          "name": "first_studied",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "highest_evidence": {
+          "enum": "highest_evidence",
+          "name": "highest_evidence",
+          "nullable": false,
+          "type": "Enum"
+        },
+        "last_published": {
+          "enum": null,
+          "name": "last_published",
+          "nullable": true,
+          "type": "DateTime"
+        },
+        "map_ncit": {
+          "enum": null,
+          "name": "map_ncit",
+          "nullable": true,
+          "type": "String"
+        },
+        "regimen_cui": {
+          "enum": null,
+          "name": "regimen_cui",
+          "nullable": false,
+          "type": "Integer"
+        },
+        "regimen_name": {
+          "enum": null,
+          "name": "regimen_name",
+          "nullable": false,
+          "type": "String"
+        },
+        "regimen_type": {
+          "enum": "regimen_type",
+          "name": "regimen_type",
+          "nullable": false,
+          "type": "Enum"
+        },
+        "sact": {
+          "enum": null,
+          "name": "sact",
+          "nullable": false,
+          "type": "Boolean"
+        },
+        "sact_modalities": {
+          "enum": null,
+          "name": "sact_modalities",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "studies": {
+          "enum": null,
+          "name": "studies",
+          "nullable": false,
+          "type": "Integer"
+        },
+        "temp": {
+          "enum": null,
+          "name": "temp",
+          "nullable": true,
+          "type": "Float"
+        },
+        "variantcount": {
+          "enum": null,
+          "name": "variantcount",
+          "nullable": false,
+          "type": "Integer"
+        },
+        "variantcountdate": {
+          "enum": null,
+          "name": "variantcountdate",
+          "nullable": false,
+          "type": "DateTime"
+        }
+      },
+      "denormalised_columns": [],
+      "derived_columns": [],
+      "description": "Table of regimens and some details about them",
+      "enums": {
+        "all_sact_fda": {
+          "name": "all_sact_fda",
+          "tablename": "regimens",
+          "values": [
+            "TRUE",
+            "CBD",
+            "FALSE"
+          ]
+        },
+        "highest_evidence": {
+          "name": "highest_evidence",
+          "tablename": "regimens",
+          "values": [
+            "Non-randomized trial",
+            "Phase 3 RCT",
+            "Non-randomized portion of RCT (registrational)",
+            "Non-randomized portion of RCT",
+            "Phase 3 RCT (registrational)",
+            "non-Phase 3 RCT",
+            "Non-randomized trial (registrational)",
+            "Observational",
+            "Early-stage non-randomized trial",
+            "non-Phase 3 RCT (registrational)",
+            "Early-stage non-randomized trial (registrational)",
+            "No supporting evidence",
+            "Expert opinion",
+            "Late-stage non-randomized trial",
+            "Late-stage non-randomized trial (registrational)"
+          ]
+        },
+        "regimen_type": {
+          "name": "regimen_type",
+          "tablename": "regimens",
+          "values": [
+            "Component-based regimen",
+            "Hybrid regimen",
+            "Null regimen",
+            "Class-based regimen"
+          ]
+        }
+      },
+      "identity_keys": [],
+      "kind": "content",
+      "maturity": "prod-",
+      "name": "regimens",
+      "normalisation_groups": [],
+      "normalised_tables": [],
+      "pk_columns": [
+        "regimen_cui"
+      ],
+      "soft_m2m_relationships": [],
+      "soft_relationships": [],
+      "source_defined_keys": [
+        "regimen_name",
+        "regimen_cui"
+      ],
+      "source_filename": "regimens.csv",
+      "source_name": "regimens",
       "use_surrogate_pk": true
     },
     "rxnorm_map": {
@@ -3047,6 +3198,7 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "rxnorm_map",
       "use_surrogate_pk": true
     },
     "sequencetable": {
@@ -3066,23 +3218,22 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "sequence.table",
       "use_surrogate_pk": true
     },
     "sig_branch_types": {
       "columns": {
         "description": {
           "enum": null,
-          "length": null,
           "name": "description",
           "nullable": true,
-          "type": "String(94)"
+          "type": "String"
         },
         "value": {
           "enum": null,
-          "length": null,
           "name": "value",
           "nullable": true,
-          "type": "String(29)"
+          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -3111,363 +3262,319 @@
         "value"
       ],
       "source_filename": "sig_branch_types.csv",
+      "source_name": "sig_branch_types",
       "use_surrogate_pk": true
     },
     "sigs": {
       "columns": {
         "alldays": {
           "enum": null,
-          "length": null,
           "name": "alldays",
           "nullable": true,
-          "type": "String(221)"
-        },
-        "branch": {
-          "enum": null,
-          "length": null,
-          "name": "branch",
-          "nullable": false,
-          "type": "String(136)"
-        },
-        "branch_type": {
-          "enum": null,
-          "length": null,
-          "name": "branch_type",
-          "nullable": true,
-          "type": "String(29)"
+          "type": "String"
         },
         "class_field": {
           "enum": "class_field",
-          "length": null,
           "name": "class_field",
-          "nullable": false,
+          "nullable": true,
           "type": "Enum"
         },
         "component": {
           "enum": null,
-          "length": null,
           "name": "component",
           "nullable": false,
-          "type": "String(47)"
+          "type": "String"
         },
         "component_cui": {
           "enum": null,
-          "length": null,
           "name": "component_cui",
           "nullable": false,
           "type": "Integer"
         },
         "component_role": {
           "enum": "component_role",
-          "length": null,
           "name": "component_role",
           "nullable": false,
           "type": "Enum"
         },
         "cycle_length_lb": {
           "enum": null,
-          "length": null,
           "name": "cycle_length_lb",
           "nullable": true,
-          "type": "Float"
+          "type": "String"
         },
         "cycle_length_ub": {
           "enum": null,
-          "length": null,
           "name": "cycle_length_ub",
           "nullable": true,
-          "type": "String(4)"
+          "type": "String"
         },
         "cycle_length_unit": {
           "enum": "cycle_length_unit",
-          "length": null,
           "name": "cycle_length_unit",
           "nullable": true,
           "type": "Enum"
         },
         "cyclesigs": {
           "enum": null,
-          "length": null,
           "name": "cyclesigs",
           "nullable": true,
-          "type": "String(208)"
+          "type": "String"
         },
         "cyclesigs_note": {
           "enum": null,
-          "length": null,
           "name": "cyclesigs_note",
           "nullable": true,
           "type": "Text"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "divided": {
           "enum": null,
-          "length": null,
           "name": "divided",
-          "nullable": true,
+          "nullable": false,
           "type": "Boolean"
         },
         "dosecapnum": {
           "enum": null,
-          "length": null,
           "name": "dosecapnum",
           "nullable": true,
           "type": "Float"
         },
         "dosecapunit": {
           "enum": "dosecapunit",
-          "length": null,
           "name": "dosecapunit",
           "nullable": true,
           "type": "Enum"
         },
         "dosecapunit_cui": {
           "enum": null,
-          "length": null,
           "name": "dosecapunit_cui",
           "nullable": true,
           "type": "Integer"
         },
         "dosemaxnum": {
           "enum": null,
-          "length": null,
           "name": "dosemaxnum",
           "nullable": true,
-          "type": "String(13)"
+          "type": "String"
         },
         "doseminnum": {
           "enum": null,
-          "length": null,
           "name": "doseminnum",
           "nullable": true,
-          "type": "String(13)"
+          "type": "String"
         },
         "doseunit": {
           "enum": null,
-          "length": null,
           "name": "doseunit",
           "nullable": true,
-          "type": "String(13)"
+          "type": "String"
         },
         "doseunit_cui": {
           "enum": null,
-          "length": null,
           "name": "doseunit_cui",
           "nullable": true,
           "type": "Integer"
         },
         "durationmaxnum": {
           "enum": null,
-          "length": null,
           "name": "durationmaxnum",
           "nullable": true,
-          "type": "Float"
+          "type": "String"
         },
         "durationminnum": {
           "enum": null,
-          "length": null,
           "name": "durationminnum",
           "nullable": true,
-          "type": "Float"
+          "type": "String"
         },
         "durationunit": {
           "enum": "durationunit",
-          "length": null,
           "name": "durationunit",
           "nullable": true,
           "type": "Enum"
         },
         "durationunit_cui": {
           "enum": null,
-          "length": null,
           "name": "durationunit_cui",
           "nullable": true,
           "type": "Integer"
         },
         "frequency": {
           "enum": "frequency",
-          "length": null,
           "name": "frequency",
           "nullable": true,
           "type": "Enum"
         },
         "frequency_cui": {
           "enum": null,
-          "length": null,
           "name": "frequency_cui",
           "nullable": true,
           "type": "Integer"
         },
         "inparens": {
           "enum": null,
-          "length": null,
           "name": "inparens",
           "nullable": true,
-          "type": "String(236)"
+          "type": "String"
         },
         "phase": {
-          "enum": null,
-          "length": null,
+          "enum": "phase",
           "name": "phase",
           "nullable": true,
-          "type": "String(152)"
+          "type": "Enum"
+        },
+        "phase_step": {
+          "enum": null,
+          "name": "phase_step",
+          "nullable": false,
+          "type": "Integer"
         },
         "portion": {
           "enum": null,
-          "length": null,
           "name": "portion",
           "nullable": false,
-          "type": "String(52)"
+          "type": "String"
         },
         "regimen": {
           "enum": null,
-          "length": null,
           "name": "regimen",
           "nullable": false,
-          "type": "String(111)"
+          "type": "String"
         },
         "regimen_cui": {
           "enum": null,
-          "length": null,
           "name": "regimen_cui",
           "nullable": false,
           "type": "Integer"
         },
         "route": {
-          "enum": null,
-          "length": null,
+          "enum": "route",
           "name": "route",
           "nullable": true,
-          "type": "String(16)"
+          "type": "Enum"
         },
         "route_cui": {
           "enum": null,
-          "length": null,
           "name": "route_cui",
           "nullable": true,
           "type": "Integer"
         },
         "seqrel": {
           "enum": null,
-          "length": null,
           "name": "seqrel",
           "nullable": true,
-          "type": "String(28)"
+          "type": "String"
         },
         "seqrelwhat": {
           "enum": null,
-          "length": null,
           "name": "seqrelwhat",
-          "nullable": true,
-          "type": "String(31)"
+          "nullable": false,
+          "type": "String"
         },
         "seqrelwhen": {
           "enum": null,
-          "length": null,
           "name": "seqrelwhen",
           "nullable": true,
-          "type": "String(11)"
+          "type": "String"
         },
         "seqrelwhenunit": {
           "enum": null,
-          "length": null,
           "name": "seqrelwhenunit",
           "nullable": true,
-          "type": "String(16)"
+          "type": "String"
         },
         "sequence": {
-          "enum": null,
-          "length": null,
+          "enum": "sequence",
           "name": "sequence",
           "nullable": true,
-          "type": "String(142)"
+          "type": "Enum"
         },
         "step_number": {
           "enum": null,
-          "length": null,
           "name": "step_number",
           "nullable": false,
-          "type": "String(8)"
+          "type": "String"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": true,
-          "type": "Text"
+          "type": "String"
+        },
+        "subcomponent": {
+          "enum": "subcomponent",
+          "name": "subcomponent",
+          "nullable": true,
+          "type": "Enum"
+        },
+        "subcomponent_cui": {
+          "enum": null,
+          "name": "subcomponent_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "tail": {
           "enum": null,
-          "length": null,
           "name": "tail",
           "nullable": true,
           "type": "Text"
         },
         "targetlevel": {
           "enum": null,
-          "length": null,
           "name": "targetlevel",
           "nullable": true,
-          "type": "String(10)"
+          "type": "String"
         },
         "targetleveltype": {
-          "enum": null,
-          "length": null,
+          "enum": "targetleveltype",
           "name": "targetleveltype",
           "nullable": true,
-          "type": "String(6)"
+          "type": "Enum"
         },
         "targetlevelunit": {
           "enum": "targetlevelunit",
-          "length": null,
           "name": "targetlevelunit",
           "nullable": true,
           "type": "Enum"
         },
         "targetlevelunit_cui": {
           "enum": null,
-          "length": null,
           "name": "targetlevelunit_cui",
           "nullable": true,
           "type": "Integer"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
         },
         "timing": {
           "enum": null,
-          "length": null,
           "name": "timing",
           "nullable": true,
-          "type": "String(107)"
+          "type": "String"
         },
         "timing_sequence": {
           "enum": null,
-          "length": null,
           "name": "timing_sequence",
           "nullable": true,
           "type": "Text"
         },
         "variant": {
           "enum": null,
-          "length": null,
           "name": "variant",
           "nullable": false,
-          "type": "String(46)"
+          "type": "String"
         },
         "variant_cui": {
           "enum": null,
-          "length": null,
           "name": "variant_cui",
           "nullable": true,
           "type": "Integer"
@@ -3475,9 +3582,12 @@
       },
       "denormalised_columns": [
         "cyclesigs_note",
+        "inparens",
         "seqrel",
+        "seqrelwhat",
         "seqrelwhen",
         "seqrelwhenunit",
+        "study",
         "timing"
       ],
       "derived_columns": [],
@@ -3511,54 +3621,20 @@
             "day",
             "week",
             "month",
-            "year"
+            "year",
+            "NS"
           ]
         },
         "dosecapunit": {
           "name": "dosecapunit",
           "tablename": "sigs",
           "values": [
-            "GBq",
+            "MBq",
             "mg",
-            "mCi",
             "mg/m^2",
             "mg/day",
-            "IU",
-            "MBq"
-          ]
-        },
-        "doseunit": {
-          "name": "doseunit",
-          "tablename": "sigs",
-          "values": [
-            "AUC",
-            "g/kg",
-            "GBq",
-            "Gy",
-            "IU",
-            "IU/kg",
-            "IU/m^2",
-            "IU/m^2/day",
-            "kBq/kg",
-            "MBq/kg",
-            "mcg",
-            "mcg/day",
-            "mcg/kg",
-            "mcg/m^2",
-            "mcg/m^2/day",
-            "mCi/kg",
-            "mg",
-            "mg/day",
-            "mg/kg",
-            "mg/kg/day",
-            "mg/m^2",
-            "mg/m^2/day",
-            "mg/m^2/hr",
-            "pfu/mL",
             "units",
-            "units/kg",
-            "units/m^2",
-            "units/m^2/day"
+            "IU"
           ]
         },
         "durationunit": {
@@ -3568,6 +3644,7 @@
             "minute",
             "day",
             "hour",
+            "NS",
             "second"
           ]
         },
@@ -3575,99 +3652,117 @@
           "name": "frequency",
           "tablename": "sigs",
           "values": [
-            "once per day",
             "once",
+            "once per day",
             "continuous",
             "every 12 hours",
             "twice per day",
             "three times per day",
             "daily NOS",
+            "NS",
             "four times per day",
             "every 6 hours",
             "every 4 hours",
+            "twice",
             "once every morning",
             "once every evening",
             "every 8 hours",
-            "five times per day",
-            "twice"
+            "five times per day"
           ]
         },
         "phase": {
           "name": "phase",
           "tablename": "sigs",
           "values": [
-            "Consolidation",
-            "Continuation",
-            "Delayed Intensification",
             "Induction",
-            "Intensification",
-            "Interim Maintenance",
+            "Consolidation",
+            "Perioperative",
+            "Neoadjuvant",
+            "Adjuvant",
             "Maintenance",
+            "Definitive",
+            "Pre-definitive",
+            "Post-definitive",
+            "Concurrent",
+            "Late intensification",
             "Pre-phase",
-            "Post-consolidation",
-            "<more to be added>",
-            "unspecified (default)"
+            "Continuation",
+            "Interim maintenance",
+            "Pre-Definitive"
           ]
         },
         "route": {
           "name": "route",
           "tablename": "sigs",
           "values": [
-            "IA",
-            "IM",
-            "inhaled",
-            "intravesicularly",
-            "IP",
-            "IT",
-            "IV",
-            "nebulized",
-            "Not specified",
-            "PO",
-            "SC"
+            "Intravenous",
+            "Oral",
+            "Subcutaneous",
+            "Intramuscular",
+            "Intrathecal",
+            "NS",
+            "Topical",
+            "by scarification",
+            "Intravesical",
+            "Inhalation",
+            "Intracavitary",
+            "Intra-arterial"
           ]
         },
-        "step_number": {
-          "name": "step_number",
+        "sequence": {
+          "name": "sequence",
           "tablename": "sigs",
           "values": [
-            "1  of  1 (default)",
-            "1  of  2",
-            "1  of  3",
-            "1  of  4",
-            "1  of  5",
-            "2  of  2",
-            "2  of  3",
-            "2  of  4",
-            "2  of  5",
-            "3  of  3",
-            "3  of  4",
-            "3  of  5",
-            "4  of  4",
-            "4  of  5",
-            "5  of  5"
+            "fourth",
+            "first",
+            "second",
+            "third",
+            "last",
+            "prior to infusions"
+          ]
+        },
+        "subcomponent": {
+          "name": "subcomponent",
+          "tablename": "sigs",
+          "values": [
+            "-",
+            "Abiraterone",
+            "Niraparib",
+            "Pertuzumab",
+            "Trastuzumab and hyaluronidase",
+            "Sulfamethoxazole",
+            "Trimethoprim",
+            "Cedazuridine",
+            "Decitabine",
+            "Nivolumab",
+            "Relatlimab"
           ]
         },
         "targetleveltype": {
           "name": "targetleveltype",
           "tablename": "sigs",
           "values": [
-            "peak",
-            "trough"
+            "steady state",
+            "trough",
+            "goal"
           ]
         },
         "targetlevelunit": {
           "name": "targetlevelunit",
           "tablename": "sigs",
           "values": [
+            "INR",
             "ng/mL",
             "mcg/L",
+            "mg",
+            "aPTT",
             "mg/L"
           ]
         }
       },
       "identity_keys": [],
       "kind": "content",
-      "maturity": "prod",
+      "maturity": "prod-",
       "name": "sigs",
       "normalisation_groups": [],
       "normalised_tables": [
@@ -3676,7 +3771,15 @@
           "parent": "sigs"
         },
         {
+          "column": "inparens",
+          "parent": "sigs"
+        },
+        {
           "column": "seqrel",
+          "parent": "sigs"
+        },
+        {
+          "column": "seqrelwhat",
           "parent": "sigs"
         },
         {
@@ -3688,30 +3791,42 @@
           "parent": "sigs"
         },
         {
+          "column": "study",
+          "parent": "sigs"
+        },
+        {
           "column": "timing",
           "parent": "sigs"
         }
       ],
       "pk_columns": [
-        "regimen_cui",
         "variant_cui",
-        "phase",
         "portion",
         "component_cui",
-        "doseminnum",
-        "route_cui",
+        "subcomponent_cui",
+        "frequency_cui",
         "timing_sequence",
-        "step_number",
-        "study",
-        "cyclesigs",
-        "alldays",
-        "inparens",
-        "tail"
+        "step_number"
       ],
-      "soft_m2m_relationships": [],
-      "soft_relationships": [],
+      "soft_m2m_relationships": [
+        {
+          "local_table": "sigs",
+          "map_column": "study",
+          "map_table": "sigs_study",
+          "target_column": "study",
+          "target_table": "studies"
+        }
+      ],
+      "soft_relationships": [
+        {
+          "local_column": "regimen_cui",
+          "target_column": "regimen_cui",
+          "target_table": "regimens"
+        }
+      ],
       "source_defined_keys": [],
       "source_filename": "sigs.csv",
+      "source_name": "sigs",
       "use_surrogate_pk": true
     },
     "sites": {
@@ -3733,193 +3848,269 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "sites",
       "use_surrogate_pk": true
     },
     "studies": {
       "columns": {
-        "biomarker": {
+        "biomarker_finding": {
           "enum": null,
-          "length": null,
-          "name": "biomarker",
+          "name": "biomarker_finding",
           "nullable": true,
-          "type": "String(25)"
+          "type": "String"
         },
         "condition": {
           "enum": null,
-          "length": null,
           "name": "condition",
           "nullable": false,
-          "type": "String(47)"
+          "type": "String"
         },
         "condition_cui": {
           "enum": null,
-          "length": null,
           "name": "condition_cui",
           "nullable": true,
           "type": "Integer"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "end": {
           "enum": null,
-          "length": null,
           "name": "end",
           "nullable": true,
-          "type": "String(24)"
+          "type": "DateTime"
         },
         "enrollment": {
           "enum": null,
-          "length": null,
           "name": "enrollment",
           "nullable": true,
-          "type": "String(35)"
+          "type": "String"
+        },
+        "intent": {
+          "enum": "intent",
+          "name": "intent",
+          "nullable": false,
+          "type": "Enum"
         },
         "phase": {
           "enum": null,
-          "length": null,
           "name": "phase",
-          "nullable": true,
-          "type": "String(30)"
-        },
-        "protocol": {
-          "enum": null,
-          "length": null,
-          "name": "protocol",
-          "nullable": true,
-          "type": "Boolean"
+          "nullable": false,
+          "type": "String"
         },
         "pubs_in_hemonc": {
           "enum": null,
-          "length": null,
           "name": "pubs_in_hemonc",
-          "nullable": false,
+          "nullable": true,
           "type": "Integer"
         },
         "reg_study": {
           "enum": null,
-          "length": null,
           "name": "reg_study",
           "nullable": false,
           "type": "Boolean"
         },
         "registry": {
           "enum": "registry",
-          "length": null,
           "name": "registry",
           "nullable": true,
           "type": "Enum"
         },
         "sact": {
           "enum": null,
-          "length": null,
           "name": "sact",
-          "nullable": true,
+          "nullable": false,
           "type": "Boolean"
         },
         "sponsor": {
           "enum": null,
-          "length": null,
           "name": "sponsor",
           "nullable": true,
           "type": "Text"
         },
+        "sponsor_cui": {
+          "enum": null,
+          "name": "sponsor_cui",
+          "nullable": true,
+          "type": "Integer"
+        },
         "sponsor_type": {
           "enum": "sponsor_type",
-          "length": null,
           "name": "sponsor_type",
           "nullable": true,
           "type": "Enum"
         },
         "start": {
           "enum": null,
-          "length": null,
           "name": "start",
           "nullable": true,
-          "type": "String(12)"
+          "type": "DateTime"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": false,
-          "type": "String(48)"
+          "type": "String"
+        },
+        "study_arms": {
+          "enum": null,
+          "name": "study_arms",
+          "nullable": true,
+          "type": "String"
+        },
+        "study_cui": {
+          "enum": null,
+          "name": "study_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "study_design": {
           "enum": "study_design",
-          "length": null,
           "name": "study_design",
-          "nullable": false,
+          "nullable": true,
           "type": "Enum"
         },
         "study_design_imputed": {
           "enum": null,
-          "length": null,
           "name": "study_design_imputed",
           "nullable": false,
           "type": "Boolean"
         },
         "study_group": {
           "enum": null,
-          "length": null,
           "name": "study_group",
           "nullable": true,
-          "type": "String(245)"
+          "type": "String"
+        },
+        "substudy": {
+          "enum": null,
+          "name": "substudy",
+          "nullable": true,
+          "type": "String"
+        },
+        "substudy_cui": {
+          "enum": null,
+          "name": "substudy_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
         },
         "trial_id": {
           "enum": null,
-          "length": null,
           "name": "trial_id",
           "nullable": true,
-          "type": "String(22)"
+          "type": "String"
         },
         "unreg_study": {
           "enum": null,
-          "length": null,
           "name": "unreg_study",
           "nullable": false,
           "type": "Boolean"
         }
       },
       "denormalised_columns": [
+        "intent",
         "sponsor",
         "study_group"
       ],
       "derived_columns": [],
-      "description": "Demographics of participants enrolled into studies, by arm",
+      "description": "Table of clinical trials included on HemOnc.org",
       "enums": {
+        "intent": {
+          "name": "intent",
+          "tablename": "studies",
+          "values": [
+            "Not applicable",
+            "Non-curative intent",
+            "Curative intent",
+            "Unspecified intent",
+            "Mixed intent",
+            "Preventive intent",
+            "Mixed"
+          ]
+        },
+        "phase": {
+          "name": "phase",
+          "tablename": "studies",
+          "values": [
+            "Adaptively randomized phase 2",
+            "Basket trial",
+            "Case report",
+            "Case series",
+            "Consensus guideline",
+            "Donor-based randomization",
+            "Expanded Access Program",
+            "Expert recommendation",
+            "Named Patient Program",
+            "Non-randomized",
+            "Non-randomized phase 2/3",
+            "Non-randomized phase 3",
+            "Observational",
+            "Phase 1",
+            "Phase 1/2",
+            "Phase 1/2a",
+            "Phase 1/2b",
+            "Phase 1a/1b",
+            "Phase 1b",
+            "Phase 1b/2",
+            "Phase 1b/2a",
+            "Phase 2",
+            "Phase 2/3",
+            "Phase 2a",
+            "Phase 2b",
+            "Phase 2b/3",
+            "Phase 3",
+            "Phase 3b",
+            "Phase 3b/4",
+            "Phase 4",
+            "Pragmatic randomized trial",
+            "Propensity score analysis",
+            "Pseudo-Mendelian randomization",
+            "Quasi-randomized",
+            "Randomized",
+            "Randomized phase 1",
+            "Randomized phase 1/2",
+            "Randomized phase 1b",
+            "Randomized phase 1b/2",
+            "Randomized phase 2",
+            "Randomized phase 2b",
+            "Registry",
+            "Response-adapted randomized trial",
+            "Retrospective",
+            "Review",
+            "Risk-adapted therapy",
+            "Single-arm phase 3",
+            "NS (not specified)",
+            "(blank - not yet determined)"
+          ]
+        },
         "registry": {
           "name": "registry",
           "tablename": "studies",
           "values": [
             "ClinicalTrials.gov",
-            "ISRCTN",
-            "UMIN",
-            "Japanese Clinical Trials Registry",
             "EudraCT",
-            "ChiCTR",
-            "jRCTs",
-            "ACTRN",
-            "Netherlands Trial Registry",
             "DRKS",
-            "DRK",
-            "Clinical Trials Registry of India",
-            "NL",
-            "ANZCTR",
+            "ISRCTN",
+            "Netherlands Trial Registry",
+            "ChiCTR",
+            "ACTRN",
+            "UMIN",
             "KCT",
+            "Clinical Trials Registry of India",
+            "jRCTs",
+            "ANZCTR",
+            "Japanese Clinical Trials Registry",
             "RPCEC",
-            ""
+            "National Medical Research Register of Malaysia"
           ]
         },
         "sponsor_type": {
@@ -3930,8 +4121,9 @@
             "Government",
             "Cooperative group",
             "Academic medical center",
-            "Community practice",
             "Other",
+            "Community practice",
+            "Sponsor-Investigator",
             "Academic consortium"
           ]
         },
@@ -3939,22 +4131,29 @@
           "name": "study_design",
           "tablename": "studies",
           "values": [
-            "CBD",
-            "Escalation",
             "Non-randomized",
-            "In-class switch",
+            "Escalation",
             "Out-of-class switch",
+            "Mixed",
+            "In-class switch",
+            "CBD",
             "De-escalation",
-            "Mixed"
+            "Other"
           ]
         }
       },
-      "identity_keys": [],
+      "identity_keys": [
+        "study"
+      ],
       "kind": "content",
-      "maturity": "dev",
+      "maturity": "prod-",
       "name": "studies",
       "normalisation_groups": [],
       "normalised_tables": [
+        {
+          "column": "intent",
+          "parent": "studies"
+        },
         {
           "column": "sponsor",
           "parent": "studies"
@@ -3965,9 +4164,10 @@
         }
       ],
       "pk_columns": [
-        "study",
-        "condition",
-        "biomarker"
+        "study_cui",
+        "substudy_cui",
+        "condition_cui",
+        "biomarker_finding"
       ],
       "soft_m2m_relationships": [],
       "soft_relationships": [
@@ -3984,6 +4184,31 @@
       ],
       "source_defined_keys": [],
       "source_filename": "studies.csv",
+      "source_name": "studies",
+      "use_surrogate_pk": true
+    },
+    "study_demographics": {
+      "columns": {},
+      "denormalised_columns": [],
+      "derived_columns": [],
+      "description": "Demographics of participants enrolled into studies, by arm",
+      "enums": {},
+      "identity_keys": [],
+      "kind": "content",
+      "maturity": "dev",
+      "name": "study_demographics",
+      "normalisation_groups": [],
+      "normalised_tables": [],
+      "pk_columns": [
+        "study_id",
+        "condition",
+        "biomarker"
+      ],
+      "soft_m2m_relationships": [],
+      "soft_relationships": [],
+      "source_defined_keys": [],
+      "source_filename": null,
+      "source_name": "study_demographics",
       "use_surrogate_pk": true
     },
     "study_eligibility": {
@@ -4007,221 +4232,259 @@
       "soft_relationships": [],
       "source_defined_keys": [],
       "source_filename": null,
+      "source_name": "study_eligibility",
       "use_surrogate_pk": true
     },
     "study_results": {
       "columns": {
         "arm_type": {
           "enum": "arm_type",
-          "length": null,
           "name": "arm_type",
           "nullable": true,
           "type": "Enum"
         },
-        "biomarker": {
+        "biomarker_finding": {
           "enum": null,
-          "length": null,
-          "name": "biomarker",
+          "name": "biomarker_finding",
           "nullable": true,
-          "type": "String(25)"
+          "type": "String"
         },
         "c_modifier": {
           "enum": null,
-          "length": null,
           "name": "c_modifier",
-          "nullable": true,
-          "type": "String(132)"
+          "nullable": false,
+          "type": "String"
         },
         "comparator": {
           "enum": null,
-          "length": null,
           "name": "comparator",
           "nullable": false,
           "type": "Text"
         },
         "comparator_code": {
           "enum": null,
-          "length": null,
           "name": "comparator_code",
-          "nullable": true,
-          "type": "String(64)"
+          "nullable": false,
+          "type": "String"
         },
         "condition": {
           "enum": null,
-          "length": null,
           "name": "condition",
           "nullable": false,
-          "type": "String(47)"
+          "type": "String"
         },
         "condition_cui": {
           "enum": null,
-          "length": null,
           "name": "condition_cui",
-          "nullable": false,
+          "nullable": true,
           "type": "Integer"
         },
         "context": {
           "enum": null,
-          "length": null,
           "name": "context",
           "nullable": false,
-          "type": "String(54)"
+          "type": "String"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "efficacy": {
           "enum": null,
-          "length": null,
           "name": "efficacy",
           "nullable": true,
           "type": "Text"
         },
         "endpoint": {
           "enum": null,
-          "length": null,
           "name": "endpoint",
           "nullable": true,
-          "type": "String(198)"
+          "type": "String"
         },
         "endpoint_class": {
           "enum": "endpoint_class",
-          "length": null,
           "name": "endpoint_class",
           "nullable": true,
           "type": "Enum"
         },
         "endpoint_type": {
           "enum": "endpoint_type",
-          "length": null,
           "name": "endpoint_type",
           "nullable": true,
           "type": "Enum"
         },
         "error": {
           "enum": null,
-          "length": null,
           "name": "error",
           "nullable": false,
           "type": "Boolean"
         },
-        "estci": {
+        "est_ci": {
           "enum": null,
-          "length": null,
-          "name": "estci",
+          "name": "est_ci",
           "nullable": true,
-          "type": "String(16)"
+          "type": "String"
+        },
+        "est_lb": {
+          "enum": null,
+          "name": "est_lb",
+          "nullable": true,
+          "type": "String"
+        },
+        "est_ub": {
+          "enum": null,
+          "name": "est_ub",
+          "nullable": true,
+          "type": "String"
         },
         "estimate": {
           "enum": null,
-          "length": null,
           "name": "estimate",
           "nullable": true,
-          "type": "String(14)"
+          "type": "String"
         },
-        "estlb": {
-          "enum": null,
-          "length": null,
-          "name": "estlb",
-          "nullable": true,
-          "type": "String(14)"
+        "intent": {
+          "enum": "intent",
+          "name": "intent",
+          "nullable": false,
+          "type": "Enum"
         },
-        "estub": {
+        "landmark_num": {
           "enum": null,
-          "length": null,
-          "name": "estub",
+          "name": "landmark_num",
           "nullable": true,
-          "type": "String(39)"
+          "type": "Integer"
+        },
+        "landmark_unit": {
+          "enum": "landmark_unit",
+          "name": "landmark_unit",
+          "nullable": true,
+          "type": "Enum"
         },
         "metric": {
           "enum": null,
-          "length": null,
           "name": "metric",
           "nullable": true,
-          "type": "String(44)"
+          "type": "String"
+        },
+        "metric_ci": {
+          "enum": null,
+          "name": "metric_ci",
+          "nullable": true,
+          "type": "String"
+        },
+        "metric_lb": {
+          "enum": null,
+          "name": "metric_lb",
+          "nullable": true,
+          "type": "String"
+        },
+        "metric_num_that_arm": {
+          "enum": null,
+          "name": "metric_num_that_arm",
+          "nullable": true,
+          "type": "String"
+        },
+        "metric_num_this_arm": {
+          "enum": null,
+          "name": "metric_num_this_arm",
+          "nullable": true,
+          "type": "String"
+        },
+        "metric_ub": {
+          "enum": null,
+          "name": "metric_ub",
+          "nullable": true,
+          "type": "String"
+        },
+        "metric_unit": {
+          "enum": "metric_unit",
+          "name": "metric_unit",
+          "nullable": true,
+          "type": "Enum"
         },
         "metric_version": {
           "enum": null,
-          "length": null,
           "name": "metric_version",
           "nullable": true,
           "type": "Integer"
         },
-        "metricnumthatarm": {
+        "p_value": {
           "enum": null,
-          "length": null,
-          "name": "metricnumthatarm",
+          "name": "p_value",
           "nullable": true,
-          "type": "String(14)"
-        },
-        "metricnumthisarm": {
-          "enum": null,
-          "length": null,
-          "name": "metricnumthisarm",
-          "nullable": true,
-          "type": "String(6)"
-        },
-        "metricunit": {
-          "enum": "metricunit",
-          "length": null,
-          "name": "metricunit",
-          "nullable": true,
-          "type": "Enum"
+          "type": "String"
         },
         "r_modifier": {
           "enum": null,
-          "length": null,
           "name": "r_modifier",
           "nullable": false,
-          "type": "String(62)"
+          "type": "String"
         },
         "regimen": {
           "enum": null,
-          "length": null,
           "name": "regimen",
           "nullable": false,
-          "type": "String(111)"
+          "type": "String"
+        },
+        "regimen_cui": {
+          "enum": null,
+          "name": "regimen_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "statistic": {
           "enum": "statistic",
-          "length": null,
           "name": "statistic",
           "nullable": true,
           "type": "Enum"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": false,
-          "type": "String(48)"
+          "type": "String"
+        },
+        "study_cui": {
+          "enum": null,
+          "name": "study_cui",
+          "nullable": true,
+          "type": "Integer"
+        },
+        "substudy": {
+          "enum": null,
+          "name": "substudy",
+          "nullable": true,
+          "type": "String"
+        },
+        "substudy_cui": {
+          "enum": null,
+          "name": "substudy_cui",
+          "nullable": true,
+          "type": "Integer"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
         },
         "toxicity": {
           "enum": null,
-          "length": null,
           "name": "toxicity",
           "nullable": true,
-          "type": "String(100)"
+          "type": "String"
         }
       },
       "denormalised_columns": [
-        "comparator_code",
-        "efficacy",
-        "estci",
-        "toxicity"
+        "comparator_code"
       ],
-      "derived_columns": [],
+      "derived_columns": [
+        "metric_num_that_arm",
+        "metric_num_this_arm"
+      ],
       "description": "Results of clinical trials by arm",
       "enums": {
         "arm_type": {
@@ -4230,9 +4493,18 @@
           "values": [
             "Control",
             "Escalation",
+            "Not applicable",
             "In-class switch",
             "Out-of-class switch",
             "De-escalation"
+          ]
+        },
+        "comparator_code": {
+          "name": "comparator_code",
+          "tablename": "study_results",
+          "values": [
+            "none - default",
+            "Not applicable (for non-randomized studies)\n333: A regimen comprised entirely of approved drugs that might be \"wanted\" for adding to the wiki - usually an experimental arm that might have superior efficacy (e.g., HR crosses 1 but UB is <=1.05)\n555: A regimen that is present on the stub page, regardless of whether it contains approved and/or investigational drugs\n666: A regimen comprised entirely of approved drugs being tested as an experimental arm, with results still pending\n777: A regimen with at least one component that is investigational in all regulatory domains that is wanted if and when the investigational component is approved\n888: A regimen comprised entirely of approved drugs that is definitely \"wanted\" for adding to the wiki\n995: A regimen comprised of approved and/or investigational drugs that is \"unwanted\" for adding to the wiki - negative experimental arms, etc. The comparative design of the unwanted regimen is in-class-switch\n996: A regimen comprised of approved and/or investigational drugs that is \"unwanted\" for adding to the wiki - negative experimental arms, etc. The comparative design of the unwanted regimen is out-of-class-switch\n997: A regimen comprised of approved and/or investigational drugs that is \"unwanted\" for adding to the wiki - negative experimental arms, etc. The comparative design of the unwanted regimen is de-escalation \n998: A regimen comprised of approved and/or investigational drugs that is \"unwanted\" for adding to the wiki - negative experimental arms, etc. The comparative design of the unwanted regimen is escalation\n999: A regimen comprised of approved and/or investigational drugs that is \"unwanted\" for adding to the wiki - negative experimental arms, etc. The comparative design of the unwanted regimen is unspecified."
           ]
         },
         "endpoint_class": {
@@ -4241,10 +4513,10 @@
           "values": [
             "time-to-event",
             "rate",
-            "Could not be determined",
-            "event at fixed time",
+            "landmark",
             "other",
-            "rate at fixed time",
+            "Could not be determined",
+            "pharmacology",
             "time-to-median event"
           ]
         },
@@ -4258,16 +4530,48 @@
             "Co-primary"
           ]
         },
-        "metricunit": {
-          "name": "metricunit",
+        "intent": {
+          "name": "intent",
+          "tablename": "study_results",
+          "values": [
+            "Non-curative intent",
+            "Curative intent",
+            "Unspecified intent",
+            "Not applicable",
+            "Preventive intent"
+          ]
+        },
+        "landmark_unit": {
+          "name": "landmark_unit",
+          "tablename": "study_results",
+          "values": [
+            "years",
+            "weeks",
+            "months",
+            "days",
+            "cycles"
+          ]
+        },
+        "metric_unit": {
+          "name": "metric_unit",
           "tablename": "study_results",
           "values": [
             "months",
+            "rate",
             "weeks",
-            "timed rate",
-            "untimed rate",
             "days",
-            "years"
+            "years",
+            "NYR"
+          ]
+        },
+        "p_value": {
+          "name": "p_value",
+          "tablename": "study_results",
+          "values": [
+            "0.01 to 1.00 in 0.01 increments",
+            "<0.01",
+            ">0.20",
+            "NS (not significant)"
           ]
         },
         "statistic": {
@@ -4279,41 +4583,30 @@
             "sHR",
             "aHR",
             "RR",
-            "PFS48 difference",
-            "RMST difference",
-            "OR",
             "RMST",
-            "rate ratio"
+            "OR",
+            "RMST:",
+            "aOR",
+            "RMST24:"
           ]
         }
       },
       "identity_keys": [],
       "kind": "content",
-      "maturity": "prod",
+      "maturity": "prod-",
       "name": "study_results",
       "normalisation_groups": [],
       "normalised_tables": [
         {
           "column": "comparator_code",
           "parent": "study_results"
-        },
-        {
-          "column": "efficacy",
-          "parent": "study_results"
-        },
-        {
-          "column": "estci",
-          "parent": "study_results"
-        },
-        {
-          "column": "toxicity",
-          "parent": "study_results"
         }
       ],
       "pk_columns": [
-        "study",
-        "condition",
-        "biomarker",
+        "study_cui",
+        "substudy_cui",
+        "condition_cui",
+        "biomarker_finding",
         "context",
         "regimen",
         "r_modifier",
@@ -4325,6 +4618,11 @@
       ],
       "soft_m2m_relationships": [],
       "soft_relationships": [
+        {
+          "local_column": "regimen_cui",
+          "target_column": "regimen_cui",
+          "target_table": "regimens"
+        },
         {
           "local_column": "condition",
           "target_column": "condition",
@@ -4338,69 +4636,58 @@
       ],
       "source_defined_keys": [],
       "source_filename": "study_results.csv",
+      "source_name": "study_results",
       "use_surrogate_pk": true
     },
     "units": {
       "columns": {
         "concept_code": {
           "enum": null,
-          "length": null,
           "name": "concept_code",
-          "nullable": true,
+          "nullable": false,
           "type": "Integer"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
-          "type": "String(12)"
+          "type": "String"
+        },
+        "fixed": {
+          "enum": null,
+          "name": "fixed",
+          "nullable": false,
+          "type": "Boolean"
+        },
+        "parameterbased": {
+          "enum": null,
+          "name": "parameterbased",
+          "nullable": false,
+          "type": "Boolean"
+        },
+        "timebased": {
+          "enum": null,
+          "name": "timebased",
+          "nullable": false,
+          "type": "Boolean"
         },
         "unit": {
           "enum": null,
-          "length": null,
           "name": "unit",
           "nullable": false,
-          "type": "String(14)"
+          "type": "String"
         },
         "unit_type": {
-          "enum": "unit_type",
-          "length": null,
+          "enum": null,
           "name": "unit_type",
           "nullable": false,
-          "type": "Enum"
+          "type": "String"
         }
       },
       "denormalised_columns": [],
       "derived_columns": [],
       "description": "Table of units of measure",
-      "enums": {
-        "unit_type": {
-          "name": "unit_type",
-          "tablename": "units",
-          "values": [
-            "units per volume",
-            "calculated dose",
-            "time",
-            "units per weight",
-            "radiation units",
-            "unitless quantity",
-            "unitless quantity per weight",
-            "unitless quantity per BSA",
-            "weight",
-            "weight per surface area (used in BMI)",
-            "BSA (body surface area)",
-            "units per time",
-            "weight per volume",
-            "units per BSA",
-            "units per BSA per time",
-            "units per weight per time",
-            "weight per volume used in certain laboratory tests, e.g., creatinine",
-            "creatinine clearance",
-            "unitless quantity per BSA per time"
-          ]
-        }
-      },
+      "enums": {},
       "identity_keys": [],
       "kind": "lookup",
       "maturity": "prod",
@@ -4413,88 +4700,91 @@
       "soft_m2m_relationships": [],
       "soft_relationships": [],
       "source_defined_keys": [
-        "unit"
+        "unit",
+        "concept_code"
       ],
       "source_filename": "units.csv",
+      "source_name": "units",
       "use_surrogate_pk": true
     },
     "variant_eligibility": {
       "columns": {
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
-          "type": "String(9)"
+          "type": "DateTime"
         },
         "logic": {
           "enum": null,
-          "length": null,
           "name": "logic",
           "nullable": true,
-          "type": "String(14)"
+          "type": "String"
         },
         "logic_count": {
           "enum": null,
-          "length": null,
           "name": "logic_count",
-          "nullable": false,
-          "type": "String(2)"
+          "nullable": true,
+          "type": "String"
         },
         "regimen": {
           "enum": null,
-          "length": null,
           "name": "regimen",
           "nullable": false,
-          "type": "String(71)"
+          "type": "String"
         },
         "regimen_cui": {
           "enum": null,
-          "length": null,
           "name": "regimen_cui",
           "nullable": false,
           "type": "Integer"
         },
         "string": {
           "enum": null,
-          "length": null,
           "name": "string",
           "nullable": false,
-          "type": "String(136)"
+          "type": "String"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": true,
-          "type": "String(161)"
+          "type": "String"
+        },
+        "subtype": {
+          "enum": "subtype",
+          "name": "subtype",
+          "nullable": true,
+          "type": "Enum"
+        },
+        "temp": {
+          "enum": null,
+          "name": "temp",
+          "nullable": true,
+          "type": "String"
         },
         "type": {
           "enum": null,
-          "length": null,
           "name": "type",
           "nullable": false,
-          "type": "String(29)"
+          "type": "String"
         },
         "unit": {
-          "enum": null,
-          "length": null,
+          "enum": "unit",
           "name": "unit",
           "nullable": true,
-          "type": "String(14)"
+          "type": "Enum"
         },
         "unit_cui": {
           "enum": null,
-          "length": null,
           "name": "unit_cui",
           "nullable": true,
-          "type": "Float"
+          "type": "Integer"
         },
         "variant_cui": {
           "enum": null,
-          "length": null,
           "name": "variant_cui",
-          "nullable": true,
+          "nullable": false,
           "type": "Integer"
         }
       },
@@ -4503,10 +4793,44 @@
       ],
       "derived_columns": [],
       "description": "Eligibility criteria for regimen variants (e.g., dosing based on weight, age, or renal function)",
-      "enums": {},
+      "enums": {
+        "subtype": {
+          "name": "subtype",
+          "tablename": "variant_eligibility",
+          "values": [
+            "platelets",
+            "WBC count",
+            "eGFR",
+            "creatinine",
+            "creatinine clearance",
+            "ECOG PS",
+            "CD4+ count",
+            "Creatinine",
+            "CD34+ cells",
+            "ANC"
+          ]
+        },
+        "unit": {
+          "name": "unit",
+          "tablename": "variant_eligibility",
+          "values": [
+            "/L",
+            "year",
+            "kg",
+            "mL/min/1.73m^2",
+            "mg/dL",
+            "m^2",
+            "kg/m^2",
+            "month",
+            "/uL",
+            "percent",
+            "cells/kg"
+          ]
+        }
+      },
       "identity_keys": [],
       "kind": "content",
-      "maturity": "dev",
+      "maturity": "prod",
       "name": "variant_eligibility",
       "normalisation_groups": [],
       "normalised_tables": [
@@ -4519,8 +4843,21 @@
         "variant_cui",
         "logic_count"
       ],
-      "soft_m2m_relationships": [],
+      "soft_m2m_relationships": [
+        {
+          "local_table": "variant_eligibility",
+          "map_column": "study",
+          "map_table": "variant_eligibility_study",
+          "target_column": "study",
+          "target_table": "studies"
+        }
+      ],
       "soft_relationships": [
+        {
+          "local_column": "regimen_cui",
+          "target_column": "regimen_cui",
+          "target_table": "regimens"
+        },
         {
           "local_column": "unit",
           "target_column": "unit",
@@ -4529,55 +4866,49 @@
       ],
       "source_defined_keys": [],
       "source_filename": "variant_eligibility.csv",
+      "source_name": "variant_eligibility",
       "use_surrogate_pk": true
     },
     "variantblob": {
       "columns": {
         "block": {
           "enum": "block",
-          "length": null,
           "name": "block",
           "nullable": false,
           "type": "Enum"
         },
         "chunk": {
           "enum": null,
-          "length": null,
           "name": "chunk",
           "nullable": false,
-          "type": "String(17)"
+          "type": "String"
         },
         "chunk_type": {
           "enum": "chunk_type",
-          "length": null,
           "name": "chunk_type",
           "nullable": false,
           "type": "Enum"
         },
         "date_created": {
           "enum": null,
-          "length": null,
           "name": "date_created",
           "nullable": false,
-          "type": "String(12)"
+          "type": "String"
         },
         "date_retired": {
           "enum": null,
-          "length": null,
           "name": "date_retired",
           "nullable": true,
-          "type": "String(12)"
+          "type": "String"
         },
         "order": {
           "enum": null,
-          "length": null,
           "name": "order",
           "nullable": false,
           "type": "Integer"
         },
         "version": {
           "enum": null,
-          "length": null,
           "name": "version",
           "nullable": false,
           "type": "Integer"
@@ -4620,217 +4951,176 @@
       "soft_m2m_relationships": [],
       "soft_relationships": [],
       "source_defined_keys": [],
-      "source_filename": "variant.blob.csv",
+      "source_filename": "variant_blob.csv",
+      "source_name": "variant.blob",
       "use_surrogate_pk": true
     },
     "variants": {
       "columns": {
         "allsigshavecyclesigs": {
           "enum": null,
-          "length": null,
           "name": "allsigshavecyclesigs",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshavedose": {
           "enum": null,
-          "length": null,
           "name": "allsigshavedose",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshavedoseunit": {
           "enum": null,
-          "length": null,
           "name": "allsigshavedoseunit",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshaveduration": {
           "enum": null,
-          "length": null,
           "name": "allsigshaveduration",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshavedurationunit": {
           "enum": null,
-          "length": null,
           "name": "allsigshavedurationunit",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshavefrequency": {
           "enum": null,
-          "length": null,
           "name": "allsigshavefrequency",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshaveroute": {
           "enum": null,
-          "length": null,
           "name": "allsigshaveroute",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshaveschedule": {
           "enum": null,
-          "length": null,
           "name": "allsigshaveschedule",
           "nullable": false,
           "type": "Boolean"
         },
         "allsigshavesequence": {
           "enum": null,
-          "length": null,
           "name": "allsigshavesequence",
           "nullable": false,
           "type": "Boolean"
         },
         "blob": {
           "enum": null,
-          "length": null,
           "name": "blob",
           "nullable": false,
           "type": "Text"
         },
         "blob_version": {
           "enum": null,
-          "length": null,
           "name": "blob_version",
-          "nullable": false,
-          "type": "Integer"
-        },
-        "branches": {
-          "enum": null,
-          "length": null,
-          "name": "branches",
           "nullable": false,
           "type": "Integer"
         },
         "components": {
           "enum": null,
-          "length": null,
           "name": "components",
           "nullable": false,
           "type": "Integer"
         },
         "cyclesigs": {
           "enum": null,
-          "length": null,
           "name": "cyclesigs",
           "nullable": false,
           "type": "Integer"
         },
         "date_added": {
           "enum": null,
-          "length": null,
           "name": "date_added",
           "nullable": false,
           "type": "DateTime"
         },
         "date_study_modified": {
           "enum": null,
-          "length": null,
           "name": "date_study_modified",
           "nullable": true,
           "type": "DateTime"
         },
         "date_tracer_modified": {
           "enum": null,
-          "length": null,
           "name": "date_tracer_modified",
           "nullable": true,
           "type": "DateTime"
         },
         "fullyspecified": {
           "enum": null,
-          "length": null,
           "name": "fullyspecified",
           "nullable": false,
           "type": "Boolean"
         },
         "portions": {
           "enum": null,
-          "length": null,
           "name": "portions",
           "nullable": false,
           "type": "Integer"
         },
         "regimen": {
           "enum": null,
-          "length": null,
           "name": "regimen",
           "nullable": false,
-          "type": "String(111)"
+          "type": "String"
         },
         "regimen_cui": {
           "enum": null,
-          "length": null,
           "name": "regimen_cui",
-          "nullable": false,
+          "nullable": true,
           "type": "Integer"
         },
         "routes": {
           "enum": null,
-          "length": null,
           "name": "routes",
           "nullable": false,
           "type": "Integer"
         },
         "sigs": {
           "enum": null,
-          "length": null,
           "name": "sigs",
           "nullable": false,
           "type": "Integer"
         },
         "study": {
           "enum": null,
-          "length": null,
           "name": "study",
           "nullable": true,
-          "type": "Text"
+          "type": "String"
         },
         "temp": {
           "enum": null,
-          "length": null,
           "name": "temp",
           "nullable": true,
           "type": "Float"
         },
-        "timings": {
-          "enum": null,
-          "length": null,
-          "name": "timings",
-          "nullable": false,
-          "type": "Integer"
-        },
         "tracer": {
           "enum": null,
-          "length": null,
           "name": "tracer",
           "nullable": true,
-          "type": "String(210)"
+          "type": "String"
         },
         "variant": {
           "enum": null,
-          "length": null,
           "name": "variant",
           "nullable": false,
-          "type": "String(11)"
+          "type": "String"
         },
         "variant_cui": {
           "enum": null,
-          "length": null,
           "name": "variant_cui",
           "nullable": false,
           "type": "Integer"
         },
         "version": {
           "enum": null,
-          "length": null,
           "name": "version",
           "nullable": false,
           "type": "Integer"
@@ -4844,7 +5134,9 @@
       "derived_columns": [],
       "description": "Table of regimen variants with versioning",
       "enums": {},
-      "identity_keys": [],
+      "identity_keys": [
+        "variant_cui"
+      ],
       "kind": "content",
       "maturity": "prod",
       "name": "variants",
@@ -4867,10 +5159,25 @@
         "variant_cui",
         "version"
       ],
-      "soft_m2m_relationships": [],
-      "soft_relationships": [],
+      "soft_m2m_relationships": [
+        {
+          "local_table": "variants",
+          "map_column": "study",
+          "map_table": "variants_study",
+          "target_column": "study",
+          "target_table": "studies"
+        }
+      ],
+      "soft_relationships": [
+        {
+          "local_column": "regimen_cui",
+          "target_column": "regimen_cui",
+          "target_table": "regimens"
+        }
+      ],
       "source_defined_keys": [],
       "source_filename": "variants.csv",
+      "source_name": "variants",
       "use_surrogate_pk": true
     }
   }

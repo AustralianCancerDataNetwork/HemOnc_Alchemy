@@ -1,5 +1,8 @@
-"""
-Clinical/domain classification rules.
+"""Classifying a regimen variant by treatment modality.
+
+HemOnc records radiotherapy as a sig like any other, distinguished by its
+`class` field. So whether a variant is radiotherapy alone, systemic therapy
+alone, or the two given together is read off its component sigs.
 """
 
 from __future__ import annotations

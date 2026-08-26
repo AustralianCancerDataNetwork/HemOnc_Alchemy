@@ -1,9 +1,28 @@
-"""Dosing-schedule token grammar.
+"""The pieces a dosing schedule is made of.
 
-Ported verbatim from hemonc_import's final_model/definitions.py — pure
-dataclasses and a regex, no entity dependency, so this is portable ahead of
-the compiler/model-generation work. Route-classification vocabulary has been
-split out to routes.py (see that module for why) rather than living here.
+A sig's `alldays` field expresses which days of a cycle a drug is given on, in
+a compact notation:
+
+| notation | meaning | becomes |
+|---|---|---|
+| `1,8,15` | given on those days | three `Day`s |
+| `[1,5,1]` | every day from 1 to 5, step 1 | a `Range` |
+| `(4)` | optional day | `Day(4, optional=True)` |
+| `1\\|2` | one of these days, unspecified which | a `Choice` |
+| `(+c)`, `(+n21)` | continues indefinitely, optionally capped in days | an `Indefinite` |
+
+Day numbers can be negative (`-14`), meaning that many days before day 1 —
+conditioning or lead-in dosing.
+
+Two markers are dropped rather than represented: a leading `U` means the
+schedule is unspecified, and `^` is stripped. Both are logged when they occur.
+
+A `Range` bound may be a word instead of a number — `EOC` for end of cycle —
+and such a range yields no explicit days at all, because its length isn't known
+from the sig alone. Roughly 79 sigs are written this way, so an empty day list
+does not by itself mean a drug is never given.
+
+`resolve_all_days` in handling.py turns the notation into these objects.
 """
 
 from __future__ import annotations

@@ -5,13 +5,21 @@ relationships, and enum-collision detection.
 
 from __future__ import annotations
 
+from dataclasses import asdict
+
 import pandas as pd
 import pytest
 
 from hemonc_alchemy.compiler.audit import enum_collision_warnings
+from hemonc_alchemy.compiler.generate import (
+    parse_multival_overrides,
+    parse_source_aliases,
+)
 from hemonc_alchemy.compiler.schema_model import (
+    ColumnSpec,
     EnumSpec,
     ForeignLikeRef,
+    NormalisedTable,
     Registry,
     SoftManyToManyRef,
     TableMeta,
@@ -22,7 +30,7 @@ from hemonc_alchemy.compiler.schema_model import (
 
 class TestDenormalisedColumnDedup:
     """`finalise_from_data` must dedupe `denormalised_columns` before calling
-    `infer_pipe_groups`, not after -- CONFIRMED in the real generated
+    `infer_pipe_groups`, not after. Seen in the real generated
     entities.py: `Drugs.normalisation_groups` contained a malformed
     `['atc', 'atc']` self-pair even though `Drugs.denormalised_columns`
     itself came out clean (deduped too late to matter for inference).
@@ -52,10 +60,198 @@ class TestDenormalisedColumnDedup:
         for group in meta.normalisation_groups:
             assert len(group.columns) == len(set(group.columns)), f"malformed self-pair: {group.columns}"
 
+    def test_hard_multival_override_removes_map_but_keeps_scalar_column(self):
+        meta = TableMeta(
+            name="studies",
+            description="",
+            kind="content",
+            maturity="prod",
+            pk_columns=["id"],
+            columns={"id": object(), "study": object(), "study_group": object()},
+            denormalised_columns=["study", "study_group"],
+        )
+        meta.normalised_tables = [
+            NormalisedTable(parent="studies", column="study"),
+            NormalisedTable(parent="studies", column="study_group"),
+        ]
+        registry = Registry(tables={"studies": meta})
+
+        registry.apply_multival_overrides({"studies": {"study"}})
+
+        assert meta.denormalised_columns == ["study_group"]
+        assert [table.column for table in meta.normalised_tables] == ["study_group"]
+        assert "study" in meta.columns
+
+
+class TestMultivalOverrides:
+    def test_parses_case_insensitive_table_and_column_headers(self):
+        df = pd.DataFrame(
+            {
+                "table": ["Studies", "study_results"],
+                "COLUMN": ["study", "est_ci"],
+                "Reason": ["scalar", "html"],
+            }
+        )
+
+        assert parse_multival_overrides(df) == {
+            "studies": {"study"},
+            "study_results": {"est_ci"},
+        }
+
+
+class TestDenormalisedColumnRetyping:
+    """A map table stores one exploded value per row, so the column's type
+    must describe that value -- not the delimited cell it came from.
+    `indications.regimen_cui` was typed String because `"12460|1354"` is not
+    numeric, leaving the generated map column String against
+    `Regimens.regimen_cui`'s BigInteger (`operator does not exist: bigint =
+    character varying` on Postgres).
+    """
+
+    def _meta(self) -> TableMeta:
+        return TableMeta(
+            name="indications", description="", kind="content", maturity="prod",
+            pk_columns=[], columns={},
+        )
+
+    def test_pipe_delimited_identifiers_become_numeric(self):
+        meta = self._meta()
+        meta.finalise_from_data(
+            pd.DataFrame({"regimen_cui": ["12460|1354", "47679", "9212|8100"]})
+        )
+        assert "regimen_cui" in meta.denormalised_columns
+        assert meta.columns["regimen_cui"].type == "Integer"
+
+    def test_placeholder_tokens_do_not_block_the_numeric_inference(self):
+        """CBD/TBA are "not yet assigned" markers on a _cui column."""
+        meta = self._meta()
+        meta.finalise_from_data(
+            pd.DataFrame({"regimen_cui": ["12460|1354", "CBD", "TBA|47679"]})
+        )
+        assert meta.columns["regimen_cui"].type == "Integer"
+
+    def test_genuinely_textual_denormalised_column_stays_a_string(self):
+        meta = self._meta()
+        meta.finalise_from_data(
+            pd.DataFrame({"regimen": ["FOLFOX|FOLFIRI", "CHOP", "R-CHOP|CVP"]})
+        )
+        assert "regimen" in meta.denormalised_columns
+        assert meta.columns["regimen"].type == "String"
+
+    def test_a_scalar_column_is_not_retyped_by_splitting(self):
+        """No pipes -> not denormalised -> left entirely alone."""
+        meta = self._meta()
+        meta.finalise_from_data(pd.DataFrame({"condition": ["a", "b", "c"]}))
+        assert meta.denormalised_columns == []
+
+
+class TestColumnSpecRoundTripTolerance:
+    def test_a_registry_written_by_an_older_version_still_loads(self):
+        """`cls(**raw)` pinned every registry.json to the exact field set that
+        wrote it; compiler/diff.py loads the *previously committed* registry,
+        so dropping a field broke the diff gate rather than just the reload.
+        """
+        spec = ColumnSpec.from_dict(
+            {"name": "aff_no", "type": "String", "nullable": False,
+             "enum": None, "length": None}       # `length` was removed
+        )
+        assert spec.name == "aff_no" and spec.nullable is False
+
+    def test_current_shape_round_trips(self):
+        original = ColumnSpec(name="route", type="Enum", nullable=True, enum="route")
+        assert ColumnSpec.from_dict(asdict(original)) == original
+
+
+class TestSoftRelationshipsSkipDenormalisedColumns:
+    """`regimens` arrived as a new table in the
+    2026-08 drop declaring `regimen_cui` as a source-defined key, so
+    `infer_soft_relationships` emitted a scalar soft FK on
+    `indications.regimen_cui` -- a column that is normalised into
+    `indications_regimen_cui` and therefore never rendered as a
+    mapped_column. SQLAlchemy failed with "Class Indications does not have a
+    mapped column named 'regimen_cui'". The m2m relationship through the map
+    table is the correct representation: one indication can cite several
+    regimens.
+    """
+
+    def _registry(self) -> Registry:
+        indications = TableMeta(
+            name="indications", description="", kind="content", maturity="prod",
+            pk_columns=[], columns={"condition": object(), "regimen_cui": object()},
+            denormalised_columns=["regimen_cui"],
+        )
+        indications.normalised_tables = [
+            NormalisedTable(parent="indications", column="regimen_cui")
+        ]
+        regimens = TableMeta(
+            name="regimens", description="", kind="content", maturity="prod",
+            pk_columns=[], columns={"regimen_cui": object()},
+            source_defined_keys=["regimen_cui"],
+        )
+        return Registry(tables={"indications": indications, "regimens": regimens})
+
+    def test_no_scalar_soft_fk_on_a_normalised_column(self):
+        registry = self._registry()
+        registry.infer_soft_relationships()
+        locals_ = [r.local_column for r in registry.tables["indications"].soft_relationships]
+        assert "regimen_cui" not in locals_
+
+    def test_the_m2m_through_the_map_table_is_still_generated(self):
+        registry = self._registry()
+        registry.infer_soft_relationships()
+        m2m = registry.tables["indications"].soft_m2m_relationships
+        assert [(r.map_table, r.map_column, r.target_table) for r in m2m] == [
+            ("indications_regimen_cui", "regimen_cui", "regimens")
+        ]
+
+    def test_a_scalar_column_still_gets_its_soft_fk(self):
+        """The skip must be scoped to denormalised columns only."""
+        registry = self._registry()
+        conditions = TableMeta(
+            name="conditions", description="", kind="content", maturity="prod",
+            pk_columns=[], columns={"condition": object()},
+            source_defined_keys=["condition"],
+        )
+        registry.tables["conditions"] = conditions
+        registry.infer_soft_relationships()
+        rels = registry.tables["indications"].soft_relationships
+        assert ("condition", "conditions") in [(r.local_column, r.target_table) for r in rels]
+
+
+class TestSourceAliases:
+    def test_parses_case_insensitive_headers_and_strips_the_extension(self):
+        df = pd.DataFrame(
+            {
+                "TABLE": ["context.table", "variant.blob"],
+                "file": ["contexts.csv", "variant_blob"],
+                "Reason": ["renamed upstream", "separator change"],
+            }
+        )
+
+        assert parse_source_aliases(df) == {
+            "contexttable": "contexts",
+            "variantblob": "variant_blob",
+        }
+
+    def test_blank_rows_are_skipped(self):
+        df = pd.DataFrame({"Table": ["context.table", None], "File": ["contexts.csv", None]})
+        assert parse_source_aliases(df) == {"contexttable": "contexts"}
+
+    def test_conflicting_declarations_for_one_table_are_rejected(self):
+        df = pd.DataFrame(
+            {"Table": ["context.table", "context.table"], "File": ["contexts.csv", "ctx.csv"]}
+        )
+        with pytest.raises(ValueError, match="conflicting files"):
+            parse_source_aliases(df)
+
+    def test_missing_required_headers_are_rejected(self):
+        with pytest.raises(ValueError, match="must contain 'Table' and 'File'"):
+            parse_source_aliases(pd.DataFrame({"Table": ["x"], "Notes": ["y"]}))
+
 
 class TestTableMetaRoundTrip:
     """TableMeta.from_dict must round-trip everything save_registry_json
-    writes -- CONFIRMED the checked-in registry.json has 18 soft
+    writes. The checked-in registry.json had 18 soft
     relationships that silently became 0 after a load_registry_json
     round-trip, which is what compiler/diff.py and compiler/audit.py both
     operate on.
@@ -104,7 +300,7 @@ class TestTableMetaRoundTrip:
 
 
 class TestEnumCollisionWarnings:
-    """CONFIRMED against real data: sigs/indications' `targetleveltype`-style
+    """sigs/indications' `targetleveltype`-style
     columns have both 'CPS at least 10%' and 'CPS at least 10', which both
     normalise to the same `safe_enum_key`. Should warn, not fail (the two
     values are the same real-world category here) -- and stay silent when
@@ -138,6 +334,21 @@ class TestEnumCollisionWarnings:
         }
         registry = Registry(tables={"indications": table})
         assert enum_collision_warnings(registry) == []
+
+
+def test_enum_rendering_escapes_multiline_values():
+    table = TableMeta(
+        name="study_results", description="", kind="content", maturity="prod", pk_columns=[],
+    )
+    enum = EnumSpec(
+        name="comparator_code",
+        tablename="study_results",
+        values=["not applicable\n333: a multiline description"],
+    )
+
+    rendered = enum.enum_class(table)
+
+    compile(rendered, "<generated-enum>", "exec")
 
 
 if __name__ == "__main__":

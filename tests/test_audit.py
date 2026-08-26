@@ -12,7 +12,7 @@ from hemonc_alchemy.compiler.audit import audit_table, has_hard_failures
 
 
 class TestNullSafeDuplicateDetection:
-    """CONFIRMED against the real sigs.csv: every one of 2422 rows flagged
+    """In the real sigs.csv, every one of 2422 rows flagged
     DUPLICATE_BUSINESS_KEYS had a null `variant_cui` (the natural key wasn't
     fully populated), and zero genuine duplicates exist among fully-keyed
     rows. Rows with a null key part must not be compared for uniqueness

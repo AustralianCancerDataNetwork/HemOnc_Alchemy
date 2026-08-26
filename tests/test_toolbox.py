@@ -1,11 +1,8 @@
-"""Functional tests for toolbox/classification.py and model/relationships.py,
-exercised against real ORM inserts on a live in-memory SQLite database --
-not just "does it import"/"does configure_mappers() succeed". These
-specifically catch the class of bug found while porting this module: a
-declared relationship or a toolbox function that's syntactically fine but
-resolves to the wrong rows (or, as with the original's dead
-`variant.study_objects` reference, an attribute that was never actually
-defined at all).
+"""Classification and relationships, against real rows in a real database.
+
+Run this way rather than as import checks, because the failure mode worth
+catching is a relationship that resolves to the wrong rows -- which looks
+fine until you query it.
 """
 
 from __future__ import annotations
@@ -50,10 +47,8 @@ def _make_variant(session, variant_cui: int) -> Variants:
         cyclesigs=0,
         components=0,
         portions=0,
-        branches=0,
         routes=0,
         sigs=0,
-        timings=0,
         blob_version=0,
         fullyspecified=True,
         allsigshavecyclesigs=True,
@@ -79,12 +74,13 @@ def _make_sig(session, *, variant_cui: int, component_cui: int, class_field: str
         component_cui=component_cui,
         class_field=class_field,
         component_role=component_role,
-        branch="A",
         component=f"drug-{component_cui}",
         portion="1",
         regimen="R",
         regimen_cui=1,
         step_number="1",
+        divided=False,
+        phase_step=1,
         variant=f"variant-{variant_cui}",
         date_added=datetime(2020, 1, 1, tzinfo=UTC),
     )
@@ -94,9 +90,8 @@ def _make_sig(session, *, variant_cui: int, component_cui: int, class_field: str
 
 
 class TestClassificationAgainstRealJoins:
-    """Sigs<->Variants join via Sigs.variant_cui == Variants.variant_cui --
-    the exact join that used to require a manual int() cast because of the
-    Float/BigInteger/String mismatch (US-18)."""
+    """Sigs are matched to Variants on `variant_cui`, which the two tables
+    once typed differently -- worth holding with real inserts."""
 
     def test_rad_sig_only_is_rt_only(self, session):
         variant = _make_variant(session, variant_cui=100)

@@ -1,14 +1,15 @@
-"""Cross-entity enrichment layer — mirrors omop_alchemy's cdm/handlers/.
+"""Helpers that work across entities.
 
-Tiers 2, 3, and 4 of the split described in ../model/relationships.py's
-docstring: fuzzy cross-reference resolution (linking.py), clinical
-classification (classification.py), and dosing-schedule parsing
-(schedule/). All three consume the model but are not themselves
-declarative ORM relationships -- that distinction is the whole point of
-splitting them out (US-16, US-17).
+Three kinds of thing, none of which is a plain database lookup:
 
-Deliberately plain functions, not properties monkey-patched onto the entity
-classes -- see linking.py's module docstring for why.
+- `classification` — treatment-level judgements, such as whether a variant is
+  radiotherapy only or concurrent chemoradiotherapy.
+- `linking` — following HemOnc's free-text cross-references between sigs,
+  studies, variants and conditions. Best-effort, not guaranteed joins.
+- `schedule` — reading dosing schedules out of a sig's `alldays` expression.
+
+These are functions you call on an entity, rather than attributes on it, so it
+is always visible where a query or an inference is happening.
 """
 
 from .classification import (

@@ -1,7 +1,6 @@
 class HemOncValidationError(RuntimeError):
-    """Raised when a generated model fails validation against its schema.
+    """The generated model doesn't match the schema it was generated from.
 
-    Analogous to omop_alchemy.errors.CDMValidationError, but produced by
-    compiler/validate.py and compiler/diff.py rather than by any
-    OMOP-specific spec check.
+    Raised while regenerating the model, not while querying it. The message
+    lists each problem found.
     """

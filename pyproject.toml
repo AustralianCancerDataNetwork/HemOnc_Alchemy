@@ -32,7 +32,7 @@ dependencies = [
   "sqlalchemy>=2.0.45",
   "pandas>=2.0",
   "oa-configurator>=1.1.0,<2.0.0",
-  "orm-loader>=1.0.0,<2.0.0",
+  "orm-loader>=1.1.0,<2.0.0",
   "typer>=0.12",
   "rich>=13.0",
 ]
@@ -86,15 +86,6 @@ packages = ["hemonc_alchemy"]
 
 [tool.uv]
 cache-keys = [{ file = "pyproject.toml" }, { git = { commit = true, tags = true } }]
-
-[tool.uv.sources]
-# TEMPORARY: points at the `register_cast_rule` branch on GitHub (not yet
-# released), which adds register_column_cast_rule() -- see
-# https://github.com/AustralianCancerDataNetwork/orm-loader/issues/36 -- plus
-# the header-quoting and required-column fixes from earlier work on this
-# same dependency. Revert this to the plain PyPI `orm-loader>=1.0.0,<2.0.0`
-# dependency (already declared above) once a real release with these lands.
-orm-loader = { git = "https://github.com/AustralianCancerDataNetwork/orm-loader", branch = "register_cast_rule" }
 
 [tool.ruff]
 extend-exclude = ["hemonc_alchemy/model/entities.py", "hemonc_alchemy/model/enums.py", "reference/"]

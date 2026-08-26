@@ -1,14 +1,12 @@
-"""
-Post-generation structural validation 
+"""Checks run over a regenerated model, at three levels.
 
-Confirms that output is syntactically valid Python
-
-1. `validate_registry` — structural checks against the Registry object
-   itself, before rendering (catches a bad pk_columns/enum declaration
-   regardless of what the generator would have done with it).
-2. `validate_generated_file` — `ast.parse` on the actual written Python, so
-   a bug in the *generator* (producing invalid syntax from valid metadata)
-   is caught too, not just bad input metadata.
+`validate_registry` checks the schema before any code is written, so a bad
+declaration is reported rather than turning into a confusing error from inside
+the generator. `validate_generated_file` parses what was actually written,
+catching a fault in the generator itself. `validate_source_regressions`
+compares against the last committed schema, since a table quietly losing its
+data is invisible to both of the others: a table with no columns has nothing
+to check, and around a dozen tables have legitimately never had any.
 """
 
 from __future__ import annotations
@@ -51,11 +49,8 @@ def validate_registry(registry: Registry) -> list[str]:
             if rel.target_table not in registry.tables:
                 errors.append(f"{name}: soft m2m relationship targets unknown table '{rel.target_table}'")
 
-        # A column repeated within its own group, or appearing in more than
-        # one group, means a table_class of exploded map tables would either
-        # be malformed (a self-pair) or ambiguous about which group governs
-        # it (review follow-up; see schema_model.py's finalise_from_data
-        # dedup-ordering fix for the confirmed real case this catches).
+        # A column repeated within a group, or spread across two, would
+        # generate a malformed or ambiguous child table. Has happened.
         seen_in_group: dict[str, int] = {}
         for group in meta.normalisation_groups:
             if len(group.columns) != len(set(group.columns)):
@@ -79,11 +74,51 @@ def validate_generated_file(path: Path) -> list[str]:
     return []
 
 
-def validate_all(registry: Registry, entities_path: Path, enums_path: Path) -> list[str]:
+def validate_source_regressions(
+    registry: Registry, previous: Registry | None
+) -> list[str]:
+    """Report tables that used to produce an entity class and no longer do.
+
+    Filename and header conventions upstream aren't ours to control, so a
+    future failure to locate a table's data is a matter of when. This is what
+    stops that producing a quietly smaller model. Returns nothing on a first
+    generation, having no baseline to compare against.
+    """
+    if previous is None:
+        return []
+
+    errors: list[str] = []
+    for name, previous_meta in sorted(previous.tables.items()):
+        if not previous_meta.columns:
+            continue
+        current = registry.tables.get(name)
+        if current is None:
+            # An outright removed table is a schema change the diff gate
+            # already reports by name; not a silent source-resolution loss.
+            continue
+        if current.columns:
+            continue
+        errors.append(
+            f"{name}: had {len(previous_meta.columns)} column(s) backed by "
+            f"'{previous_meta.source_filename or 'an unrecorded file'}' and now resolves to no "
+            f"source file, so it no longer generates an entity class. If the extract was "
+            f"renamed upstream, declare it on the dictionary's SourceAliases sheet; if the "
+            f"table is genuinely gone, remove it from the dictionary."
+        )
+    return errors
+
+
+def validate_all(
+    registry: Registry,
+    entities_path: Path,
+    enums_path: Path,
+    previous: Registry | None = None,
+) -> list[str]:
     """Run every check; return all failures (does not raise)."""
     errors = validate_registry(registry)
     errors += validate_generated_file(entities_path)
     errors += validate_generated_file(enums_path)
+    errors += validate_source_regressions(registry, previous)
     return errors
 
 

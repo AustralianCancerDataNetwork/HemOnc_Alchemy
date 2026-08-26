@@ -1,10 +1,14 @@
-"""
-Fuzzy cross-entity resolution: sig <-> study <-> variant <-> condition.
+"""Following HemOnc's cross-references between sigs, studies, variants and
+conditions.
 
-These resolvers parse pipe-delimited free text and issue ad hoc
-`session.execute(select(...))` queries.
+Some of these links are only recorded as free text — a `study` field holding
+several study names separated by `|`, for example — so resolving them means
+splitting that text and looking the names up. That is a best-effort match on
+what the source wrote, not a guaranteed join, and a name that doesn't resolve
+is simply absent from the result rather than raising.
 
-This is best-effort cross-referencing, not guaranteed-correct FK joins.
+Each function takes an entity and returns the related entities, deduplicated.
+Several issue their own queries, so the entity must be attached to a session.
 """
 
 from __future__ import annotations
@@ -80,9 +84,7 @@ def sig_study_objects(sig) -> list[Studies]:
     variant = sig_variant_context(sig)
     if variant is not None:
         for study_map_row in variant.study_items:
-            # `study_objects` is attached post-hoc in model.relationships,
-            # so it is not visible to static analysis on the generated map
-            # class even though it is present at runtime.
+            # cast: attached in model.relationships, so invisible statically.
             study_objects = cast(list[Studies], study_map_row.study_objects)
             studies.extend(study_objects)
 
