@@ -35,5 +35,20 @@ services:
       - postgres-data:/var/lib/postgresql
       - ./initdb:/docker-entrypoint-initdb.d:ro
 
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
+      # Development-only default; override this in .env for a shared machine.
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-hemonc-admin}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
 volumes:
   postgres-data:
+  pgadmin-data:

@@ -11,10 +11,11 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
+        "ms-toolsai.jupyter",
         "charliermarsh.ruff"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
         "python.analysis.extraPaths": [
           "/workspace/hemonc-alchemy"
         ]

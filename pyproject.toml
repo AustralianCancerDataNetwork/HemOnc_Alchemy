@@ -51,6 +51,7 @@ dev = [
   "oa-configurator[dev,postgres]>=1.1.0,<2.0.0",
   "hemonc-alchemy[author,postgres]",
   "ipython>=8.0",
+  "ipykernel>=6.29",
   "pytest>=8.0",
   "pytest-cov>=4.0",
   "ruff>=0.4",
