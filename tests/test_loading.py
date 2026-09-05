@@ -20,10 +20,10 @@ from hemonc_alchemy.model.base import Base
 from hemonc_alchemy.model.entities import (
     Canonicaltriples,
     HemoncClasses,
-    hemonc_classes_Secondary_home_as_stringMap,
     Units,
     Variants,
     canonicaltriples_Class_1_provenanceMap,
+    hemonc_classes_Secondary_home_as_stringMap,
 )
 from hemonc_alchemy.model.enums import (
     HemoncClasses_Class_typeEnum,

@@ -268,7 +268,7 @@ def _surrogate_parent_lookup(
         else:
             lookup[key] = row[0]
 
-    source_lookup: dict[tuple[object, ...], int | None] = {}
+    source_lookup: dict[object, int | None] = {}
     for index, row in df.iterrows():
         key = tuple(
             _identity_value(row[column.name], column, source=True, on_error=failed)
@@ -305,7 +305,7 @@ def load_denormalised(
         df = _read_source_csv(path)
 
     key_cols = _natural_key_columns(entity_cls)
-    is_surrogate = hasattr(entity_cls, "id")
+    is_surrogate = "id" in entity_cls.__table__.c
 
     parent_lookup: dict[object, int | None] = {}
     if is_surrogate:
