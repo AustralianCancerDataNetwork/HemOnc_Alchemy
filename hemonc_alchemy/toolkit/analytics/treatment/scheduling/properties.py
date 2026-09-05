@@ -25,8 +25,13 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]
 
+from .....model.enums import (
+    Sigs_Cycle_length_unitEnum,
+    Sigs_FrequencyEnum,
+    Sigs_PhaseEnum,
+)
 from .handling import Day, Indefinite, apply_sig_to_series, resolve_all_days
 from .routes import route_group
 
@@ -55,7 +60,7 @@ class ScheduleEvent:
     route_group: str | None
     days: tuple[Day, ...]
     indefinite: Indefinite | None
-    phase: str | None
+    phase: Sigs_PhaseEnum | None
     phase_step: int | None
     portion: str | None
     timing_sequence: str | None
@@ -63,10 +68,10 @@ class ScheduleEvent:
     dose_min: str | None
     dose_max: str | None
     dose_unit: str | None
-    frequency: str | None
-    cycle_length_lb: float | None
+    frequency: Sigs_FrequencyEnum | None
+    cycle_length_lb: str | None
     cycle_length_ub: str | None
-    cycle_length_unit: str | None
+    cycle_length_unit: Sigs_Cycle_length_unitEnum | None
     raw_all_days: str | None
 
 

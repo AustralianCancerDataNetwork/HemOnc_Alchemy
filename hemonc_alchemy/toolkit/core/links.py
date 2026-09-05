@@ -29,8 +29,26 @@ def study_condition_object(study):
 
 
 def study_variant_objects(study):
-    """A study's distinct resolved variants, deduped by variant_cui."""
-    return dedupe_by(study.variants, lambda variant: getattr(variant, "variant_cui", None))
+    """A study's resolved variants, keeping the highest imported version.
+
+    ``Variants.variant_cui`` is not unique. When a study relationship loads
+    several versions, this helper deliberately prefers the greatest
+    ``(version, id)`` rather than depending on select-in loading order.
+    """
+    latest = {}
+    for variant in study.variants:
+        variant_cui = getattr(variant, "variant_cui", None)
+        if variant_cui is None:
+            continue
+        current = latest.get(variant_cui)
+        candidate_key = (getattr(variant, "version", -1), getattr(variant, "id", -1))
+        current_key = (
+            getattr(current, "version", -1),
+            getattr(current, "id", -1),
+        ) if current is not None else None
+        if current is None or candidate_key > current_key:
+            latest[variant_cui] = variant
+    return list(latest.values())
 
 
 def variant_condition_objects(variant):
@@ -92,13 +110,13 @@ def sig_study_objects(sig) -> list[Studies]:
     variant-context fallback preserves the useful legacy behavior for sigs
     whose study map is absent but whose variant has study links.
     """
-    studies = []
-    studies.extend(getattr(sig, "study_objects", ()))
+    studies: list[Studies] = []
+    studies.extend(cast(list[Studies], getattr(sig, "study_objects", ())))
     variant = sig_variant_context(sig)
     if variant is not None:
         for study_map_row in variant.study_items:
             # cast: attached in model.relationships, so invisible statically.
-            study_objects = cast(list[Studies], study_map_row.study_objects)
+            study_objects = cast(list[Studies], getattr(study_map_row, "study_objects", ()))
             studies.extend(study_objects)
 
     return dedupe_by(

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import pytest
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
@@ -13,6 +14,13 @@ from hemonc_alchemy.toolkit.analytics.treatment.selection import (
     ComponentRequirement,
     TreatmentSelectionSpec,
     build_variant_statement,
+)
+from hemonc_alchemy.toolkit.analytics.treatment.selection.components import (
+    category_expression,
+)
+from hemonc_alchemy.toolkit.core.components import (
+    component_cui_subquery,
+    component_search_statement,
 )
 from hemonc_alchemy.toolkit.core.conditions import condition_cui_statement
 from hemonc_alchemy.toolkit.core.links import sig_study_tokens
@@ -46,9 +54,14 @@ def test_variant_selection_ranks_versions_and_normalizes_phase():
         [123],
         component_requirements=(ComponentRequirement.from_terms("cisplatin"),),
         category_requirements=(CategoryRequirement("cytotoxic", 1),),
-        phase="adjuvant",
+        phase="Adjuvant",
     )
-    sql = _sql(build_variant_statement(spec))
+    sql = _sql(
+        build_variant_statement(
+            spec,
+            category_mapping={"main_class": {"Platinum agent": "cytotoxic"}},
+        )
+    )
 
     assert "row_number() OVER (PARTITION BY variants.variant_cui" in sql
     assert "variants_study.parent_id = variants.id" in sql
@@ -75,9 +88,45 @@ def test_sig_study_tokens_reads_current_normalized_map_rows():
 def test_unknown_phase_fails_at_statement_boundary():
     spec = TreatmentSelectionSpec.for_conditions([123], phase="not-a-phase")
 
-    try:
+    with pytest.raises(ValueError, match="Unknown sig phase: 'not-a-phase'"):
         build_variant_statement(spec)
-    except ValueError as exc:
-        assert str(exc) == "Unknown sig phase: 'not-a-phase'"
-    else:
-        raise AssertionError("an unknown generated enum value must be rejected")
+
+
+def test_category_requirements_require_an_explicit_mapping():
+    spec = TreatmentSelectionSpec.for_conditions(
+        [123], category_requirements=(CategoryRequirement("cytotoxic", 0),)
+    )
+
+    with pytest.raises(ValueError, match="category_mapping is required"):
+        build_variant_statement(spec)
+
+
+def test_category_expression_supports_one_column_and_rejects_empty_mapping():
+    metadata = sa.MetaData()
+    components = sa.Table(
+        "components",
+        metadata,
+        sa.Column("main_class", sa.String),
+    )
+    engine = sa.create_engine("sqlite:///:memory:")
+    metadata.create_all(engine)
+    with engine.begin() as connection:
+        connection.execute(components.insert(), [{"main_class": "Platinum agent"}])
+        value = connection.execute(
+            sa.select(
+                category_expression(
+                    components,
+                    {"main_class": {"Platinum agent": "cytotoxic"}},
+                )
+            )
+        ).scalar_one()
+    assert value == "cytotoxic"
+
+    with pytest.raises(ValueError, match="must not be empty"):
+        category_expression(components, {"main_class": {}})
+
+
+@pytest.mark.parametrize("builder", [component_search_statement, component_cui_subquery])
+def test_component_search_rejects_empty_columns(builder):
+    with pytest.raises(ValueError, match="At least one component search column"):
+        builder("cisplatin", columns=())

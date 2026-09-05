@@ -1,5 +1,6 @@
 """Standalone treatment selection contracts and query builders."""
 
+from .components import category_expression
 from .specs import CategoryRequirement, ComponentRequirement, TreatmentSelectionSpec
 from .variants import (
     VariantQueryArtifacts,
@@ -15,5 +16,6 @@ __all__ = [
     "VariantQueryArtifacts",
     "build_variant_query_artifacts",
     "build_variant_statement",
+    "category_expression",
     "select_variants",
 ]

@@ -132,6 +132,29 @@ class TestClassificationAgainstRealJoins:
         assert is_concurrent_chemort(variant) is True
         assert is_rt_only(variant) is False
 
+    def test_unclassified_sig_does_not_imply_systemic_treatment(self, session):
+        variant = _make_variant(session, variant_cui=250)
+        _make_sig(
+            session,
+            variant_cui=250,
+            component_cui=6,
+            class_field="rad sig",
+            component_role="locoregional",
+        )
+        _make_sig(
+            session,
+            variant_cui=250,
+            component_cui=7,
+            class_field=None,
+            component_role="primary systemic",
+        )
+        session.expire_all()
+
+        assert has_radiation_sig(variant) is True
+        assert has_non_radiation_sig(variant) is False
+        assert is_concurrent_chemort(variant) is False
+        assert is_rt_only(variant) is False
+
     def test_no_sigs_classifies_as_neither(self, session):
         variant = _make_variant(session, variant_cui=300)
         session.expire_all()

@@ -6,17 +6,12 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Literal
 
+from .....toolkit.core.components import COMPONENT_SEARCH_COLUMNS
+
 VersionPolicy = Literal["all", "latest"]
 CategoryMatch = Literal["exact", "min"]
 
-DEFAULT_COMPONENT_COLUMNS = (
-    "component",
-    "drug",
-    "drug_inn",
-    "main_class",
-    "canmed_major_class",
-    "canmed_minor_class",
-)
+DEFAULT_COMPONENT_COLUMNS = COMPONENT_SEARCH_COLUMNS
 
 
 def _strings(values: Iterable[str]) -> tuple[str, ...]:

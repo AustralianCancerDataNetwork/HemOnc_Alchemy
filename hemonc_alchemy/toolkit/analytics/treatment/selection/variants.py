@@ -10,13 +10,24 @@ from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
 from .....model import Variants
-from .components import build_component_statement, component_search_predicate
+from .components import (
+    build_component_statement,
+    category_expression,
+    component_search_predicate,
+)
 from .specs import CategoryMapping, TreatmentSelectionSpec
 
 
 @dataclass(frozen=True)
 class VariantQueryArtifacts:
-    """The stages of a treatment query, retained for inspection and testing."""
+    """The stages of a treatment query, retained for inspection and testing.
+
+    Variant identity is the generated surrogate ``Variants.id``. The
+    default query selects one latest row per ``variant_cui``; the ``all``
+    policy is available when callers explicitly need every imported version.
+    ``Sigs`` has no version column, so sigs joined by ``variant_cui`` remain
+    shared across versions.
+    """
 
     components: Select
     categorized_components: Any
@@ -28,12 +39,10 @@ def _categorized_components(
     components: Select,
     category_mapping: CategoryMapping | None,
 ) -> Any:
-    from .components import _category_expression
-
     source = components.subquery("treatment_components")
     return select(
         source,
-        _category_expression(source, category_mapping),
+        category_expression(source, category_mapping),
     ).subquery("categorized_components")
 
 
@@ -43,25 +52,30 @@ def build_variant_query_artifacts(
     category_mapping: CategoryMapping | None = None,
 ) -> VariantQueryArtifacts:
     """Build inspectable component, grouping, and final variant statements."""
-    components = build_component_statement(spec, category_mapping=category_mapping)
+    if spec.category_requirements and category_mapping is None:
+        raise ValueError(
+            "category_mapping is required when category_requirements are supplied."
+        )
+
+    components = build_component_statement(spec)
     categorized = _categorized_components(components, category_mapping)
 
     predicates = []
-    for requirement in spec.component_requirements:
+    for component_requirement in spec.component_requirements:
         predicates.append(
             sa.func.count(sa.distinct(categorized.c.sig_id)).filter(
-                component_search_predicate(categorized, requirement)
+                component_search_predicate(categorized, component_requirement)
             )
             >= 1
         )
-    for requirement in spec.category_requirements:
+    for category_requirement in spec.category_requirements:
         count = sa.func.count(sa.distinct(categorized.c.sig_id)).filter(
-            categorized.c.broad_category == requirement.category
+            categorized.c.broad_category == category_requirement.category
         )
         predicates.append(
-            count == requirement.amount
-            if requirement.match == "exact"
-            else count >= requirement.amount
+            count == category_requirement.amount
+            if category_requirement.match == "exact"
+            else count >= category_requirement.amount
         )
 
     variant_ids = (
@@ -100,7 +114,14 @@ def select_variants(
     *,
     category_mapping: CategoryMapping | None = None,
 ) -> list[Variants]:
-    """Execute :func:`build_variant_statement` and return selected variants."""
-    return session.execute(
-        build_variant_statement(spec, category_mapping=category_mapping)
-    ).unique().scalars().all()
+    """Execute the variant query under its explicit version policy.
+
+    ``latest`` returns one generated parent row per ``variant_cui``. Because
+    ``Sigs`` has no version column, returned variants still expose sigs joined
+    by that shared CUI rather than version-provenance-specific sig membership.
+    """
+    return list(
+        session.execute(
+            build_variant_statement(spec, category_mapping=category_mapping)
+        ).unique().scalars()
+    )

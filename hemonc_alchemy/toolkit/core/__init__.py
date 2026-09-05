@@ -5,6 +5,7 @@ configuration, synthetic OMOP rows, or treatment selection policy.
 """
 
 from .components import (
+    COMPONENT_SEARCH_COLUMNS,
     ComponentHit,
     component_cui_subquery,
     component_search_statement,
@@ -23,9 +24,11 @@ from .links import (
     sig_variant_context,
     study_condition_object,
     study_variant_objects,
+    variant_condition_objects,
 )
 
 __all__ = [
+    "COMPONENT_SEARCH_COLUMNS",
     "ComponentHit",
     "component_cui_subquery",
     "component_search_statement",
@@ -40,4 +43,5 @@ __all__ = [
     "sig_variant_context",
     "study_condition_object",
     "study_variant_objects",
+    "variant_condition_objects",
 ]

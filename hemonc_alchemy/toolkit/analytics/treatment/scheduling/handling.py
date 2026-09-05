@@ -92,9 +92,9 @@ def parse_range(token: str):
         logger.warning("Unparseable range token %r (expected 3 comma-separated parts)", token)
         return []
 
-    start, end, step = parts
-    start = int(start) if start.lstrip("-").isdigit() else start
-    end = int(end) if end.lstrip("-").isdigit() else end
+    start_text, end_text, step = parts
+    start: int | str = int(start_text) if start_text.lstrip("-").isdigit() else start_text
+    end: int | str = int(end_text) if end_text.lstrip("-").isdigit() else end_text
     return [Range(start, end, int(step))]
 
 

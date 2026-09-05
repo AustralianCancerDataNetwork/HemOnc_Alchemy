@@ -12,7 +12,9 @@ class VariantBundle:
 
     The ORM rows are retained rather than copied into a second schema. This
     gives callers an immutable boundary for composing selection,
-    classification, and scheduling.
+    classification, and scheduling. The bundle inherits the model's current
+    cross-version limitation: ``Sigs`` stores ``variant_cui`` but not
+    ``version``, so its sigs cannot be proven to belong to one version only.
     """
 
     variant: Any

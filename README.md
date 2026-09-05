@@ -13,6 +13,17 @@ uv sync                 # to query HemOnc
 uv sync --extra dev     # also the regeneration tooling, tests and linting
 ```
 
+## Documentation
+
+The end-user documentation lives in `docs/` and is configured by `mkdocs.yml`.
+With the development extras installed, preview it locally with:
+
+```bash
+mkdocs serve
+```
+
+Build the static site with `mkdocs build --strict`.
+
 ## Configuring a connection
 
 Connections are managed by [oa-configurator](https://pypi.org/project/oa-configurator/), shared across the stack, so you set a database up once and every package can reach it:

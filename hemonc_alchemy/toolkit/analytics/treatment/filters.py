@@ -48,7 +48,11 @@ def standalone_radiation_sig_statement(
 def studies_with_standalone_radiation_sigs_statement(
     condition_cuis: Iterable[int],
 ) -> Select:
-    """Select study IDs containing a standalone radiation sig."""
+    """Select ``Studies.id`` values containing a standalone radiation sig.
+
+    ``Studies.study`` is not globally unique in the generated model, so
+    distinctness applies to entity IDs rather than source study names.
+    """
     return (
         select(Studies.id)
         .join(sigs_StudyMap, sigs_StudyMap.study == Studies.study)
@@ -68,9 +72,9 @@ def find_standalone_radiation_sigs(
     condition_cuis: Iterable[int],
 ) -> list[Sigs]:
     """Execute :func:`standalone_radiation_sig_statement`."""
-    return session.execute(
-        standalone_radiation_sig_statement(condition_cuis)
-    ).scalars().all()
+    return list(
+        session.execute(standalone_radiation_sig_statement(condition_cuis)).scalars()
+    )
 
 
 def find_studies_with_standalone_radiation_sigs(
@@ -78,6 +82,8 @@ def find_studies_with_standalone_radiation_sigs(
     condition_cuis: Iterable[int],
 ) -> list[int]:
     """Execute the standalone-radiation study-ID query."""
-    return list(session.execute(
-        studies_with_standalone_radiation_sigs_statement(condition_cuis)
-    ).scalars())
+    return list(
+        session.execute(
+            studies_with_standalone_radiation_sigs_statement(condition_cuis)
+        ).scalars()
+    )

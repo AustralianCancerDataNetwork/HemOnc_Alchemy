@@ -31,7 +31,7 @@ class ComponentHit:
     canmed_minor_class: str | None
 
 
-_DEFAULT_COLUMNS = (
+COMPONENT_SEARCH_COLUMNS = (
     "component",
     "drug",
     "drug_inn",
@@ -39,6 +39,15 @@ _DEFAULT_COLUMNS = (
     "canmed_major_class",
     "canmed_minor_class",
 )
+
+_SEARCH_COLUMNS = {
+    "component": Sigs.component,
+    "drug": Drugs.drug,
+    "drug_inn": Drugs.drug_inn,
+    "main_class": Drugs.main_class,
+    "canmed_major_class": drugs_Canmed_major_classMap.canmed_major_class,
+    "canmed_minor_class": drugs_Canmed_minor_classMap.canmed_minor_class,
+}
 
 
 def _as_terms(search_terms: str | Iterable[str]) -> tuple[str, ...]:
@@ -57,10 +66,19 @@ def _search_expressions(
     return [column.ilike(f"%{term}%") for term in terms for column in columns]
 
 
+def _search_columns(columns: tuple[str, ...]) -> tuple[Any, ...]:
+    if not columns:
+        raise ValueError("At least one component search column is required.")
+    unknown = sorted(set(columns) - set(_SEARCH_COLUMNS))
+    if unknown:
+        raise ValueError(f"Unknown component search column(s): {unknown}")
+    return tuple(_SEARCH_COLUMNS[name] for name in columns)
+
+
 def component_search_statement(
     search_terms: str | Iterable[str],
     *,
-    columns: tuple[str, ...] = _DEFAULT_COLUMNS,
+    columns: tuple[str, ...] = COMPONENT_SEARCH_COLUMNS,
 ) -> Select:
     """Return a statement selecting distinct components matching text.
 
@@ -69,19 +87,7 @@ def component_search_statement(
     statement is intentionally composable: callers may add condition, study,
     or treatment-policy predicates before execution.
     """
-    allowed = {
-        "component": Sigs.component,
-        "drug": Drugs.drug,
-        "drug_inn": Drugs.drug_inn,
-        "main_class": Drugs.main_class,
-        "canmed_major_class": drugs_Canmed_major_classMap.canmed_major_class,
-        "canmed_minor_class": drugs_Canmed_minor_classMap.canmed_minor_class,
-    }
-    unknown = sorted(set(columns) - set(allowed))
-    if unknown:
-        raise ValueError(f"Unknown component search column(s): {unknown}")
-
-    selected = [
+    selected: list[Any] = [
         Sigs.component_cui.label("component_cui"),
         Sigs.component.label("component"),
         Drugs.drug.label("drug"),
@@ -102,7 +108,7 @@ def component_search_statement(
             drugs_Canmed_minor_classMap,
             drugs_Canmed_minor_classMap.parent_id == Drugs.id,
         )
-        .where(sa.or_(*_search_expressions(_as_terms(search_terms), tuple(allowed[name] for name in columns))))
+        .where(sa.or_(*_search_expressions(_as_terms(search_terms), _search_columns(columns))))
         .distinct()
     )
 
@@ -110,7 +116,7 @@ def component_search_statement(
 def component_cui_subquery(
     search_terms: str | Iterable[str],
     *,
-    columns: tuple[str, ...] = _DEFAULT_COLUMNS,
+    columns: tuple[str, ...] = COMPONENT_SEARCH_COLUMNS,
 ) -> Any:
     """Return a distinct ``component_cui`` subquery for composition in filters."""
     return (
@@ -125,19 +131,7 @@ def component_cui_subquery(
             drugs_Canmed_minor_classMap,
             drugs_Canmed_minor_classMap.parent_id == Drugs.id,
         )
-        .where(
-            sa.or_(*_search_expressions(
-                _as_terms(search_terms),
-                tuple({
-                    "component": Sigs.component,
-                    "drug": Drugs.drug,
-                    "drug_inn": Drugs.drug_inn,
-                    "main_class": Drugs.main_class,
-                    "canmed_major_class": drugs_Canmed_major_classMap.canmed_major_class,
-                    "canmed_minor_class": drugs_Canmed_minor_classMap.canmed_minor_class,
-                }[name] for name in columns),
-            ))
-        )
+        .where(sa.or_(*_search_expressions(_as_terms(search_terms), _search_columns(columns))))
         .distinct()
         .subquery("matching_component_cuis")
     )
@@ -147,7 +141,7 @@ def search_components(
     session: Session,
     search_terms: str | Iterable[str],
     *,
-    columns: tuple[str, ...] = _DEFAULT_COLUMNS,
+    columns: tuple[str, ...] = COMPONENT_SEARCH_COLUMNS,
 ) -> list[ComponentHit]:
     """Execute :func:`component_search_statement` and return component hits."""
     rows = session.execute(
