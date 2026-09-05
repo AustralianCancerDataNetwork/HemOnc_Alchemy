@@ -1,0 +1,25 @@
+{
+  "name": "HemOnc Alchemy",
+  "dockerComposeFile": "compose.yaml",
+  "service": "python-hemonc-alchemy",
+  "workspaceFolder": "/workspace/hemonc-alchemy",
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
+  "postCreateCommand": "uv sync --frozen --extra dev",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.extraPaths": [
+          "/workspace/hemonc-alchemy"
+        ]
+      }
+    }
+  },
+  "shutdownAction": "none"
+}

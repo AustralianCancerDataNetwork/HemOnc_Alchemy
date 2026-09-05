@@ -145,6 +145,61 @@ class TestDenormalisedColumnRetyping:
         assert meta.denormalised_columns == []
 
 
+class TestNaturalKeyPolicy:
+    def test_sparse_lookup_uses_a_surrogate_key_everywhere(self):
+        meta = TableMeta(
+            name="lookup_values",
+            description="",
+            kind="lookup",
+            maturity="prod",
+            pk_columns=["lookup_id"],
+        )
+        meta.finalise_from_data(
+            pd.DataFrame(
+                {
+                    "lookup_id": ["A", None],
+                    "description": ["first", "second"],
+                    "aliases": ["one|uno", "two|dos"],
+                }
+            )
+        )
+
+        assert meta.uses_surrogate_pk is True
+        assert meta.natural_key_is_usable is False
+        rendered = meta.table_class(Registry(tables={meta.name: meta}))
+        child = meta.normalised_table_class(meta.normalised_tables[0])
+        assert "id: Mapped[int]" in rendered
+        assert "lookup_id: Mapped[Optional[str]]" in rendered
+        assert "parent_id: Mapped[int]" in child
+        assert "ForeignKey('lookup_values.id')" in child
+
+    def test_duplicate_lookup_key_uses_a_surrogate_key(self):
+        meta = TableMeta(
+            name="lookup_values",
+            description="",
+            kind="lookup",
+            maturity="prod",
+            pk_columns=["lookup_id"],
+        )
+        meta.finalise_from_data(pd.DataFrame({"lookup_id": ["A", "A"]}))
+
+        assert meta.natural_key_has_duplicates is True
+        assert meta.uses_surrogate_pk is True
+
+    def test_complete_lookup_key_remains_the_database_key(self):
+        meta = TableMeta(
+            name="lookup_values",
+            description="",
+            kind="lookup",
+            maturity="prod",
+            pk_columns=["lookup_id"],
+            columns={"lookup_id": ColumnSpec(name="lookup_id", type="String", nullable=False)},
+        )
+
+        assert meta.natural_key_is_usable is True
+        assert meta.uses_surrogate_pk is False
+
+
 class TestColumnSpecRoundTripTolerance:
     def test_a_registry_written_by_an_older_version_still_loads(self):
         """`cls(**raw)` pinned every registry.json to the exact field set that

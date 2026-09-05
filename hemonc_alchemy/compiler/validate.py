@@ -28,7 +28,7 @@ def validate_registry(registry: Registry) -> list[str]:
             # CSV was found) -- nothing to check.
             continue
 
-        uses_surrogate = meta.use_surrogate_pk and meta.kind == "content"
+        uses_surrogate = meta.uses_surrogate_pk
         effective_pk = ["id"] if uses_surrogate else meta.pk_columns
 
         for pk in effective_pk:
@@ -36,6 +36,12 @@ def validate_registry(registry: Registry) -> list[str]:
                 continue
             if pk not in meta.columns:
                 errors.append(f"{name}: declared pk_column '{pk}' does not exist among its generated columns")
+
+        if not uses_surrogate and not meta.natural_key_is_usable:
+            errors.append(
+                f"{name}: natural key {meta.pk_columns!r} is sparse or duplicated; "
+                "enable surrogate primary-key generation"
+            )
 
         for col_name in meta.enums:
             if col_name not in meta.columns:

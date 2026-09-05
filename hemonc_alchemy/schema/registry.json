@@ -104,6 +104,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "affiliations",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -318,6 +319,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "authors",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -438,6 +440,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "canonicaltriples",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -471,6 +474,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "changelog",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -496,6 +500,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "cities",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -518,6 +523,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "concept_relationship_stage",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -543,6 +549,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "concept_stage",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -565,6 +572,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "concept_synonym_stage",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -924,6 +932,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "conditions",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -1096,6 +1105,7 @@
       "kind": "lookup",
       "maturity": "dev",
       "name": "contexts",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -1250,6 +1260,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "drugs",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [
         {
           "columns": [
@@ -1371,6 +1382,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "exclusions",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -1406,6 +1418,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "h4types",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -1566,6 +1579,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "hemonc_classes",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -1649,6 +1663,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "hemonc_rels",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -1721,6 +1736,7 @@
       "kind": "lookup",
       "maturity": "prod-",
       "name": "inclusions",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -2245,6 +2261,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "indications",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [
         {
           "columns": [
@@ -2392,6 +2409,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "pagelookup",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -2414,6 +2432,7 @@
       "kind": "lookup",
       "maturity": "dev",
       "name": "pagetable",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -2630,6 +2649,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "persons",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -2686,6 +2706,7 @@
       "kind": "content",
       "maturity": "dev",
       "name": "protocols",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [],
@@ -2706,6 +2727,7 @@
       "kind": "content",
       "maturity": "dev",
       "name": "rct_design",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -2937,6 +2959,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "refs",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -3163,6 +3186,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "regimens",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -3188,6 +3212,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "rxnorm_map",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -3211,6 +3236,7 @@
       "kind": "lookup",
       "maturity": "dev",
       "name": "sequencetable",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [],
@@ -3246,6 +3272,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "sig_branch_types",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -3764,6 +3791,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "sigs",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -3839,6 +3867,7 @@
       "kind": "lookup",
       "maturity": "prod-",
       "name": "sites",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -4148,6 +4177,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "studies",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -4197,6 +4227,7 @@
       "kind": "content",
       "maturity": "dev",
       "name": "study_demographics",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -4221,6 +4252,7 @@
       "kind": "content",
       "maturity": "dev",
       "name": "study_eligibility",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -4595,6 +4627,7 @@
       "kind": "content",
       "maturity": "prod-",
       "name": "study_results",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -4692,6 +4725,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "units",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -4832,6 +4866,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "variant_eligibility",
+      "natural_key_has_duplicates": true,
       "normalisation_groups": [],
       "normalised_tables": [
         {
@@ -4942,6 +4977,7 @@
       "kind": "lookup",
       "maturity": "prod",
       "name": "variantblob",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [],
       "pk_columns": [
@@ -5140,6 +5176,7 @@
       "kind": "content",
       "maturity": "prod",
       "name": "variants",
+      "natural_key_has_duplicates": false,
       "normalisation_groups": [],
       "normalised_tables": [
         {

@@ -11,8 +11,9 @@ objects orm_loader's validators can use, so the same validation
 logic can run without reimplementation.
 
 Notes:
-- a content table's real primary key is the generated `id` column, not
-  the natural key in `pk_columns` (that's only a UniqueConstraint)
+- a surrogate-key table's real primary key is the generated `id` column, not
+  the natural key in `pk_columns` (which is only a UniqueConstraint when it
+  is complete and unique)
 - HemOnc's cross-table relationships are all viewonly and never declared
   as a real SQLAlchemy ForeignKey (see model/relationships.py), so
   `is_foreign_key` is always False here.
@@ -62,7 +63,7 @@ def hemonc_field_specs(registry: SchemaRegistry) -> dict[str, dict[str, FieldSpe
         if not meta.columns:
             continue
 
-        uses_surrogate = meta.use_surrogate_pk and meta.kind == "content"
+        uses_surrogate = meta.uses_surrogate_pk
         effective_pk = {"id"} if uses_surrogate else set(meta.pk_columns)
 
         fields: dict[str, FieldSpec] = {}

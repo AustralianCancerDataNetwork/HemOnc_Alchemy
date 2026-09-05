@@ -105,7 +105,7 @@ class Authors(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'authors.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['pmid', 'sequence', 'aff_no']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = []
@@ -168,7 +168,7 @@ class Conditions(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'conditions.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['condition_cui']
     source_defined_keys = ['condition', 'condition_cui']
     identity_keys = ['condition_cui']
     denormalised_columns = ['map_icd10cm', 'map_icd9cm', 'map_icdo3', 'map_icdo3_morph', 'map_oncotree', 'map_seer', 'map_type_icdo3_morph']
@@ -286,7 +286,7 @@ class Drugs(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'drugs.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['drug_cui']
     source_defined_keys = ['drug', 'drug_cui']
     identity_keys = ['drug_cui']
     denormalised_columns = ['atc', 'canmed_major_class', 'canmed_major_class_cui', 'canmed_minor_class', 'canmed_minor_class_cui']
@@ -364,7 +364,7 @@ class Indications(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'indications.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['component_cui', 'condition_cui', 'regulator', 'withdrawn', 'stage', 'status', 'stage_or_status', 'age', 'ineligibility', 'prior_therapy', 'with_field', 'biomarker', 'biomarker_finding', 'study', 'substudy']
     source_defined_keys = []
     identity_keys = ['component_cui']
     denormalised_columns = ['biomarker2', 'biomarker2_finding', 'biomarker2_type', 'biomarker3', 'biomarker3_finding', 'biomarker3_type', 'biomarker4', 'biomarker4_finding', 'biomarker4_type', 'biomarker_type', 'context', 'demographics', 'prior_therapy_negation', 'prior_therapy_setting', 'regimen', 'regimen_cui', 'response_contingency', 'risk_stratification']
@@ -387,10 +387,6 @@ class Indications(EntityBase, Base):
         'biomarker2': Indications_Biomarker2Enum,
         'biomarker4': Indications_Biomarker4Enum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('component_cui', 'condition_cui', 'regulator', 'withdrawn', 'stage', 'status', 'stage_or_status', 'age', 'ineligibility', 'prior_therapy', 'with_field', 'biomarker', 'biomarker_finding', 'study', 'substudy', name='uq_indications_natural_key'),
-    )
 
     accelerated: Mapped[bool] = mapped_column(Boolean, nullable=False)
     age: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -622,7 +618,7 @@ class Persons(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'persons.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['name', 'person_cui']
     source_defined_keys = []
     identity_keys = ['person_cui']
     denormalised_columns = ['condition_types', 'conditions', 'country', 'location', 'orcid', 'site', 'study_groups', 'study_sponsors']
@@ -633,10 +629,6 @@ class Persons(EntityBase, Base):
         'gender': Persons_GenderEnum,
         'vital_status': Persons_Vital_statusEnum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('name', 'person_cui', name='uq_persons_natural_key'),
-    )
 
     co_authors: Mapped[int] = mapped_column(BigInteger, nullable=False)
     co_authorships: Mapped[int] = mapped_column(BigInteger, nullable=False)
@@ -735,7 +727,7 @@ class Refs(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'refs.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', 'pmid']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['biblio', 'doi', 'reference', 'study', 'title']
@@ -744,10 +736,6 @@ class Refs(EntityBase, Base):
     enum_lookup = {
         'ref_type': Refs_Ref_typeEnum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', 'pmid', name='uq_refs_natural_key'),
-    )
 
     biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     citations: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
@@ -859,7 +847,7 @@ class Regimens(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'regimens.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['regimen_cui']
     source_defined_keys = ['regimen_name', 'regimen_cui']
     identity_keys = []
     denormalised_columns = []
@@ -902,7 +890,7 @@ class Sigs(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'sigs.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['variant_cui', 'portion', 'component_cui', 'subcomponent_cui', 'frequency_cui', 'timing_sequence', 'step_number']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['cyclesigs_note', 'inparens', 'seqrel', 'seqrelwhat', 'seqrelwhen', 'seqrelwhenunit', 'study', 'timing']
@@ -922,10 +910,6 @@ class Sigs(EntityBase, Base):
         'frequency': Sigs_FrequencyEnum,
         'sequence': Sigs_SequenceEnum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('variant_cui', 'portion', 'component_cui', 'subcomponent_cui', 'frequency_cui', 'timing_sequence', 'step_number', name='uq_sigs_natural_key'),
-    )
 
     alldays: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     class_field: Mapped[Optional[Sigs_Class_fieldEnum]] = mapped_column(Enum(Sigs_Class_fieldEnum), nullable=True)
@@ -1068,7 +1052,7 @@ class Studies(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'studies.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding']
     source_defined_keys = []
     identity_keys = ['study']
     denormalised_columns = ['intent', 'sponsor', 'study_group']
@@ -1081,10 +1065,6 @@ class Studies(EntityBase, Base):
         'study_design': Studies_Study_designEnum,
         'sponsor_type': Studies_Sponsor_typeEnum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', name='uq_studies_natural_key'),
-    )
 
     biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     condition: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -1160,7 +1140,7 @@ class StudyResults(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'study_results.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', 'context', 'regimen', 'r_modifier', 'comparator', 'c_modifier', 'endpoint', 'metric', 'metric_version']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['comparator_code']
@@ -1177,10 +1157,6 @@ class StudyResults(EntityBase, Base):
         'statistic': StudyResults_StatisticEnum,
         'p_value': StudyResults_P_valueEnum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('study_cui', 'substudy_cui', 'condition_cui', 'biomarker_finding', 'context', 'regimen', 'r_modifier', 'comparator', 'c_modifier', 'endpoint', 'metric', 'metric_version', name='uq_study_results_natural_key'),
-    )
 
     arm_type: Mapped[Optional[StudyResults_Arm_typeEnum]] = mapped_column(Enum(StudyResults_Arm_typeEnum), nullable=True)
     biomarker_finding: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -1258,7 +1234,7 @@ class VariantEligibility(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'variant_eligibility.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['variant_cui', 'logic_count']
     source_defined_keys = []
     identity_keys = []
     denormalised_columns = ['study']
@@ -1268,10 +1244,6 @@ class VariantEligibility(EntityBase, Base):
         'subtype': VariantEligibility_SubtypeEnum,
         'unit': VariantEligibility_UnitEnum,
     }
-
-    __table_args__ = (
-        sa.UniqueConstraint('variant_cui', 'logic_count', name='uq_variant_eligibility_natural_key'),
-    )
 
     date_added: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     logic: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
@@ -1326,7 +1298,7 @@ class Variants(EntityBase, Base):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
     filename = 'variants.csv'
-    natural_key_columns = ['id']
+    natural_key_columns = ['variant_cui', 'version']
     source_defined_keys = []
     identity_keys = ['variant_cui']
     denormalised_columns = ['blob', 'study', 'tracer']
@@ -1467,6 +1439,8 @@ class canonicaltriples_Class_2_provenanceMap(EntityBase, Base):
 
 class HemoncClasses(EntityBase, Base):
     __tablename__ = 'hemonc_classes'
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
     filename = 'hemonc_classes.csv'
     natural_key_columns = ['concept_class_id']
     source_defined_keys = []
@@ -1482,7 +1456,7 @@ class HemoncClasses(EntityBase, Base):
     }
 
     class_type: Mapped[HemoncClasses_Class_typeEnum] = mapped_column(Enum(HemoncClasses_Class_typeEnum), nullable=False)
-    concept_class_id: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
+    concept_class_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     date_added: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     date_deprecated: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     description: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -1501,11 +1475,7 @@ class HemoncClasses(EntityBase, Base):
 class hemonc_classes_Secondary_home_as_cuiMap(EntityBase, Base):
     __tablename__ = 'hemonc_classes_secondary_home_as_cui'
 
-    concept_class_id: Mapped[str] = mapped_column(String(255), primary_key=True)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['concept_class_id'], ['hemonc_classes.concept_class_id']),
-    )
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('hemonc_classes.id'), primary_key=True)
     secondary_home_as_cui: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['HemoncClasses'] = sa_relationship(back_populates='secondary_home_as_cui_items')
@@ -1513,11 +1483,7 @@ class hemonc_classes_Secondary_home_as_cuiMap(EntityBase, Base):
 class hemonc_classes_Secondary_home_as_stringMap(EntityBase, Base):
     __tablename__ = 'hemonc_classes_secondary_home_as_string'
 
-    concept_class_id: Mapped[str] = mapped_column(String(255), primary_key=True)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['concept_class_id'], ['hemonc_classes.concept_class_id']),
-    )
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('hemonc_classes.id'), primary_key=True)
     secondary_home_as_string: Mapped[str] = mapped_column(Text, primary_key=True, nullable=False)
 
     parent: Mapped['HemoncClasses'] = sa_relationship(back_populates='secondary_home_as_string_items')
@@ -1821,6 +1787,8 @@ class inclusions_Ref_typeMap(EntityBase, Base):
 
 class SigBranchTypes(EntityBase, Base):
     __tablename__ = 'sig_branch_types'
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
     filename = 'sig_branch_types.csv'
     natural_key_columns = ['value']
     source_defined_keys = ['value']
@@ -1830,7 +1798,7 @@ class SigBranchTypes(EntityBase, Base):
 
     enum_lookup = {}
 
-    value: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False, default='')
+    value: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
     ]
@@ -1839,11 +1807,7 @@ class SigBranchTypes(EntityBase, Base):
 class sig_branch_types_DescriptionMap(EntityBase, Base):
     __tablename__ = 'sig_branch_types_description'
 
-    value: Mapped[str] = mapped_column(String(255), primary_key=True)
-
-    __table_args__ = (
-        ForeignKeyConstraint(['value'], ['sig_branch_types.value']),
-    )
+    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('sig_branch_types.id'), primary_key=True)
     description: Mapped[str] = mapped_column(String(255), primary_key=True, nullable=False)
 
     parent: Mapped['SigBranchTypes'] = sa_relationship(back_populates='description_items')

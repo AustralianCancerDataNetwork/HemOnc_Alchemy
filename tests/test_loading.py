@@ -17,7 +17,18 @@ import sqlalchemy as sa
 import sqlalchemy.orm as so
 
 from hemonc_alchemy.model.base import Base
-from hemonc_alchemy.model.entities import Canonicaltriples, Units, Variants
+from hemonc_alchemy.model.entities import (
+    Canonicaltriples,
+    HemoncClasses,
+    hemonc_classes_Secondary_home_as_stringMap,
+    Units,
+    Variants,
+    canonicaltriples_Class_1_provenanceMap,
+)
+from hemonc_alchemy.model.enums import (
+    HemoncClasses_Class_typeEnum,
+    HemoncClasses_DomainEnum,
+)
 from hemonc_alchemy.toolbox.loading import (
     _header_renames,
     _resolved_csv_path,
@@ -157,6 +168,75 @@ class TestDenormalisedLoadingNaturalKey:
 
         count = session.execute(sa.text("SELECT COUNT(*) FROM canonicaltriples_class_1_provenance")).scalar()
         assert count == results["class_1_provenance"]
+
+    def test_casts_enum_natural_key_before_child_insert(self, tmp_path):
+        csv_path = tmp_path / "canonicaltriples.csv"
+        csv_path.write_text(
+            "class_1,relationship,class_2,date_added,in_ohdsi,internal,used_in,"
+            "class_1_provenance\n"
+            "Regimen,is_a,Context,2020-01-01,0,0,x,HTML\n"
+        )
+
+        engine = sa.create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(
+            engine,
+            tables=[Canonicaltriples.__table__, canonicaltriples_Class_1_provenanceMap.__table__],
+        )
+        with so.Session(engine) as session:
+            results = load_all(session, Canonicaltriples, tmp_path)
+            session.commit()
+
+            assert results["class_1_provenance"] == 1
+            row = session.execute(
+                sa.select(canonicaltriples_Class_1_provenanceMap)
+            ).scalar_one()
+        assert row.class_1.value == "regimen"
+
+    def test_surrogate_parent_matching_handles_sparse_natural_key(self, tmp_path):
+        csv_path = tmp_path / "hemonc_classes.csv"
+        csv_path.write_text(
+            "description,domain,OMOP.domain_id,OMOP.standard_concept,class_type,"
+            "primary_table,primary_field,concept_class_id,secondary_home_as_string,"
+            "secondary_home_as_cui,in_OHDSI,date_added,date_deprecated\n"
+            "Clinical Trial Registry,clinical trial,,,ready for core,ready for core,,,"
+            "studies$registry,,FALSE,D-2023-06-02,\n"
+        )
+
+        engine = sa.create_engine("sqlite:///:memory:")
+        Base.metadata.create_all(
+            engine,
+            tables=[
+                HemoncClasses.__table__,
+                hemonc_classes_Secondary_home_as_stringMap.__table__,
+            ],
+        )
+        with so.Session(engine) as session:
+            session.execute(
+                sa.insert(HemoncClasses),
+                {
+                    "id": 1,
+                    "class_type": HemoncClasses_Class_typeEnum.READY_FOR_CORE,
+                    "concept_class_id": None,
+                    "date_added": "D-2023-06-02",
+                    "date_deprecated": None,
+                    "description": "Clinical Trial Registry",
+                    "domain": HemoncClasses_DomainEnum.CLINICAL_TRIAL,
+                    "in_ohdsi": False,
+                    "omopdomain_id": None,
+                    "omopstandard_concept": None,
+                    "primary_field": None,
+                    "primary_table": "ready for core",
+                },
+            )
+            results = load_denormalised(session, HemoncClasses, tmp_path)
+            session.commit()
+
+            assert results["secondary_home_as_string"] == 1
+            child = session.execute(
+                sa.select(hemonc_classes_Secondary_home_as_stringMap)
+            ).scalar_one()
+            assert child.parent_id == 1
+            assert child.secondary_home_as_string == "studies$registry"
 
 
 class TestLoadAll:

@@ -221,8 +221,7 @@ class ColumnSpec:
         `id` PK instead. 
         """
         is_natural_pk = self.name in table.pk_columns
-        use_surrogate = table.use_surrogate_pk and table.kind == "content"
-        return is_natural_pk and not use_surrogate
+        return is_natural_pk and not table.uses_surrogate_pk
 
     def effective_nullable(self, table: TableMeta) -> bool:
         """
@@ -391,6 +390,7 @@ class TableMeta:
     soft_relationships: list[ForeignLikeRef] = field(default_factory=list)
     soft_m2m_relationships: list[SoftManyToManyRef] = field(default_factory=list)
     use_surrogate_pk: bool = True
+    natural_key_has_duplicates: bool = False
 
     # The table's raw spelling in the data dictionary, before safe_identifier
     # flattened it into `name` (e.g. "canonical.triples" -> "canonicaltriples").
@@ -415,6 +415,35 @@ class TableMeta:
         """The extract file for this table, guessed from its name if the
         real one hasn't been located yet."""
         return self.source_filename or f"{self.name}.csv"
+
+    @property
+    def natural_key_is_usable(self) -> bool:
+        """Whether the declared natural key can be a relational key.
+
+        A dictionary key is a business identity, not automatically a valid
+        PostgreSQL primary key.  Extracts occasionally contain blank or
+        repeated values in a declared key.  Such a key remains useful for
+        lookups, but cannot be enforced as a database primary key.
+        """
+        return bool(self.pk_columns) and all(
+            column in self.columns
+            and not self.columns[column].nullable
+            for column in self.pk_columns
+        ) and not self.natural_key_has_duplicates
+
+    @property
+    def uses_surrogate_pk(self) -> bool:
+        """Whether this table gets a generated ``id`` primary key.
+
+        Content tables have always used generated ids.  Lookup tables use
+        their declared natural key only while that key is complete and
+        unique in the extract; sparse or duplicated lookup keys get the same
+        surrogate-key treatment.  ``use_surrogate_pk`` remains the explicit
+        opt-out switch for callers constructing metadata by hand.
+        """
+        if not self.use_surrogate_pk:
+            return False
+        return self.kind == "content" or not self.natural_key_is_usable
 
     @classmethod
     def from_dict(cls, raw: dict) -> TableMeta:
@@ -441,6 +470,7 @@ class TableMeta:
                 SoftManyToManyRef(**r) for r in raw.get("soft_m2m_relationships", [])
             ],
             use_surrogate_pk=raw.get("use_surrogate_pk", True),
+            natural_key_has_duplicates=raw.get("natural_key_has_duplicates", False),
             source_name=raw.get("source_name"),
             source_filename=raw.get("source_filename"),
         )
@@ -452,7 +482,7 @@ class TableMeta:
         return f"{base}_{suffix}"
 
     def _map_primary_join(self, map_table: str) -> str:
-        if self.use_surrogate_pk and self.kind == "content":
+        if self.uses_surrogate_pk:
             return f"{self.classname}.id == {map_table}.c.parent_id"
 
         pk_conds = [f"{self.classname}.{pk} == {map_table}.c.{pk}" for pk in self.pk_columns]
@@ -575,6 +605,13 @@ class TableMeta:
         self.derived_columns = sorted(set(self.derived_columns))
         self.source_defined_keys = list(dict.fromkeys(self.source_defined_keys))
 
+        if self.pk_columns and all(column in df_data.columns for column in self.pk_columns):
+            key_frame = df_data[self.pk_columns].copy()
+            for column in self.pk_columns:
+                key_frame[column] = _clean_identifier_placeholders(key_frame[column], column)
+            complete_keys = key_frame.loc[~key_frame.isna().any(axis=1)]
+            self.natural_key_has_duplicates = bool(complete_keys.duplicated().any())
+
         self.normalised_tables = [
             NormalisedTable(parent=self.name, column=c) for c in self.denormalised_columns
         ]
@@ -631,7 +668,7 @@ class TableMeta:
 
         lines: list[str] = [f"class {class_name}(EntityBase, Base):", f"    __tablename__ = '{table_name}'", ""]
 
-        if parent.use_surrogate_pk and parent.kind == "content":
+        if parent.uses_surrogate_pk:
             lines.append(
                 f"    parent_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('{parent.name}.id'), primary_key=True)"
             )
@@ -716,14 +753,11 @@ class TableMeta:
 
         lines.append(f"class {class_name}(EntityBase, Base):")
         lines.append(f"    __tablename__ = '{self.name}'")
-        if self.use_surrogate_pk and self.kind == "content":
+        if self.uses_surrogate_pk:
             lines.append("    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)")
             lines.append("")
         lines.append(f"    filename = '{self.filename}'")
-        if self.use_surrogate_pk and self.kind == "content":
-            lines.append("    natural_key_columns = ['id']")
-        else:
-            lines.append(f"    natural_key_columns = {self.pk_columns!r}")
+        lines.append(f"    natural_key_columns = {self.pk_columns!r}")
         lines.append(f"    source_defined_keys = {self.source_defined_keys!r}")
         lines.append(f"    identity_keys = {self.identity_keys!r}")
         lines.append(f"    denormalised_columns = {self.denormalised_columns!r}")
@@ -741,7 +775,7 @@ class TableMeta:
 
         lines.append("")
 
-        if self.use_surrogate_pk and self.kind == "content" and self.pk_columns:
+        if self.uses_surrogate_pk and self.natural_key_is_usable:
             uniq_cols = ", ".join(f"'{c}'" for c in self.pk_columns)
             lines.append("    __table_args__ = (")
             lines.append(f"        sa.UniqueConstraint({uniq_cols}, name='uq_{self.name}_natural_key'),")

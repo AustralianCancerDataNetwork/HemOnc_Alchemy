@@ -1,0 +1,39 @@
+services:
+  python-hemonc-alchemy:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    command: ["/bin/sh", "-c", "uv sync --frozen --extra dev && sleep infinity"]
+    environment:
+      DATABASE_URL: postgresql+psycopg://hemonc:hemonc@postgres:5432/hemonc_alchemy
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGDATABASE: hemonc_alchemy
+      PGUSER: hemonc
+      PGPASSWORD: hemonc
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ..:/workspace/hemonc-alchemy:cached
+
+  postgres:
+    image: pgvector/pgvector:0.8.6-pg18-bookworm
+    environment:
+      POSTGRES_DB: hemonc_alchemy
+      POSTGRES_USER: hemonc
+      POSTGRES_PASSWORD: hemonc
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hemonc -d hemonc_alchemy"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "5432:5432"
+    volumes:
+      # PostgreSQL 18 stores data under a major-version-specific subdirectory.
+      - postgres-data:/var/lib/postgresql
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  postgres-data:
