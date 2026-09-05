@@ -15,7 +15,7 @@ import sqlalchemy.orm as so
 
 from hemonc_alchemy.model.base import Base
 from hemonc_alchemy.model.entities import Sigs, Variants
-from hemonc_alchemy.toolkit import (
+from hemonc_alchemy.toolkit.analytics.treatment.classification import (
     has_non_radiation_sig,
     has_radiation_sig,
     is_concurrent_chemort,

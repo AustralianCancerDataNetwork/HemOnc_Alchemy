@@ -8,7 +8,8 @@ type = layers
 layers =
     hemonc_alchemy.cli
     hemonc_alchemy.compiler
-    hemonc_alchemy.toolkit
+    hemonc_alchemy.toolkit.analytics
+    hemonc_alchemy.toolkit.core
     hemonc_alchemy.model
 
 [importlinter:contract:omop-alchemy-behind-bridge]
@@ -16,7 +17,8 @@ name = omop-alchemy is only reachable through the optional integrations bridge
 type = forbidden
 source_modules =
     hemonc_alchemy.model
-    hemonc_alchemy.toolkit
+    hemonc_alchemy.toolkit.analytics
+    hemonc_alchemy.toolkit.core
     hemonc_alchemy.compiler
     hemonc_alchemy.cli
     hemonc_alchemy.config

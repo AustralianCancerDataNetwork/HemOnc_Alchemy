@@ -16,7 +16,7 @@ import sqlalchemy.orm as so
 
 from hemonc_alchemy.model.base import Base
 from hemonc_alchemy.model.entities import Drugs, Sigs, Variants
-from hemonc_alchemy.toolkit.schedule import (
+from hemonc_alchemy.toolkit.analytics.treatment.scheduling import (
     administration_frame,
     administration_matrix,
     cancer_services_drugs,

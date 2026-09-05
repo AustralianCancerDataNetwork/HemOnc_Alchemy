@@ -18,8 +18,8 @@ from typing import cast
 from sqlalchemy import select
 from sqlalchemy.orm import object_session
 
-from ..model.entities import Studies, Variants
-from ..model.relationships import dedupe_by, split_pipe_values
+from ...model import Studies, Variants
+from ...model.relationships import dedupe_by
 
 
 def study_condition_object(study):
@@ -55,8 +55,16 @@ def condition_variant_objects(condition):
 
 
 def sig_study_tokens(sig) -> list[str]:
-    """A sig's raw pipe-delimited `study` field, split and deduped."""
-    return split_pipe_values(getattr(sig, "study", None))
+    """Return the normalized study names attached to a sig.
+
+    Older HemOnc exports exposed these names as a pipe-delimited ``study``
+    field. The current generated model stores them in ``sigs_study`` rows;
+    reading the map rows keeps this helper correct for the imported schema.
+    """
+    return dedupe_by(
+        (getattr(study_map_row, "study", None) for study_map_row in sig.study_items),
+        lambda study: study,
+    )
 
 
 def sig_variant_context(sig) -> Variants | None:
@@ -78,22 +86,20 @@ def sig_variant_context(sig) -> Variants | None:
 
 
 def sig_study_objects(sig) -> list[Studies]:
-    """A sig's resolved Studies: those reachable via its variant context,
-    plus any remaining raw study tokens resolved by direct name lookup."""
+    """A sig's resolved studies from normalized links and variant context.
+
+    A sig normally has direct ``study_objects`` in the current schema. The
+    variant-context fallback preserves the useful legacy behavior for sigs
+    whose study map is absent but whose variant has study links.
+    """
     studies = []
+    studies.extend(getattr(sig, "study_objects", ()))
     variant = sig_variant_context(sig)
     if variant is not None:
         for study_map_row in variant.study_items:
             # cast: attached in model.relationships, so invisible statically.
             study_objects = cast(list[Studies], study_map_row.study_objects)
             studies.extend(study_objects)
-
-    tokens = set(sig_study_tokens(sig))
-    tokens.difference_update({getattr(study, "study", None) for study in studies if getattr(study, "study", None)})
-
-    session = object_session(sig)
-    if session is not None and tokens:
-        studies.extend(session.execute(select(Studies).where(Studies.study.in_(sorted(tokens)))).scalars().all())
 
     return dedupe_by(
         studies,

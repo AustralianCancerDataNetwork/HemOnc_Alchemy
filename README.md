@@ -96,7 +96,7 @@ Some schedules continue indefinitely (until progression, say) rather than ending
 `administration_frame` turns a variant's sigs into a per-drug, per-day view of a cycle — one row per drug per day, which pivots, groups and joins like any other tidy frame:
 
 ```python
-from hemonc_alchemy.toolkit.schedule import administration_frame, administration_matrix
+from hemonc_alchemy.toolkit.analytics.treatment.scheduling import administration_frame, administration_matrix
 
 frame = administration_frame(variant)
 frame[frame.route_group == "IV"]                    # what needs a clinic visit
