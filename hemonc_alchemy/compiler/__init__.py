@@ -6,5 +6,5 @@ extract rather than hand-written, along with `schema/registry.json` recording
 what they were generated from.
 
 Not needed to query HemOnc, and not installed unless you ask for the `author`
-extra. Nothing in `model/` or `toolbox/` imports it.
+extra. Nothing in `model/` or `toolkit/` imports it.
 """

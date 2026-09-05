@@ -14,7 +14,7 @@ from .config import get_hemonc_context as get_hemonc_context
 
 if TYPE_CHECKING:
     from .model import *
-    from .toolbox.schedule import resolve_all_days as resolve_all_days
+    from .toolkit.schedule import resolve_all_days as resolve_all_days
 
 _EAGER = ["HemOncAlchemyConfig", "create_hemonc_engine", "get_hemonc_context"]
 
@@ -36,7 +36,7 @@ def __getattr__(name: str):
     than failing while importing it.
     """
     if name == "resolve_all_days":
-        value = import_module(".toolbox.schedule", __name__).resolve_all_days
+        value = import_module(".toolkit.schedule", __name__).resolve_all_days
     elif name == "__all__":
         value = _public_names()
     else:

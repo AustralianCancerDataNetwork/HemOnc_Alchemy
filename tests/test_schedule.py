@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from hemonc_alchemy.model.enums import Sigs_RouteEnum
-from hemonc_alchemy.toolbox.schedule import (
+from hemonc_alchemy.toolkit.schedule import (
     Day,
     Indefinite,
     resolve_all_days,

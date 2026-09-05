@@ -7,7 +7,7 @@ This class does NOT provide pipe-delimited denormalisation / explode handling
 (a HemOnc sig/regimen row can expand into N child rows), and natural-key-based 
 FK resolution at load time for surrogate-PK tables 
 
-This is handled in `toolbox/loading.py` (`load_denormalised`).
+This is handled in `toolkit/loading.py` (`load_denormalised`).
 """
 
 from __future__ import annotations

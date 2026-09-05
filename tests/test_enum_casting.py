@@ -34,7 +34,7 @@ from hemonc_alchemy.model.enums import (
     Canonicaltriples_Class_1Enum,
     Drugs_Class_typeEnum,
 )
-from hemonc_alchemy.toolbox.loading import load_entity
+from hemonc_alchemy.toolkit.loading import load_entity
 
 # Resolved the same way the CLI does (`HEMONC_DATA_DIR`), falling back to the
 # in-repo extract directory. This was previously hardcoded to one machine's

@@ -96,7 +96,7 @@ Some schedules continue indefinitely (until progression, say) rather than ending
 `administration_frame` turns a variant's sigs into a per-drug, per-day view of a cycle — one row per drug per day, which pivots, groups and joins like any other tidy frame:
 
 ```python
-from hemonc_alchemy.toolbox.schedule import administration_frame, administration_matrix
+from hemonc_alchemy.toolkit.schedule import administration_frame, administration_matrix
 
 frame = administration_frame(variant)
 frame[frame.route_group == "IV"]                    # what needs a clinic visit
@@ -113,7 +113,7 @@ cisplatin  1.0  0.5  0.25  1.0  0.5  0.25  1.0  0.5  0.25
 
 Two things to know when reading it. Sigs whose route isn't specified are excluded, so the frame covers less than the regimen if `route_group` is unknown. And where `indefinite` is set the days shown are only the part that was written down — the schedule continues past them.
 
-`hemonc_alchemy.toolbox` also holds helpers for classifying treatment, such as distinguishing radiotherapy-only variants from concurrent chemoradiotherapy, and for splitting a variant's drugs into clinic- versus home-administered (`cancer_services_drugs`, `home_administered_drugs`).
+`hemonc_alchemy.toolkit` also holds helpers for classifying treatment, such as distinguishing radiotherapy-only variants from concurrent chemoradiotherapy, and for splitting a variant's drugs into clinic- versus home-administered (`cancer_services_drugs`, `home_administered_drugs`).
 
 ## Pulling in model updates as required
 
@@ -133,7 +133,7 @@ hemonc-alchemy audit                              # key duplication and enum ris
 ```
 hemonc_alchemy/
 ├── model/       entity classes (generated) and their relationships
-├── toolbox/     classification, cross-entity lookup, dosing schedules, loading
+├── toolkit/     classification, cross-entity lookup, dosing schedules, loading
 ├── schema/      registry.json — the schema the model was generated from
 ├── compiler/    regenerates model/ from the data dictionary; maintainers only
 ├── config.py    database configuration

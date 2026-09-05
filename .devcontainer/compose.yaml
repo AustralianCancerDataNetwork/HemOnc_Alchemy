@@ -41,6 +41,11 @@ services:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@example.com}
       # Development-only default; override this in .env for a shared machine.
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-hemonc-admin}
+      # Load the checked-in server definition whenever the container starts.
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: ${PGADMIN_REPLACE_SERVERS_ON_STARTUP:-True}
+      # The password cannot be stored in servers.json; pgAdmin reads it from pgpass.
+      PGPASS_FILE: /pgadmin4/pgpass
     depends_on:
       postgres:
         condition: service_healthy
@@ -48,6 +53,8 @@ services:
       - "${PGADMIN_PORT:-5050}:80"
     volumes:
       - pgadmin-data:/var/lib/pgadmin
+      - ./servers.json:/pgadmin4/servers.json:ro
+      - ./pgpass:/pgadmin4/pgpass:ro
 
 volumes:
   postgres-data:

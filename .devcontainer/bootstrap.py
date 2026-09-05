@@ -6,7 +6,7 @@ import sqlalchemy.orm as so
 
 from hemonc_alchemy.model import entities
 from hemonc_alchemy.model.base import Base, concrete_entities, register_enum_casts
-from hemonc_alchemy.toolbox.loading import load_all
+from hemonc_alchemy.toolkit.loading import load_all
 
 data_dir = Path("/workspace/hemonc-alchemy/data/Tables")
 engine = sa.create_engine(os.environ["DATABASE_URL"])
