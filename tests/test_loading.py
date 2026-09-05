@@ -31,6 +31,7 @@ from hemonc_alchemy.model.enums import (
 )
 from hemonc_alchemy.toolbox.loading import (
     _header_renames,
+    _identity_value,
     _resolved_csv_path,
     load_all,
     load_denormalised,
@@ -42,6 +43,16 @@ from hemonc_alchemy.toolbox.loading import (
 # all five real-data tests below skipped silently on any other machine --
 # indistinguishable, in the summary, from an intentional skip.
 _REAL_DATA_DIR = Path(os.environ.get("HEMONC_DATA_DIR", "data/Tables"))
+
+
+def test_surrogate_identity_treats_invalid_datetime_placeholder_as_null():
+    column = sa.Column("date_added", sa.DateTime)
+    failures = []
+
+    assert _identity_value(
+        "Uncertain date", column, source=True, on_error=failures.append
+    ) is None
+    assert failures == ["Uncertain date"]
 
 pytestmark = [
     pytest.mark.skipif(

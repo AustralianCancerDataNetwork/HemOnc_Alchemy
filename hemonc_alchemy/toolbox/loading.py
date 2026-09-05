@@ -213,11 +213,27 @@ def _identity_value(value: object, column: sa.Column, *, source: bool, on_error)
             return value
         return str(value).strip().lower() in {"true", "t", "yes", "y", "1"}
     if python_type is int:
-        return int(value)
+        try:
+            return int(value)
+        except (TypeError, ValueError, OverflowError):
+            on_error(value)
+            return None
     if python_type is float:
-        return float(value)
+        try:
+            return float(value)
+        except (TypeError, ValueError, OverflowError):
+            on_error(value)
+            return None
     if python_type in {date, datetime}:
-        return pd.Timestamp(value).isoformat()
+        try:
+            return pd.Timestamp(value).isoformat()
+        except (TypeError, ValueError, OverflowError):
+            # Match orm-loader's handling of placeholders such as
+            # "Uncertain date": an invalid value is loaded as NULL when the
+            # generated column is nullable, so it must not abort parent-row
+            # matching here.
+            on_error(value)
+            return None
     return str(value).strip()
 
 
