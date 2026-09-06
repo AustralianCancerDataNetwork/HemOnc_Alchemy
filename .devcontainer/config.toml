@@ -47,18 +47,19 @@ kind        = "generic"
 connection  = "devcontainer_postgres_test"
 schema_name = "public"
 
-# OMOP-alchemy's CDM target shares the compose PostgreSQL service but uses a
-# separate schema. This keeps HemOnc tables in `public` and leaves the OMOP
-# CDM namespace available for the integration notebooks.
+# OMOP-alchemy's CDM target shares the compose PostgreSQL service and the
+# HemOnc schema for now. This is a configuration choice for the disposable
+# development database; oa-configurator will own schema resolution when its
+# cross-package support is available.
 [databases.cdm_db]
 kind        = "cdm"
 connection  = "devcontainer_postgres"
-schema_name = "omop"
+schema_name = "public"
 
 [databases.test_cdm_db]
 kind        = "cdm"
 connection  = "devcontainer_postgres_test"
-schema_name = "omop"
+schema_name = "public"
 
 # ---------------------------------------------------------------------------
 # Tools: package-specific [tools.<tool_name>] sections.
@@ -67,7 +68,6 @@ schema_name = "omop"
 [tools.hemonc_alchemy]
 hemonc_db      = "hemonc_db"
 test_hemonc_db = "test_hemonc_db"
-omop_schema    = "omop"
 
 [tools.omop_alchemy]
 cdm_db      = "cdm_db"

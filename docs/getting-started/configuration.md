@@ -60,7 +60,7 @@ Toolkit functions do not own your session or transaction. This keeps connection 
 
 ## The devcontainer configuration
 
-When the repository devcontainer is created, `.devcontainer/config.toml` is copied to `~/.config/omop/config.toml` with mode 600. Its `hemonc_db` target points at the Compose PostgreSQL service; its test target points at a separate `hemonc_alchemy_test` database. The same server exposes `cdm_db` and `test_cdm_db` in the `omop` schema.
+When the repository devcontainer is created, `.devcontainer/config.toml` is copied to `~/.config/omop/config.toml` with mode 600. Its `hemonc_db` target points at the Compose PostgreSQL service; its test target points at a separate `hemonc_alchemy_test` database. For now, `cdm_db` and `test_cdm_db` use the same `public` schema as their HemOnc databases. This is deliberately a seed configuration rather than a package-level restriction; schema resolution will move to oa-configurator when its cross-package support is available.
 
 The checked-in file is a seed, not the active configuration. Delete the copied configuration before rebuilding if you want to start again from the seed. To keep configuration elsewhere, set `OA_CONFIG_PATH`.
 

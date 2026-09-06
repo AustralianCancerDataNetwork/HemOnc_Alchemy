@@ -32,24 +32,21 @@ def _sqlite_omop_session():
         sa.Column("vocabulary_id", sa.String), sa.Column("concept_class_id", sa.String),
         sa.Column("standard_concept", sa.String), sa.Column("concept_code", sa.String),
         sa.Column("valid_start_date", sa.Date), sa.Column("valid_end_date", sa.Date),
-        sa.Column("invalid_reason", sa.String), schema="omop",
+        sa.Column("invalid_reason", sa.String),
     )
     relationship = sa.Table(
         "concept_relationship", metadata,
         sa.Column("concept_id_1", sa.Integer), sa.Column("concept_id_2", sa.Integer),
         sa.Column("relationship_id", sa.String), sa.Column("valid_start_date", sa.Date),
         sa.Column("valid_end_date", sa.Date), sa.Column("invalid_reason", sa.String),
-        schema="omop",
     )
     vocabulary = sa.Table(
         "vocabulary", metadata,
         sa.Column("vocabulary_id", sa.String, primary_key=True),
         sa.Column("vocabulary_name", sa.String), sa.Column("vocabulary_reference", sa.String),
         sa.Column("vocabulary_version", sa.String), sa.Column("vocabulary_concept_id", sa.Integer),
-        schema="omop",
     )
     with engine.connect() as connection:
-        connection.exec_driver_sql("ATTACH DATABASE ':memory:' AS omop")
         metadata.create_all(connection)
         connection.execute(concept.insert(), [
             {"concept_id": 1, "concept_name": "Classical Hodgkin lymphoma", "domain_id": "Condition", "vocabulary_id": "HemOnc", "concept_class_id": "Condition", "concept_code": "614", "invalid_reason": None},

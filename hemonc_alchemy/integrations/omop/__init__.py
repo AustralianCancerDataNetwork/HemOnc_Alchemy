@@ -1,4 +1,4 @@
-"""Optional read-only integration with an OMOP vocabulary schema."""
+"""Optional read-only integration with OMOP vocabulary tables."""
 
 from .binding import OmopBinding, load_omop_binding, omop_available
 from .diagnostics import (

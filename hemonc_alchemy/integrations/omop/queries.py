@@ -35,7 +35,6 @@ def condition_to_snomed(
     session: Any,
     condition_cuis: Iterable[str | int],
     *,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[StandardConceptMapping]:
     """Map condition CUIs to active SNOMED disorder concepts."""
@@ -47,7 +46,6 @@ def condition_to_snomed(
         source_domain="Condition",
         target_domain="Condition",
         target_concept_class="Disorder",
-        schema=schema,
         include_invalid=include_invalid,
     )
 
@@ -56,7 +54,6 @@ def drug_to_rxnorm_ingredient(
     session: Any,
     drug_cuis: Iterable[str | int],
     *,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[StandardConceptMapping]:
     """Map HemOnc drug/component CUIs to RxNorm ingredients."""
@@ -68,7 +65,6 @@ def drug_to_rxnorm_ingredient(
         source_domain="Drug",
         target_domain="Drug",
         target_concept_class="Ingredient",
-        schema=schema,
         include_invalid=include_invalid,
     )
 
@@ -77,7 +73,6 @@ def regimen_to_hemonc(
     session: Any,
     regimen_cuis: Iterable[str | int],
     *,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[HemOncConcept]:
     """Resolve regimen CUIs to HemOnc concepts in the ``Regimen`` domain."""
@@ -86,7 +81,6 @@ def regimen_to_hemonc(
         session,
         regimen_cuis,
         domain="Regimen",
-        schema=schema,
         include_invalid=include_invalid,
     )
 
@@ -98,15 +92,14 @@ def _hemonc_relationships(
     source_cuis: Iterable[str | int] | None = None,
     source_class: str | None = None,
     target_class: str | None = None,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[HemOncRelationship]:
-    binding = load_omop_binding(schema=schema)
+    binding = load_omop_binding()
     relationships = tuple(relationship_ids)
     if (
         binding is None
         or not relationships
-        or not omop_available(session, schema=schema)
+        or not omop_available(session)
     ):
         return []
 
@@ -166,7 +159,7 @@ def _hemonc_relationships(
     )
 
     result: list[HemOncRelationship] = []
-    for row in session.execute(binding.apply(statement)).mappings():
+    for row in session.execute(statement).mappings():
         result.append(
             HemOncRelationship(
                 relationship_id=str(row["relationship_id"]),
@@ -197,7 +190,6 @@ def regimen_modalities(
     session: Any,
     regimen_cuis: Iterable[str | int] | None = None,
     *,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[HemOncRelationship]:
     """Return the curated ``Has modality`` links attached to regimens."""
@@ -208,7 +200,6 @@ def regimen_modalities(
         source_cuis=regimen_cuis,
         source_class="Regimen",
         target_class="Modality",
-        schema=schema,
         include_invalid=include_invalid,
     )
 
@@ -228,7 +219,6 @@ def component_roles(
     session: Any,
     component_cuis: Iterable[str | int] | None = None,
     *,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[HemOncRelationship]:
     """Return directed component-role links without collapsing their labels."""
@@ -237,7 +227,6 @@ def component_roles(
         session,
         COMPONENT_ROLE_RELATIONSHIPS,
         source_cuis=component_cuis,
-        schema=schema,
         include_invalid=include_invalid,
     )
 
@@ -246,7 +235,6 @@ def component_class_hierarchy(
     session: Any,
     component_cuis: Iterable[str | int] | None = None,
     *,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[HemOncRelationship]:
     """Return direct ``Is a`` links whose target is a Component Class.
@@ -261,7 +249,6 @@ def component_class_hierarchy(
         ("Is a",),
         source_cuis=component_cuis,
         target_class="Component Class",
-        schema=schema,
         include_invalid=include_invalid,
     )
 

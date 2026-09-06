@@ -38,13 +38,11 @@ class MappingCoverage:
 def vocabulary_versions(
     session: Any,
     vocabulary_ids: Iterable[str] | None = None,
-    *,
-    schema: str = "omop",
 ) -> list[VocabularyVersion]:
     """Return the database-declared versions for the requested vocabularies."""
 
-    binding = load_omop_binding(schema=schema)
-    if binding is None or not omop_available(session, schema=schema):
+    binding = load_omop_binding()
+    if binding is None or not omop_available(session):
         return []
     vocabulary = binding.vocabulary
     statement = sa.select(vocabulary)
@@ -59,7 +57,7 @@ def vocabulary_versions(
     ).order_by(vocabulary.vocabulary_id)
     return [
         VocabularyVersion(str(row.vocabulary_id), row.vocabulary_version)
-        for row in session.execute(binding.apply(statement))
+        for row in session.execute(statement)
     ]
 
 
@@ -71,7 +69,6 @@ def coverage_report(
     source_domain: str | None = None,
     target_domain: str | None = None,
     target_concept_class: str | None = None,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> MappingCoverage:
     """Report source resolution, mapping coverage, and ambiguity.
@@ -86,7 +83,6 @@ def coverage_report(
         session,
         requested,
         domain=source_domain,
-        schema=schema,
         include_invalid=include_invalid,
     )
     mappings = map_to_standard(
@@ -96,7 +92,6 @@ def coverage_report(
         source_domain=source_domain,
         target_domain=target_domain,
         target_concept_class=target_concept_class,
-        schema=schema,
         include_invalid=include_invalid,
     )
     counts = Counter(mapping.hemonc_cui for mapping in mappings if mapping.target is not None)
@@ -116,7 +111,7 @@ def coverage_report(
         mapping_rows=len(mappings),
         unmatched_cuis=tuple(sorted(requested_set - mapped)),
         ambiguous_cuis=tuple(sorted(cui for cui, count in counts.items() if count > 1)),
-        vocabulary_versions=tuple(vocabulary_versions(session, vocabulary_ids, schema=schema)),
+        vocabulary_versions=tuple(vocabulary_versions(session, vocabulary_ids)),
     )
 
 
@@ -144,8 +139,6 @@ class SuspiciousMappingDiagnostic:
 def biomarker_qualifier_diagnostics(
     session: Any,
     condition_cuis: Iterable[str | int],
-    *,
-    schema: str = "omop",
 ) -> list[BiomarkerMappingDiagnostic]:
     """Flag condition mappings that lose a source biomarker qualifier.
 
@@ -170,7 +163,6 @@ def biomarker_qualifier_diagnostics(
         target_vocabulary="SNOMED",
         source_domain="Condition",
         target_domain="Condition",
-        schema=schema,
     )
     by_cui: dict[str, list[StandardConceptMapping]] = {}
     for mapping in mappings:
@@ -197,8 +189,6 @@ def biomarker_qualifier_diagnostics(
 def suspicious_condition_mappings(
     session: Any,
     condition_cuis: Iterable[str | int],
-    *,
-    schema: str = "omop",
 ) -> list[SuspiciousMappingDiagnostic]:
     """Flag condition mappings to modifier vocabularies or measurement classes.
 
@@ -223,7 +213,6 @@ def suspicious_condition_mappings(
         session,
         values,
         source_domain="Condition",
-        schema=schema,
     )
     result = []
     for mapping in mappings:

@@ -24,18 +24,18 @@ Install the optional dependency when you need the integration package:
 uv add "hemonc-alchemy[omop]"
 ```
 
-The bridge lazily loads OMOP Alchemy's public CDM models and uses its schema-translation and validity semantics. The HemOnc package does not import the optional model tree during ordinary package imports. HemOnc-specific mapping joins remain local because OMOP Alchemy cannot know which HemOnc CUI or relationship policy a consumer intends.
+The bridge lazily loads OMOP Alchemy's public CDM models and uses their validity semantics. The HemOnc package does not import the optional model tree during ordinary package imports. HemOnc-specific mapping joins remain local because OMOP Alchemy cannot know which HemOnc CUI or relationship policy a consumer intends.
 
-Configure the OMOP schema alongside the HemOnc database configuration. The default is `omop`, but every public operation accepts `schema=` so a deployment can use another schema:
+The current devcontainer configuration puts both vocabularies in the same schema so the public OMOP models can be queried directly from the HemOnc session. This is configuration, not an invariant enforced by the integration; schema resolution will move to oa-configurator as that support lands:
 
 ```python
 from hemonc_alchemy.integrations.omop import omop_available, map_to_standard
 
-if omop_available(session, schema="omop"):
-    mappings = map_to_standard(session, [105], target_vocabulary="RxNorm", schema="omop")
+if omop_available(session):
+    mappings = map_to_standard(session, [105], target_vocabulary="RxNorm")
 ```
 
-If the schema or vocabulary is not present, the bridge returns an empty result rather than making HemOnc-only applications fail during startup.
+If the configured OMOP tables or vocabulary are not present, the bridge returns an empty result rather than making HemOnc-only applications fail during startup.
 
 ## Common queries
 
@@ -81,4 +81,4 @@ These are curated HemOnc taxonomy edges, not a replacement for `public.indicatio
 
 ## Database boundary
 
-The functions on this page perform same-database, schema-qualified joins. If HemOnc and OMOP are in separate databases, query the source CUIs first and resolve them with a second OMOP session. PostgreSQL being on the same server is not enough for an ordinary cross-database SQL join; use an explicit application-level bridge, an FDW, or a materialized mapping subset.
+The functions on this page perform same-database joins. If HemOnc and OMOP are in separate databases, query the source CUIs first and resolve them with a second OMOP session. PostgreSQL being on the same server is not enough for an ordinary cross-database SQL join; use an explicit application-level bridge, an FDW, or a materialized mapping subset.

@@ -89,7 +89,6 @@ def resolve_hemonc_concepts(
     cuis: str | int | Iterable[str | int],
     *,
     domain: str | None = None,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[HemOncConcept]:
     """Resolve HemOnc CUIs to their HemOnc vocabulary concepts.
@@ -101,8 +100,8 @@ def resolve_hemonc_concepts(
     """
 
     values = _values(cuis)
-    binding = load_omop_binding(schema=schema)
-    if not values or binding is None or not omop_available(session, schema=schema):
+    binding = load_omop_binding()
+    if not values or binding is None or not omop_available(session):
         return []
 
     concept = binding.concept
@@ -131,7 +130,7 @@ def resolve_hemonc_concepts(
             concept=_concept_reference(row, ""),
             invalid_reason=row["invalid_reason"],
         )
-        for row in session.execute(binding.apply(statement)).mappings()
+        for row in session.execute(statement).mappings()
     ]
 
 
@@ -143,7 +142,6 @@ def map_to_standard(
     source_domain: str | None = None,
     target_domain: str | None = None,
     target_concept_class: str | None = None,
-    schema: str = "omop",
     include_invalid: bool = False,
 ) -> list[StandardConceptMapping]:
     """Follow active ``Maps to`` edges from HemOnc CUIs.
@@ -159,8 +157,8 @@ def map_to_standard(
     """
 
     values = _values(cuis)
-    binding = load_omop_binding(schema=schema)
-    if not values or binding is None or not omop_available(session, schema=schema):
+    binding = load_omop_binding()
+    if not values or binding is None or not omop_available(session):
         return []
 
     source = aliased(binding.concept, name="source")
@@ -213,7 +211,7 @@ def map_to_standard(
     )
 
     result: list[StandardConceptMapping] = []
-    for row in session.execute(binding.apply(statement)).mappings():
+    for row in session.execute(statement).mappings():
         target_reference = (
             _concept_reference(row, "target_")
             if row["target_concept_id"] is not None
