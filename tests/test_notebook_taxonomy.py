@@ -1,8 +1,11 @@
 """Tests for the notebooks' shared classification rules.
 
 `notebooks/_taxonomy.py` is not part of the installed package -- it is a
-helper the demonstration notebooks import. It is tested here because four
-notebooks depend on it and their published figures change if it drifts.
+helper the optional demonstration notebooks import. When the notebook bundle
+is present locally, it is tested here because several notebooks depend on it
+and their published figures change if it drifts. Package CI may not check out
+the ignored notebook bundle, so the module-level import is intentionally
+optional.
 """
 
 from __future__ import annotations
@@ -16,7 +19,10 @@ NOTEBOOKS = Path(__file__).resolve().parent.parent / "notebooks"
 if str(NOTEBOOKS) not in sys.path:
     sys.path.insert(0, str(NOTEBOOKS))
 
-import _taxonomy as taxonomy
+taxonomy = pytest.importorskip(
+    "_taxonomy",
+    reason="notebook helpers are optional and are not included in package CI",
+)
 
 
 @pytest.mark.parametrize(
