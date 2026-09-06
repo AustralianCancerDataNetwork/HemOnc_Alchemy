@@ -138,6 +138,10 @@ class TestLoadEntityEndToEnd:
         assert set(rows) == {Canonicaltriples_Class_1Enum.PROCEDURE, Canonicaltriples_Class_1Enum.REGIMEN}
 
 
+@pytest.mark.skipif(
+    not _REAL_DATA_DIR.is_dir(),
+    reason=f"real HemOnc extracts not found at {_REAL_DATA_DIR} (set HEMONC_DATA_DIR)",
+)
 @pytest.mark.postgres
 class TestSurrogatePkEnumColumn:
     """`Drugs` is a surrogate-PK ("content") table with a nullable sa.Enum
