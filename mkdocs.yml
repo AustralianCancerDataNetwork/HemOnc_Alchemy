@@ -7,6 +7,8 @@ repo_name: HemOnc_Alchemy
 theme:
   name: material
   features:
+    - navigation.instant
+    - navigation.tracking
     - navigation.sections
     - navigation.expand
     - navigation.path
@@ -29,6 +31,7 @@ theme:
 
 markdown_extensions:
   - admonition
+  - pymdownx.details
   - footnotes
   - tables
   - attr_list
@@ -39,6 +42,8 @@ markdown_extensions:
         - name: mermaid
           class: mermaid
           format: !!python/name:mermaid2.fence_mermaid
+  - pymdownx.tabbed:
+      alternate_style: true
   - toc:
       permalink: true
       toc_depth: 3
@@ -94,3 +99,4 @@ nav:
 
   - Maintainers:
       - Regenerating the model: maintainers/regeneration.md
+      - Contributing and releases: maintainers/release-process.md
