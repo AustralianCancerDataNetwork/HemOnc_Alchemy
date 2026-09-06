@@ -112,7 +112,11 @@ def regen(
             typer.echo(f"  - {change}")
         raise typer.Exit(code=1)
 
-    warnings = audit_module.enum_collision_warnings(registry) + audit_module.enum_threshold_warnings(registry)
+    warnings = (
+        audit_module.enum_collision_warnings(registry)
+        + audit_module.enum_threshold_warnings(registry)
+        + audit_module.dictionary_only_column_warnings(registry)
+    )
     for warning in warnings:
         typer.secho(f"Warning: {warning}", fg=typer.colors.YELLOW)
 

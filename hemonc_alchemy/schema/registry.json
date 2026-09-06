@@ -755,12 +755,6 @@
           "name": "variantscountdate",
           "nullable": true,
           "type": "DateTime"
-        },
-        "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes": {
-          "enum": null,
-          "name": "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes",
-          "nullable": true,
-          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -1225,12 +1219,6 @@
           "name": "multiagent",
           "nullable": false,
           "type": "Boolean"
-        },
-        "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes": {
-          "enum": null,
-          "name": "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes",
-          "nullable": true,
-          "type": "String"
         }
       },
       "denormalised_columns": [
@@ -2053,12 +2041,6 @@
         "time_contingency": {
           "enum": null,
           "name": "time_contingency",
-          "nullable": true,
-          "type": "String"
-        },
-        "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes": {
-          "enum": null,
-          "name": "whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes",
           "nullable": true,
           "type": "String"
         },
@@ -3746,6 +3728,18 @@
             "third",
             "last",
             "prior to infusions"
+          ]
+        },
+        "step_number": {
+          "name": "step_number",
+          "tablename": "sigs",
+          "values": [
+            "1 of 1 (default)",
+            "1 of 2",
+            "2 of 2",
+            "1 of N",
+            "2 of N",
+            "[\u2026], N of N"
           ]
         },
         "subcomponent": {

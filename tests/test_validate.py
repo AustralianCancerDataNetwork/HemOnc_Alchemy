@@ -47,6 +47,15 @@ class TestNormalisationGroupInvariant:
         table.normalisation_groups = [NormalisationGroup(columns=["atc_class", "atc_code"])]
         assert validate_registry(Registry(tables={"drugs": table})) == []
 
+    def test_dictionary_sheet_without_enrichment_is_rejected(self):
+        registry = Registry(tables={"sigs": _table(name="sigs")})
+        registry._dictionary_sheets = {"sigs"}
+        registry._dictionary_enriched_columns = {"sigs": set()}
+
+        errors = validate_registry(registry)
+
+        assert any("dictionary sheet exists but contributed no" in error for error in errors)
+
 
 class TestSourceRegressions:
     """The silent half of the 2026-08-17 regression: three tables stopped

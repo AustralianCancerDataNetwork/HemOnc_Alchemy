@@ -39,6 +39,18 @@ Maturity = Literal["dev", "prod", "prod-"]
 _IDENTIFIER_PLACEHOLDER_TOKENS = {"tba", "tbd", "cbd", "pending"}
 
 
+def _is_dictionary_footnote(value: str) -> bool:
+    """Whether a ``Variable`` value is prose rather than a field name."""
+    lowered = value.casefold()
+    return (
+        lowered.startswith(("note:", "note "))
+        or value.startswith("(*)")
+        or any(character.isspace() for character in value)
+        or value.endswith(".")
+        or len(value) > 80
+    )
+
+
 def _clean_identifier_placeholders(series: pd.Series, col_name: str) -> pd.Series:
     """
     For `_cui`-suffixed identifier columns, treat known "not yet
@@ -490,22 +502,43 @@ class TableMeta:
             return pk_conds[0]
         return f"and_({', '.join(pk_conds)})"
 
-    def enrich_field_metadata(self, df_dict: pd.DataFrame) -> None:
+    def enrich_field_metadata(self, df_dict: pd.DataFrame) -> set[str]:
+        """Enrich this table and return the columns contributed by the sheet.
+
+        Dictionary sheets occasionally contain prose in the ``Variable``
+        column. It is metadata about the sheet, not a field declaration, so
+        sentence-shaped values are ignored rather than passed through
+        ``safe_identifier``.
+        """
         df_dict = norm_cols(df_dict)
         dictionary_columns = {str(column).strip().casefold(): column for column in df_dict.columns}
-        variable_column = dictionary_columns.get("variable")
+        variable_column = next(
+            (
+                column
+                for column in df_dict.columns
+                if str(column).strip().casefold().startswith("variable")
+            ),
+            None,
+        )
         type_column = dictionary_columns.get("type")
         multival_column = dictionary_columns.get("multiple values allowed")
         allowed_values_column = dictionary_columns.get("allowed values/format")
+        enriched_columns: set[str] = set()
 
         for _, row in df_dict.iterrows():
             val = row[variable_column] if variable_column and pd.notna(row[variable_column]) else ""
             r = str(val).strip()
 
-            if not r or r.lower().startswith("note:") or r.lower().startswith("note "):
+            if not r:
+                continue
+            if _is_dictionary_footnote(r):
+                print(
+                    f"Warning: ignoring prose in {self.name} dictionary Variable cell: {r!r}"
+                )
                 continue
 
             col_name = safe_identifier(r).lower()
+            enriched_columns.add(col_name)
             type_str = get_data_type(str(row.get(type_column, "")))
             multival = str(row.get(multival_column, "")).lower()
             allowed_fmt = str(row.get(allowed_values_column, "")).strip().lower()
@@ -530,6 +563,8 @@ class TableMeta:
 
             if "valid" in col_name or "count_" in col_name or "total" in col_name or "num_" in col_name:
                 self.derived_columns.append(col_name)
+
+        return enriched_columns
 
     def finalise_from_data(self, df_data: pd.DataFrame | None) -> None:
         """
@@ -844,6 +879,13 @@ class Registry:
 
     tables: dict[str, TableMeta]
 
+    def __post_init__(self) -> None:
+        # These are regeneration diagnostics, not schema metadata, so keep
+        # them out of registry.json and the generated model.
+        self._dictionary_sheets: set[str] = set()
+        self._dictionary_enriched_columns: dict[str, set[str]] = {}
+        self._dictionary_only_columns: dict[str, list[str]] = {}
+
     @classmethod
     def from_dict(cls, raw: dict) -> Registry:
         return cls(tables={name: TableMeta.from_dict(meta) for name, meta in raw["tables"].items()})
@@ -877,10 +919,11 @@ class Registry:
 
         for table_name, meta in self.tables.items():
             if table_name in xls.sheet_names:
+                self._dictionary_sheets.add(table_name)
                 df_dict = pd.read_excel(xls, sheet_name=table_name)
                 df_dict.columns = [str(c).strip() for c in df_dict.columns]
                 df_dict = norm_cols(df_dict)
-                meta.enrich_field_metadata(df_dict)
+                self._dictionary_enriched_columns[table_name] = meta.enrich_field_metadata(df_dict)
             else:
                 print(f"Warning: no dictionary sheet for table '{table_name}'")
 
@@ -927,6 +970,13 @@ class Registry:
 
             df_data = pd.read_csv(data_path)
             df_data = norm_cols(df_data)
+
+            csv_columns = {
+                safe_identifier(str(column)).lower() for column in df_data.columns
+            }
+            self._dictionary_only_columns[table_name] = sorted(
+                set(meta.columns) - csv_columns - set(meta.derived_columns)
+            )
 
             meta.finalise_from_data(df_data)
 

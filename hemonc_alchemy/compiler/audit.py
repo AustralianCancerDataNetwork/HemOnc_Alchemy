@@ -379,6 +379,24 @@ def enum_threshold_warnings(registry: Registry, within: int = 3) -> list[str]:
     return warnings
 
 
+def dictionary_only_column_warnings(registry: Registry) -> list[str]:
+    """Report dictionary fields not present in the current table extract.
+
+    These are intentionally warnings rather than automatic column removals:
+    a reviewed computed field could be absent from a particular CSV release.
+    Footnotes are filtered earlier by ``enrich_field_metadata``.
+    """
+    warnings: list[str] = []
+    dictionary_only = getattr(registry, "_dictionary_only_columns", {})
+    for table_name, columns in sorted(dictionary_only.items()):
+        if columns:
+            warnings.append(
+                f"{table_name}: dictionary-only column(s) not found in the current "
+                f"CSV header: {', '.join(columns)}"
+            )
+    return warnings
+
+
 def build_report(results: list[AuditResult], data_dir: Path) -> str:
     status_counts = Counter(result.status for result in results)
 

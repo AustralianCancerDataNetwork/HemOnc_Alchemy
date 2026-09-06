@@ -22,6 +22,15 @@ def validate_registry(registry: Registry) -> list[str]:
     """Structural checks against the Registry, before any code is rendered."""
     errors: list[str] = []
 
+    dictionary_sheets = getattr(registry, "_dictionary_sheets", set())
+    enriched_columns = getattr(registry, "_dictionary_enriched_columns", {})
+    for table_name in sorted(dictionary_sheets):
+        if not enriched_columns.get(table_name):
+            errors.append(
+                f"{table_name}: dictionary sheet exists but contributed no "
+                "field enrichment; check its Variable column header"
+            )
+
     for name, meta in registry.tables.items():
         if len(meta.columns) == 0:
             # No entity class is generated for this table (e.g. no backing

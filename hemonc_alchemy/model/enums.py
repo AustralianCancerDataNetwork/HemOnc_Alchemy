@@ -296,19 +296,6 @@ class Sigs_PhaseEnum(str, Enum):
     CONTINUATION = 'continuation'
     INTERIM_MAINTENANCE = 'interim maintenance'
 
-class Sigs_SubcomponentEnum(str, Enum):
-    TO = '-'
-    ABIRATERONE = 'abiraterone'
-    NIRAPARIB = 'niraparib'
-    PERTUZUMAB = 'pertuzumab'
-    TRASTUZUMAB_AND_HYALURONIDASE = 'trastuzumab and hyaluronidase'
-    SULFAMETHOXAZOLE = 'sulfamethoxazole'
-    TRIMETHOPRIM = 'trimethoprim'
-    CEDAZURIDINE = 'cedazuridine'
-    DECITABINE = 'decitabine'
-    NIVOLUMAB = 'nivolumab'
-    RELATLIMAB = 'relatlimab'
-
 class Sigs_Component_roleEnum(str, Enum):
     PRIMARY_SYSTEMIC = 'primary systemic'
     SECONDARY_SYSTEMIC = 'secondary systemic'
@@ -322,12 +309,38 @@ class Sigs_Cycle_length_unitEnum(str, Enum):
     YEAR = 'year'
     NS = 'ns'
 
+class Sigs_Step_numberEnum(str, Enum):
+    I_1_OF_1_DEFAULT = '1 of 1 (default)'
+    I_1_OF_2 = '1 of 2'
+    I_2_OF_2 = '2 of 2'
+    I_1_OF_N = '1 of n'
+    I_2_OF_N = '2 of n'
+    N_OF_N = '[…], n of n'
+
 class Sigs_Class_fieldEnum(str, Enum):
     NON_TO_CANONICAL_SIG = 'non-canonical sig'
     IV_INTERMITTENT_CANONICAL_SIG = 'iv intermittent canonical sig'
     RAD_SIG = 'rad sig'
     IV_CONTINUOUS_CANONICAL_SIG = 'iv continuous canonical sig'
     NON_TO_IV_CANONICAL_SIG = 'non-iv canonical sig'
+
+class Sigs_TargetleveltypeEnum(str, Enum):
+    STEADY_STATE = 'steady state'
+    TROUGH = 'trough'
+    GOAL = 'goal'
+
+class Sigs_SubcomponentEnum(str, Enum):
+    TO = '-'
+    ABIRATERONE = 'abiraterone'
+    NIRAPARIB = 'niraparib'
+    PERTUZUMAB = 'pertuzumab'
+    TRASTUZUMAB_AND_HYALURONIDASE = 'trastuzumab and hyaluronidase'
+    SULFAMETHOXAZOLE = 'sulfamethoxazole'
+    TRIMETHOPRIM = 'trimethoprim'
+    CEDAZURIDINE = 'cedazuridine'
+    DECITABINE = 'decitabine'
+    NIVOLUMAB = 'nivolumab'
+    RELATLIMAB = 'relatlimab'
 
 class Sigs_DosecapunitEnum(str, Enum):
     MBQ = 'mbq'
@@ -344,11 +357,6 @@ class Sigs_TargetlevelunitEnum(str, Enum):
     MG = 'mg'
     APTT = 'aptt'
     MG_L = 'mg/l'
-
-class Sigs_TargetleveltypeEnum(str, Enum):
-    STEADY_STATE = 'steady state'
-    TROUGH = 'trough'
-    GOAL = 'goal'
 
 class Sigs_RouteEnum(str, Enum):
     INTRAVENOUS = 'intravenous'

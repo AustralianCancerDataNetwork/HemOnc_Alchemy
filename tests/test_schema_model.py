@@ -10,7 +10,10 @@ from dataclasses import asdict
 import pandas as pd
 import pytest
 
-from hemonc_alchemy.compiler.audit import enum_collision_warnings
+from hemonc_alchemy.compiler.audit import (
+    dictionary_only_column_warnings,
+    enum_collision_warnings,
+)
 from hemonc_alchemy.compiler.generate import (
     parse_multival_overrides,
     parse_source_aliases,
@@ -97,6 +100,66 @@ class TestMultivalOverrides:
             "studies": {"study"},
             "study_results": {"est_ci"},
         }
+
+
+class TestDictionaryFieldEnrichment:
+    def test_footnote_variable_is_not_generated_as_a_column(self, capsys):
+        meta = TableMeta(
+            name="drugs", description="", kind="content", maturity="prod", pk_columns=[]
+        )
+        enriched = meta.enrich_field_metadata(
+            pd.DataFrame(
+                {
+                    "Variable": [
+                        "drug",
+                        "(*) While we do not impose a limit, these are externally maintained vocabularies and have their own defined scopes",
+                    ],
+                    "Type": ["String", "String"],
+                }
+            )
+        )
+
+        assert enriched == {"drug"}
+        assert set(meta.columns) == {"drug"}
+        assert "ignoring prose" in capsys.readouterr().out
+
+    def test_variable_note_header_still_enriches_the_sheet(self):
+        meta = TableMeta(
+            name="sigs", description="", kind="content", maturity="prod", pk_columns=[]
+        )
+        enriched = meta.enrich_field_metadata(
+            pd.DataFrame(
+                {
+                    "Variable (note 1)": ["study", "regimen_cui"],
+                    "Type": ["String", "Integer"],
+                }
+            )
+        )
+
+        assert enriched == {"study", "regimen_cui"}
+        assert set(meta.columns) == {"study", "regimen_cui"}
+
+    def test_dictionary_only_column_is_a_warning(self, tmp_path):
+        meta = TableMeta(
+            name="drugs",
+            description="",
+            kind="content",
+            maturity="prod",
+            pk_columns=[],
+            columns={
+                "drug": ColumnSpec(name="drug", type="String"),
+                "declared_but_absent": ColumnSpec(
+                    name="declared_but_absent", type="String"
+                ),
+            },
+        )
+        registry = Registry(tables={"drugs": meta})
+        pd.DataFrame({"drug": ["cisplatin"]}).to_csv(tmp_path / "drugs.csv", index=False)
+        registry.finalise_table_metadata_from_data(tmp_path)
+
+        warnings = dictionary_only_column_warnings(registry)
+        assert len(warnings) == 1
+        assert "declared_but_absent" in warnings[0]
 
 
 class TestDenormalisedColumnRetyping:

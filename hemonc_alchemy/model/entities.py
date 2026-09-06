@@ -77,6 +77,7 @@ from .enums import (
     Sigs_PhaseEnum,
     Sigs_RouteEnum,
     Sigs_SequenceEnum,
+    Sigs_Step_numberEnum,
     Sigs_SubcomponentEnum,
     Sigs_TargetleveltypeEnum,
     Sigs_TargetlevelunitEnum,
@@ -213,7 +214,6 @@ class Conditions(EntityBase, Base):
     variants_count: Mapped[str] = mapped_column(String(255), nullable=False)
     variantscount: Mapped[str] = mapped_column(String(255), nullable=False)
     variantscountdate: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
     ]
@@ -308,7 +308,6 @@ class Drugs(EntityBase, Base):
     investigational: Mapped[bool] = mapped_column(Boolean, nullable=False)
     main_class: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     multiagent: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
     normalisation_groups = [
         ['canmed_major_class', 'canmed_major_class_cui'],
@@ -418,7 +417,6 @@ class Indications(EntityBase, Base):
     substudy_cui: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True)
     temp: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     time_contingency: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    whilewedonotimposealimittheseareexternallymaintainedvocabulariesandhavetheirowndefinedscopes: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     with_field: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     withdrawn: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -898,13 +896,14 @@ class Sigs(EntityBase, Base):
 
     enum_lookup = {
         'phase': Sigs_PhaseEnum,
-        'subcomponent': Sigs_SubcomponentEnum,
         'component_role': Sigs_Component_roleEnum,
         'cycle_length_unit': Sigs_Cycle_length_unitEnum,
+        'step_number': Sigs_Step_numberEnum,
         'class_field': Sigs_Class_fieldEnum,
+        'targetleveltype': Sigs_TargetleveltypeEnum,
+        'subcomponent': Sigs_SubcomponentEnum,
         'dosecapunit': Sigs_DosecapunitEnum,
         'targetlevelunit': Sigs_TargetlevelunitEnum,
-        'targetleveltype': Sigs_TargetleveltypeEnum,
         'route': Sigs_RouteEnum,
         'durationunit': Sigs_DurationunitEnum,
         'frequency': Sigs_FrequencyEnum,
