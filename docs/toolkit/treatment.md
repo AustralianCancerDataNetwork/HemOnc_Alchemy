@@ -1,7 +1,6 @@
 # Treatment analytics
 
-Treatment analytics interpret HemOnc sigs and variants while keeping the
-selection criteria explicit.
+Treatment analytics are where HemOnc rows acquire reusable treatment meaning. The key discipline is to keep the policy explicit: HemOnc supplies source labels and relationships, while the selection spec or classification function states how your application interprets them.
 
 ## Classify a variant
 
@@ -12,15 +11,14 @@ from hemonc_alchemy.toolkit.analytics.treatment.classification import (
 )
 
 if is_concurrent_chemort(variant):
-    print("radiation and systemic sigs are both classified")
+    print("radiation and systemic sigs are both confidently classified")
 elif is_rt_only(variant):
     print("all sigs are confidently classified as radiation")
 ```
 
-A NULL or unknown `class_field` is unclassified. It does not count as systemic
-treatment, and it prevents a variant from being called confidently RT-only.
+An unknown or NULL `class_field` is unknown. It does not count as systemic treatment and prevents a confident radiation-only or concurrent-chemoradiotherapy classification. Treating “unclassified” as “not present” would turn missing source information into a clinical conclusion.
 
-## Filter standalone radiation sigs
+## Query standalone radiation
 
 ```python
 from hemonc_alchemy.toolkit.analytics.treatment.filters import (
@@ -30,12 +28,11 @@ from hemonc_alchemy.toolkit.analytics.treatment.filters import (
 sigs = find_standalone_radiation_sigs(session, [condition_cui])
 ```
 
-“Standalone” here is a specific model query policy: a radiation-classified sig
-with regimen `Radiation therapy`, no `variant_cui`, and a normalized study link
-to one of the requested condition CUIs. It is not equivalent to proving that a
-whole study contains no systemic treatment.
+“Standalone” is a precise query policy: a radiation-classified sig with regimen `Radiation therapy`, no `variant_cui`, and a normalized study link to one of the requested condition CUIs. It does not prove that the entire study contains no systemic treatment.
 
-## Select variants by requirements
+## Select variants
+
+Describe the selection as a plain spec, then execute it:
 
 ```python
 from hemonc_alchemy.toolkit.analytics.treatment.selection import (
@@ -52,8 +49,7 @@ spec = TreatmentSelectionSpec.for_conditions(
 variants = select_variants(session, spec)
 ```
 
-Category requirements require an explicit mapping from source fields to the
-categories used by the requirement:
+Component terms within one requirement are alternatives; separate requirements are combined. Category requirements work the same way, but require an application-supplied mapping from a source field to the category names used by the spec:
 
 ```python
 from hemonc_alchemy.toolkit.analytics.treatment.selection import CategoryRequirement
@@ -69,6 +65,6 @@ variants = select_variants(
 )
 ```
 
-The query builder exposes intermediate SQL artifacts when a notebook or test
-needs to inspect the component projection, category projection, matching
-variant IDs, and final ORM statement.
+The mapping is policy, not a hidden property of the model. Read source values before building a production mapping and decide how unmapped classes should be handled.
+
+`build_variant_query_artifacts()` exposes the component projection, category projection, matching variant identities, and final statement. Use it when a selection needs auditability or returns an unexpected volume.

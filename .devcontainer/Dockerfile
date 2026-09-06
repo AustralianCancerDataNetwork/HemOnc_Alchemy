@@ -18,8 +18,9 @@ RUN groupadd --gid "${USER_GID}" "${USERNAME}" \
 
 WORKDIR /workspace/hemonc-alchemy
 
-# The source is mounted by Compose. Install the project as the container starts,
-# when the mounted Git checkout is available to hatch-vcs.
+# The source is mounted by Compose. The project and its extras are installed by
+# the Compose command/post-create hook when the mounted Git checkout is
+# available to hatch-vcs; installing here would omit the mounted source tree.
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/* \

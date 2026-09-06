@@ -1,41 +1,51 @@
 # Installation
 
-## Querying an existing database
+Install the package that matches the job you are doing. The base package contains the generated model, connection helpers, and toolkit APIs. PostgreSQL support is optional because the model itself does not require a particular driver.
 
-Install the package with `uv`:
-
-```bash
-uv add hemonc-alchemy
-```
-
-The base install provides the generated SQLAlchemy model, connection helpers,
-and toolkit query APIs. PostgreSQL support is included in the recommended
-`postgres` extra:
+## Use HemOnc from another project
 
 ```bash
 uv add "hemonc-alchemy[postgres]"
 ```
 
-The equivalent `pip` form is:
+With pip:
 
 ```bash
 pip install "hemonc-alchemy[postgres]"
 ```
 
-## Working on HemOnc Alchemy
-
-From a checkout, install the development environment:
+## Work on the repository
 
 ```bash
 uv sync --extra dev
 ```
 
-This includes the model-generation tooling, tests, linting, IPython, and
-Jupyter kernel support used by the repository's notebooks and development
-containers.
+The `dev` extra adds model-generation tools, tests, linting, and documentation dependencies. It does not need to include Jupyter or plotting libraries.
 
-## What is not installed by default
+## Run the notebooks
 
-The package does not install Docker, PostgreSQL, pgAdmin, or HemOnc source
-extracts. Those are environment concerns. For a disposable local database,
-use the repository's [development stack](local-development.md).
+```bash
+uv sync --extra exploration
+```
+
+The `exploration` extra adds the Python kernel, matplotlib, IPython, and the PostgreSQL driver used by `notebooks/`. For package development and notebooks together:
+
+```bash
+uv sync --extra dev --extra exploration
+```
+
+The repository devcontainer installs the development, exploration, PostgreSQL, authoring, and OMOP extras together.
+
+## Use the OMOP bridge
+
+`omop-alchemy` is intentionally not a runtime dependency. Install the optional extra only for code that resolves HemOnc identifiers against an OMOP vocabulary:
+
+```bash
+uv sync --extra omop
+```
+
+The bridge shares configuration and loading infrastructure with HemOnc Alchemy, but the two packages keep their models separate.
+
+## What installation does not provide
+
+Installation does not provide Docker, PostgreSQL, pgAdmin, a HemOnc source extract, or clinical data. Use the [development stack](local-development.md) for a disposable local database.

@@ -1,19 +1,24 @@
 # Configuration
 
-Database settings use `oa-configurator`, the shared configuration layer used by
-the Australian Cancer Data Network stack. This keeps connection details out of
-source code and lets related packages refer to the same named database.
+HemOnc Alchemy uses `oa-configurator` so several Australian Cancer Data Network packages can refer to the same named databases without putting credentials in Python or source control.
 
-## Configure a HemOnc database
+The configuration has three levels:
 
-Run:
+- A **connection** contains driver, host, credentials, and database name.
+- A **database** gives that connection a logical name and schema.
+- A **tool target** tells HemOnc Alchemy which logical database to use as `hemonc_db`.
+
+That indirection is useful when the same application moves between a local database, a shared server, and a test database. It also makes it possible for a HemOnc target and an OMOP target to share a PostgreSQL server while remaining different schemas or databases.
+
+## Configure a database
+
+Run the interactive configurator:
 
 ```bash
 omop-config configure hemonc_alchemy
 ```
 
-When prompted, configure the database referenced by `hemonc_db`. A minimal
-configuration conceptually looks like this:
+A minimal configuration has this shape:
 
 ```toml
 [connections.hemonc]
@@ -33,28 +38,33 @@ schema_name = "public"
 hemonc_db = "hemonc_db"
 ```
 
-Use the interactive command to create the exact file and preserve the
-configurator's current schema conventions. Never commit passwords.
+Let the configurator create the real file so its current conventions are preserved. Never commit passwords. If you need separate test or OMOP targets, configure them as additional named databases rather than changing application code.
 
-## Create an engine
+## Open a session
+
+Resolve the logical target once, keep the engine for the lifetime of the application, and create sessions for units of work:
 
 ```python
-import sqlalchemy.orm as so
+from sqlalchemy.orm import Session
 
 from hemonc_alchemy import create_hemonc_engine, get_hemonc_context
 
 _, database = get_hemonc_context()
 engine = create_hemonc_engine(database)
 
-with so.Session(engine) as session:
+with Session(engine) as session:
     ...
 ```
 
-`get_hemonc_context()` resolves the named database once. Keep the engine for
-the lifetime of the application and create sessions for individual units of
-work.
+Toolkit functions do not own your session or transaction. This keeps connection lifetime, transaction boundaries, and error handling under application control.
 
-## Check connectivity
+## The devcontainer configuration
+
+When the repository devcontainer is created, `.devcontainer/config.toml` is copied to `~/.config/omop/config.toml` with mode 600. Its `hemonc_db` target points at the Compose PostgreSQL service; its test target points at a separate `hemonc_alchemy_test` database. The same server exposes `cdm_db` and `test_cdm_db` in the `omop` schema.
+
+The checked-in file is a seed, not the active configuration. Delete the copied configuration before rebuilding if you want to start again from the seed. To keep configuration elsewhere, set `OA_CONFIG_PATH`.
+
+## Check the connection
 
 ```bash
 python - <<'PY'
@@ -70,5 +80,4 @@ with Session(engine) as session:
 PY
 ```
 
-If configuration is missing, the connection helper points you back to
-`omop-config configure hemonc_alchemy`.
+If the target is missing, configure it with `omop-config configure hemonc_alchemy` rather than embedding a connection string in analysis code.

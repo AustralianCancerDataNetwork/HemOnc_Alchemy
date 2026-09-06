@@ -27,6 +27,10 @@ class HemOncAlchemyConfig(PackageConfigBase):
     test_hemonc_db : str, optional
         Name of the ``[databases.*]`` entry holding the test HemOnc database,
         marked ``RefTo(GenericDatabaseConfig, is_test=True)``.
+    omop_schema : str
+        Schema containing the optional OMOP vocabulary tables. Pass this
+        value to ``integrations.omop`` functions when it differs from the
+        conventional ``omop`` schema.
     """
 
     tool_name: ClassVar[str] = "hemonc_alchemy"
@@ -36,6 +40,7 @@ class HemOncAlchemyConfig(PackageConfigBase):
     test_hemonc_db: Annotated[
         str | None, RefTo(GenericDatabaseConfig, is_test=True)
     ] = None
+    omop_schema: str = "omop"
 
 
 def get_hemonc_context() -> tuple[HemOncAlchemyConfig, ResolvedDatabase]:

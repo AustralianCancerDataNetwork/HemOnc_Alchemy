@@ -1,17 +1,27 @@
 # Toolkit
 
-The toolkit answers model-level questions without hiding the underlying
-SQLAlchemy boundary. Query statements remain inspectable, execution requires a
-caller-supplied session, and model relationships remain read-only.
+The toolkit is the application-facing layer above the generated model. Its useful distinction is not “which helper exists,” but “who owns the meaning of this query?”
 
-## Choose an area
+## Choose the boundary
 
-| If you need to… | Start with |
+| Question | Boundary |
 |---|---|
-| Resolve condition names, search components, or follow normalized links | [`core`](core.md) |
-| Classify treatment modality, filter standalone RT, or select variants | [`treatment`](treatment.md) |
-| Resolve dosing notation or compare administration across cycle days | [`scheduling`](scheduling.md) |
-| Load source CSVs into a database | [`toolkit.loading`](../model/loading.md) |
+| What conditions, drugs, studies, or sigs are linked in HemOnc? | `toolkit.core` |
+| Which variants satisfy component or category requirements? | Treatment selection |
+| Is a variant radiation-only, concurrent chemoradiotherapy, or otherwise classified? | Treatment classification |
+| Which days and routes does a sig imply? | Scheduling |
+| What does this consumer call a modality, bundle, or eligible cohort? | Your application |
+
+Core operations describe the source model. Treatment analytics encode reusable oncology meaning. Consumer-specific policy should be translated into toolkit specifications or kept in the consuming application rather than added to the generated model.
+
+## Statements versus execution
+
+Many toolkit operations have two forms:
+
+- a statement builder that returns inspectable SQLAlchemy `Select` objects;
+- an execution helper that accepts your `Session` and returns ORM rows or read models.
+
+This is intentional. The toolkit does not hide joins, choose your transaction boundary, or force a pandas representation. Build a statement when you need to add predicates, inspect SQL, or compose it into a larger query.
 
 ## Dependency direction
 
@@ -22,18 +32,11 @@ flowchart TD
     Treatment --> Consumer[Downstream applications]
 ```
 
-Core operations describe HemOnc model behavior. Treatment analytics add domain
-policy. Downstream applications adapt their own protocol or reporting objects
-to these boundaries rather than importing application policy into the model.
-
-## Public imports
-
-Import from an area package:
+Import from an area package at the application boundary:
 
 ```python
 from hemonc_alchemy.toolkit.core.components import search_components
 from hemonc_alchemy.toolkit.analytics.treatment.selection import select_variants
 ```
 
-The lower-level module paths are useful when reading the API reference, but the
-area-level names are the intended application boundary.
+The generated model and lower-level compiler modules remain available for structural work and maintenance, but they are not substitutes for the toolkit's explicit policies.

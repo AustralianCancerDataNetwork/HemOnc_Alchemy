@@ -14,7 +14,7 @@ CategoryMatch = Literal["exact", "min"]
 DEFAULT_COMPONENT_COLUMNS = COMPONENT_SEARCH_COLUMNS
 
 
-def _strings(values: Iterable[str]) -> tuple[str, ...]:
+def _required_strings(values: Iterable[str]) -> tuple[str, ...]:
     result = tuple(dict.fromkeys(value.strip() for value in values if value and value.strip()))
     if not result:
         raise ValueError("At least one non-empty string is required.")
@@ -29,8 +29,8 @@ class ComponentRequirement:
     columns: tuple[str, ...] = DEFAULT_COMPONENT_COLUMNS
 
     def __post_init__(self) -> None:
-        object.__setattr__(self, "terms", _strings(self.terms))
-        object.__setattr__(self, "columns", _strings(self.columns))
+        object.__setattr__(self, "terms", _required_strings(self.terms))
+        object.__setattr__(self, "columns", _required_strings(self.columns))
 
     @classmethod
     def from_terms(
@@ -78,7 +78,7 @@ class TreatmentSelectionSpec:
         if not cuis:
             raise ValueError("At least one condition CUI is required.")
         object.__setattr__(self, "condition_cuis", cuis)
-        object.__setattr__(self, "regimens", _strings(self.regimens) if self.regimens else ())
+        object.__setattr__(self, "regimens", _required_strings(self.regimens) if self.regimens else ())
         if self.version_policy not in {"all", "latest"}:
             raise ValueError("Version policy must be 'all' or 'latest'.")
 

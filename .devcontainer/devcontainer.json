@@ -5,7 +5,9 @@
   "workspaceFolder": "/workspace/hemonc-alchemy",
   "remoteUser": "vscode",
   "updateRemoteUserUID": true,
-  "postCreateCommand": "uv sync --frozen --extra dev",
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  // also on start, so containers created before the kernel fix get it
+  "postStartCommand": "bash .devcontainer/register-kernel.sh",
   "customizations": {
     "vscode": {
       "extensions": [

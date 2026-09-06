@@ -83,6 +83,9 @@ nav:
       - Treatment analytics: toolkit/treatment.md
       - Schedules and administration: toolkit/scheduling.md
 
+  - Integrations:
+      - OMOP: integrations/omop.md
+
   - Reference:
       - API overview: reference/index.md
       - Model entities: reference/entities.md

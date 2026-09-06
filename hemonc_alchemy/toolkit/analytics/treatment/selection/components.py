@@ -18,7 +18,7 @@ from .....model import (
     variants_StudyMap,
 )
 from .....model.enums import Sigs_PhaseEnum
-from .....naming import safe_enum_key
+from .....toolkit.core.coercion import coerce_enum_value
 from .....toolkit.core.components import COMPONENT_SEARCH_COLUMNS
 from .specs import CategoryMapping, ComponentRequirement, TreatmentSelectionSpec
 
@@ -120,17 +120,7 @@ def build_component_statement(
     if spec.regimens:
         stmt = stmt.where(Variants.regimen.in_(spec.regimens))
     if spec.phase is not None:
-        try:
-            if isinstance(spec.phase, Sigs_PhaseEnum):
-                phase = spec.phase
-            else:
-                phase_value = str(spec.phase).strip().lower()
-                try:
-                    phase = Sigs_PhaseEnum(phase_value)
-                except ValueError:
-                    phase = Sigs_PhaseEnum[safe_enum_key(phase_value)]
-        except (KeyError, ValueError) as exc:
-            raise ValueError(f"Unknown sig phase: {spec.phase!r}") from exc
+        phase = coerce_enum_value(Sigs_PhaseEnum, spec.phase, "sig phase")
         stmt = stmt.where(Sigs.phase == phase)
     if spec.study_context is not None:
         stmt = stmt.where(

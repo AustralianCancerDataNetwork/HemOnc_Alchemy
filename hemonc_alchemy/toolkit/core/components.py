@@ -40,7 +40,7 @@ COMPONENT_SEARCH_COLUMNS = (
     "canmed_minor_class",
 )
 
-_SEARCH_COLUMNS = {
+COMPONENT_SEARCH_EXPRESSIONS = {
     "component": Sigs.component,
     "drug": Drugs.drug,
     "drug_inn": Drugs.drug_inn,
@@ -69,10 +69,10 @@ def _search_expressions(
 def _search_columns(columns: tuple[str, ...]) -> tuple[Any, ...]:
     if not columns:
         raise ValueError("At least one component search column is required.")
-    unknown = sorted(set(columns) - set(_SEARCH_COLUMNS))
+    unknown = sorted(set(columns) - set(COMPONENT_SEARCH_EXPRESSIONS))
     if unknown:
         raise ValueError(f"Unknown component search column(s): {unknown}")
-    return tuple(_SEARCH_COLUMNS[name] for name in columns)
+    return tuple(COMPONENT_SEARCH_EXPRESSIONS[name] for name in columns)
 
 
 def component_search_statement(

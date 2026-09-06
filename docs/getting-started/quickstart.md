@@ -1,15 +1,13 @@
 # Quickstart
 
-This example assumes PostgreSQL is configured and the HemOnc tables have
-already been imported.
+The normal analysis flow is: resolve a human-readable condition name once, keep the resulting CUI, build an explicit selection specification, and execute it with your session. Names are convenient input; CUIs are the stable scope passed into model queries.
 
-## Query a condition and its variants
+This example assumes PostgreSQL is configured and the HemOnc tables are loaded:
 
 ```python
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from hemonc_alchemy import Conditions, create_hemonc_engine, get_hemonc_context
+from hemonc_alchemy import create_hemonc_engine, get_hemonc_context
 from hemonc_alchemy.toolkit.core.conditions import condition_cuis_by_names
 from hemonc_alchemy.toolkit.analytics.treatment.selection import (
     TreatmentSelectionSpec,
@@ -24,18 +22,19 @@ with Session(engine) as session:
     if not condition_cuis:
         raise LookupError("Condition was not found")
 
-    spec = TreatmentSelectionSpec.for_conditions(condition_cuis)
+    spec = TreatmentSelectionSpec.for_conditions(
+        condition_cuis,
+        version_policy="latest",
+    )
     variants = select_variants(session, spec)
 
     for variant in variants[:5]:
         print(variant.variant_cui, variant.version, variant.regimen)
 ```
 
-The default selection policy is `version_policy="latest"`: one generated
-`Variants` row per `variant_cui`. Pass `version_policy="all"` when comparing
-all imported versions deliberately.
+`version_policy="latest"` returns one generated `Variants` row per `variant_cui`, using the highest imported `(version, id)`. Use `version_policy="all"` when the purpose is to compare or audit imported versions. Do not infer version policy from the CUI alone.
 
-## Inspect a variant's components
+## Inspect a selected variant
 
 ```python
 from hemonc_alchemy.toolkit.analytics.treatment.bundles import VariantBundle
@@ -45,22 +44,17 @@ for sig in bundle.sigs:
     print(sig.component, sig.doseminnum, sig.doseunit, sig.alldays)
 ```
 
-The bundle keeps the ORM rows attached to the session. The `Sigs` model does not
-carry a version column, so the sigs should be read as linked by shared
-`variant_cui`, not as version-provenance evidence.
+The bundle is a read model over ORM rows; it is not a second persistence schema. `Sigs` has no version column, so its relationship to a selected variant is by shared `variant_cui`, not proof of version-specific provenance.
 
-## Build SQL without executing it
+## Inspect or extend the SQL
 
-Toolkit queries return SQLAlchemy statements when you need to inspect or extend
-the query before execution:
+The toolkit keeps query construction separate from execution. Use a statement when you need to inspect SQL, add a predicate, apply a limit, or return mappings instead of ORM objects:
 
 ```python
 from hemonc_alchemy.toolkit.core.components import component_search_statement
 
-statement = component_search_statement("cisplatin")
-statement = statement.limit(20)
+statement = component_search_statement("cisplatin").limit(20)
 rows = session.execute(statement).mappings().all()
 ```
 
-This keeps SQL visible. The toolkit does not hide joins or turn every query
-into a pandas DataFrame.
+For treatment selection, `build_variant_query_artifacts()` exposes the intermediate projections as well as the final statement. This is useful when a selection returns an unexpected number of variants.

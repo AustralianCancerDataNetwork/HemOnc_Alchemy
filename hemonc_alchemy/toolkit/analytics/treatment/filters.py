@@ -7,12 +7,9 @@ from collections.abc import Iterable
 from sqlalchemy import Select, select
 from sqlalchemy.orm import Session
 
-from ....model import (
-    Sigs,
-    Studies,
-    sigs_StudyMap,
-)
+from ....model import Sigs, Studies, sigs_StudyMap
 from ....model.enums import Sigs_Class_fieldEnum
+from ....toolkit.core.sigs import SigSelectionSpec, sig_search_statement
 
 
 def _condition_cuis(condition_cuis: Iterable[int]) -> tuple[int, ...]:
@@ -27,21 +24,17 @@ def standalone_radiation_sig_statement(
 ) -> Select:
     """Select standalone radiation sigs associated with given conditions.
 
-    “Standalone” follows the existing SCOOP rule: the sig is marked as a
-    radiation sig, is named ``Radiation therapy``, and has no variant CUI.
+    “Standalone” means that the sig is marked as a radiation sig, is named
+    ``Radiation therapy``, and has no variant CUI.
     Study membership is resolved through the normalized ``sigs_study`` map.
     """
-    return (
-        select(Sigs)
-        .join(sigs_StudyMap, sigs_StudyMap.parent_id == Sigs.id)
-        .join(Studies, Studies.study == sigs_StudyMap.study)
-        .where(
-            Studies.condition_cui.in_(_condition_cuis(condition_cuis)),
-            Sigs.class_field == Sigs_Class_fieldEnum.RAD_SIG,
-            Sigs.regimen == "Radiation therapy",
-            Sigs.variant_cui.is_(None),
+    return sig_search_statement(
+        SigSelectionSpec.for_conditions(
+            _condition_cuis(condition_cuis),
+            regimens=("Radiation therapy",),
+            class_field=Sigs_Class_fieldEnum.RAD_SIG,
+            variant_policy="none",
         )
-        .distinct()
     )
 
 

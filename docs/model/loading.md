@@ -1,7 +1,6 @@
 # Loading data
 
-Loading is a maintainer or environment operation. Analysis code should normally
-connect to an already imported database and use the model or toolkit.
+Loading is an environment or maintainer operation. Analysis code should normally connect to an already imported database and use the model or toolkit.
 
 ## Load one entity
 
@@ -11,35 +10,21 @@ from pathlib import Path
 from hemonc_alchemy.model import Variants
 from hemonc_alchemy.toolkit.loading import load_all
 
-counts = load_all(
-    session,
-    Variants,
-    Path("data/Tables"),
-)
+counts = load_all(session, Variants, Path("data/Tables"))
 session.commit()
 print(counts)
 ```
 
-`load_all()` loads the entity's primary rows and then its denormalized child
-tables. It resolves source filenames and headers, applies the registered enum
-casts, and maps denormalized rows back to their generated parent IDs.
+`load_all()` loads primary rows and their denormalized child tables. It resolves source filenames and headers, applies registered enum casts, and maps child rows back to generated parent IDs.
 
-## Full development bootstrap
-
-The repository bootstrap loops over every generated entity with a source file:
+## Bootstrap the development database
 
 ```bash
 uv run python .devcontainer/bootstrap.py
 ```
 
-It drops and recreates the schema first. This makes retries deterministic after
-a partial import, but also makes it destructive to the target database. Use it
-only with the disposable development database described in [Local development](../getting-started/local-development.md).
+The repository bootstrap loops over generated entities for which a source file exists. It drops and recreates the target schema before loading, which makes retries deterministic but destroys existing data in that schema. Use it only with the disposable database described in [Local development](../getting-started/local-development.md).
 
-## Source-shaped values
+## Preserve source-shaped values
 
-The loader preserves the fact that some source values are not safely numeric or
-date-like. For example, a value such as `Uncertain date` is not forced into an
-invented timestamp. Scheduling and analysis code should handle nullable or
-string-valued source fields at the boundary where a numeric interpretation is
-actually needed.
+The loader does not force uncertain source values into invented types. A field may remain nullable, string-valued, or contain a source marker such as `Uncertain date`. Convert it only at the analysis boundary where your application can state what happens to values that do not parse.

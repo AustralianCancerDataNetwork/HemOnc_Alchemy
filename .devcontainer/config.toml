@@ -1,0 +1,80 @@
+# oa-configurator stack config for the HemOnc Alchemy devcontainer.
+#
+# Copied to ~/.config/omop/config.toml (mode 600) by post-create.sh the first
+# time the container is created, so `omop-config configure hemonc_alchemy` can
+# edit it afterwards without touching this checked-in seed. Delete that copy
+# and rebuild the container to start again from this file.
+#
+# The credentials below are the throwaway ones the compose stack creates; they
+# only reach the `postgres` service on the devcontainer network. Real passwords
+# belong in your own ~/.config/omop/config.toml, never here.
+
+# ---------------------------------------------------------------------------
+# Connections: the compose `postgres` service, addressed by service name.
+# ---------------------------------------------------------------------------
+
+[connections.devcontainer_postgres]
+dialect       = "postgresql+psycopg"
+host          = "postgres"
+port          = 5432
+user          = "hemonc"
+password      = "hemonc"
+database_name = "hemonc_alchemy"
+
+# Same server, separate database, so `pytest -m postgres` never writes to the
+# database you loaded with bootstrap.py. Created on first use by the
+# oa-configurator pytest plugin; `test_only` is the safety check that lets it.
+[connections.devcontainer_postgres_test]
+dialect       = "postgresql+psycopg"
+host          = "postgres"
+port          = 5432
+user          = "hemonc"
+password      = "hemonc"
+database_name = "hemonc_alchemy_test"
+test_only     = true
+
+# ---------------------------------------------------------------------------
+# Databases: the logical targets used by HemOnc and OMOP Alchemy.
+# ---------------------------------------------------------------------------
+
+[databases.hemonc_db]
+kind        = "generic"
+connection  = "devcontainer_postgres"
+schema_name = "public"
+
+[databases.test_hemonc_db]
+kind        = "generic"
+connection  = "devcontainer_postgres_test"
+schema_name = "public"
+
+# OMOP-alchemy's CDM target shares the compose PostgreSQL service but uses a
+# separate schema. This keeps HemOnc tables in `public` and leaves the OMOP
+# CDM namespace available for the integration notebooks.
+[databases.cdm_db]
+kind        = "cdm"
+connection  = "devcontainer_postgres"
+schema_name = "omop"
+
+[databases.test_cdm_db]
+kind        = "cdm"
+connection  = "devcontainer_postgres_test"
+schema_name = "omop"
+
+# ---------------------------------------------------------------------------
+# Tools: package-specific [tools.<tool_name>] sections.
+# ---------------------------------------------------------------------------
+
+[tools.hemonc_alchemy]
+hemonc_db      = "hemonc_db"
+test_hemonc_db = "test_hemonc_db"
+omop_schema    = "omop"
+
+[tools.omop_alchemy]
+cdm_db      = "cdm_db"
+test_cdm_db = "test_cdm_db"
+
+[logging]
+level = "INFO"
+
+[logging.loggers]
+"sqlalchemy.engine" = "WARNING"

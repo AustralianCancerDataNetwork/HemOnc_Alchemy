@@ -1,13 +1,10 @@
 # Relationships and cross-references
 
-HemOnc contains both ordinary generated relationships and cross-references
-that require explicit model knowledge. The toolkit keeps those operations
-visible and read-only.
+HemOnc contains ordinary foreign-key relationships, normalized child tables for multi-valued fields, and source links that need explicit policy. The ORM exposes these as read-only navigation; it does not remove ambiguity from the data.
 
-## Multi-valued fields are child tables
+## Multi-valued source fields
 
-A source field such as a variant's studies may contain several values. The
-loader stores these in a child map table:
+Source spreadsheets often store several values in one cell, for example `"12460|1354"`. The loader splits those values into child map rows:
 
 ```text
 Variants                 variants_study
@@ -16,11 +13,9 @@ id  ───────────────────  parent_id
                          study
 ```
 
-Use `variant.study_items` or `variant.study_objects` rather than parsing a
-source pipe-delimited value. The same pattern applies to `Sigs.study_items` and
-`Sigs.study_objects`.
+Use `variant.study_items` or `variant.study_objects` rather than parsing a pipe-delimited string. The same pattern applies to sigs, indications, and other generated map tables.
 
-## Core link helpers
+## Traversal helpers
 
 ```python
 from hemonc_alchemy.toolkit.core.links import (
@@ -35,20 +30,14 @@ studies = sig_study_objects(sig)
 variants = study_variant_objects(study)
 ```
 
-These helpers may issue SQL when relationships are lazy or when a latest
-variant context must be resolved. Keep the entity attached to its session.
+Some helpers issue SQL when a relationship is lazy or when they must resolve a latest variant context. Keep the entity attached to its session for the duration of traversal.
 
-## Ambiguity is part of the data model
+## Ambiguity is part of the model
 
-`Studies.study` is not globally unique, and `Variants.variant_cui` can have
-multiple versions. Helpers therefore need an explicit policy:
+`Studies.study` is not globally unique. The same study name can be represented by several rows, often because it is associated with several conditions. Do not use `.scalar_one()` on a study-name lookup unless you have first established uniqueness for your extract.
 
-- variant traversal prefers the highest `(version, id)` for a shared CUI;
-- treatment selection defaults to the latest variant row;
-- study-ID queries return distinct `Studies.id` values, not a claim that source
-  study names are unique;
-- sig-to-variant links cannot prove version-specific membership because `Sigs`
-  currently has no `version` column.
+`Variants` can contain several imported rows for one `variant_cui`. Traversal and treatment selection therefore need an explicit version policy; the toolkit's latest policy keeps the highest `(version, id)`.
 
-That last limitation is especially important when using `VariantBundle`,
-classification, or schedule helpers on a selected variant.
+`Sigs` currently store `variant_cui` but not variant version. A sig attached to a selected variant is therefore shared across imported versions with that CUI. It is not evidence of version-specific provenance.
+
+The toolkit reports or preserves these ambiguities instead of picking an arbitrary row. If your application needs a single result, make the tie-breaking rule part of that application's query.

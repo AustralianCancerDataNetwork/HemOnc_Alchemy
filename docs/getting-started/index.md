@@ -1,16 +1,13 @@
 # Getting started
 
-This section gets you from an installed package to a session that can answer
-questions about imported HemOnc data.
+There are two separate jobs: install the Python package, then point it at a database that already contains HemOnc data. The package does not download or provision a production extract.
 
-HemOnc Alchemy does not provision a database for production use. It works with
-any reachable PostgreSQL database that contains the generated HemOnc schema.
-The repository also includes an optional two-container development stack for
-local exploration.
+The shortest useful route is:
 
-## Orientation
+1. [Install](installation.md) the base package and the PostgreSQL driver.
+2. [Configure](configuration.md) a named database with `omop-config`.
+3. Follow the [quickstart](quickstart.md) to resolve a condition and select variants.
 
-- [Installation](installation.md) — install the query or development extras.
-- [Configuration](configuration.md) — register a database with the shared stack configuration.
-- [Quickstart](quickstart.md) — create an engine, session, and first query.
-- [Local development](local-development.md) — use the PostgreSQL, pgvector, pgAdmin, and Python containers.
+Use the [local development](local-development.md) guide when you want the disposable Compose stack, pgAdmin, or the repository's notebooks.
+
+The first conceptual guide to read is [Understanding the HemOnc model](../model/index.md). It explains row grain, source identifiers, versioning, and multi-valued fields—the details that determine whether a query is counting what you think it is counting.

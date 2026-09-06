@@ -1,25 +1,21 @@
 # Understanding the HemOnc model
 
-HemOnc Alchemy exposes the imported terminology as generated SQLAlchemy entity
-classes. The generated model describes table shape and source data; the toolkit
-adds model-facing queries and clinical interpretation around it.
+The generated SQLAlchemy model is a typed view of the imported source. It tells you what rows and fields exist; it does not decide what a row means for a particular application. That distinction is why the toolkit sits above the model.
 
-## Main row grains
+## The core row grains
 
 | Entity | One row represents |
 |---|---|
-| `Conditions` | a HemOnc condition and its condition CUI |
-| `Regimens` | a named treatment regimen |
-| `Variants` | one versioned concrete regimen variant |
-| `Sigs` | one dosing instruction within a variant |
-| `Drugs` | a treatment component or drug identity |
-| `Studies` | a study/source row associated with HemOnc content |
-| `StudyResults` | a reported study outcome |
-| `Indications` | a condition/regimen indication and its evidence metadata |
+| `Conditions` | A HemOnc condition and its CUI |
+| `Regimens` | A named regimen |
+| `Variants` | A concrete regimen variant and imported version |
+| `Sigs` | One dosing instruction within a variant |
+| `Drugs` | A treatment component or drug identity |
+| `Studies` | A study/source row associated with HemOnc content |
+| `StudyResults` | A recorded outcome from a study |
+| `Indications` | A regulatory indication and its evidence metadata |
 
-The row grain matters when counting. A variant can have many sigs, a sig can
-have many study links, and a source study name may occur in more than one
-`Studies` row.
+These grains are deliberately different. Counting sigs answers a question about dosing instructions, not regimens. Counting indications answers a question about regulatory records, not distinct drugs. A join can multiply rows even when every table is correct.
 
 ## Read the model in layers
 
@@ -30,8 +26,19 @@ flowchart TD
     Relations --> Toolkit[Core and treatment toolkit]
 ```
 
-- [Entities and generated models](entities.md) explains what is generated and
-  how to choose a class.
-- [Relationships and cross-references](relationships.md) explains normalized
-  child tables, surrogate IDs, and ambiguous links.
-- [Loading data](loading.md) explains how source extracts become rows.
+- Generated entities describe table shape.
+- Generated child maps preserve multi-valued source fields in normalized form.
+- Hand-written relationships provide convenient traversal but do not change source identity.
+- Toolkit functions add reusable query or treatment policy.
+
+Start with the generated class when you need a structural query. Move to the toolkit when the operation involves recurring cross-reference logic, version policy, treatment classification, or schedule interpretation.
+
+## The identity model
+
+There are three identities to keep distinct:
+
+1. A generated database row has a surrogate `id`.
+2. A HemOnc concept has a source CUI such as `condition_cui` or `drug_cui`.
+3. An OMOP concept has an OMOP `concept_id`.
+
+The same value should not be used interchangeably across those roles. See [Entities and generated models](entities.md) and [Relationships and cross-references](relationships.md) before writing joins.

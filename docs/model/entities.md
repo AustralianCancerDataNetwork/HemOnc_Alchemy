@@ -1,8 +1,20 @@
 # Entities and generated models
 
-The classes in `hemonc_alchemy.model` are generated from the HemOnc data
-dictionary. They are not the place to add application-specific properties or
-workflow state.
+The classes in `hemonc_alchemy.model` are generated from the HemOnc data dictionary. Treat them as a faithful structural surface: application-specific state, protocol rules, and derived classifications belong outside the generated model.
+
+## Choosing a class
+
+Use the entity that matches the question's grain:
+
+- `Conditions` for condition identity and names.
+- `Regimens` for named treatment concepts and regimen-level metadata.
+- `Variants` for concrete regimen versions.
+- `Sigs` for drug, dose, route, and cycle-day instructions.
+- `Drugs` for component identity and classification.
+- `Indications` for regulatory records.
+- `Studies` and `StudyResults` for source studies and recorded outcomes.
+
+For example:
 
 ```python
 from hemonc_alchemy import Sigs, Variants
@@ -13,23 +25,21 @@ if variant is not None:
         print(sig.component, sig.alldays)
 ```
 
-## Surrogate IDs and natural keys
+## Surrogate IDs and source keys
 
-Some entity tables use a generated integer `id` as their primary key while the
-source identity remains a separate natural key. For `Variants`:
+Generated primary keys make relationships efficient, but they are not usually the source identity. For `Variants`:
 
 ```text
-primary key:  id
-natural key: (variant_cui, version)
-identity:    variant_cui, when a latest-version policy is explicit
+database primary key: id
+source/version key:   (variant_cui, version)
+latest identity:      variant_cui, when a latest-version policy is explicit
 ```
 
-Do not join a child map's `parent_id` to a CUI. `variants_study.parent_id`
-points to `Variants.id`, not `Variants.variant_cui`.
+Child map rows use generated foreign keys. For example, `variants_study.parent_id` points to `Variants.id`, not `Variants.variant_cui`.
 
 ## Generated enums
 
-Enum columns are exposed as generated Python enum members after loading:
+Enum columns are exposed as generated Python enum members:
 
 ```python
 from hemonc_alchemy.model.enums import Sigs_RouteEnum
@@ -38,13 +48,8 @@ if sig.route == Sigs_RouteEnum.INTRAVENOUS:
     ...
 ```
 
-Toolkit APIs that accept source-facing strings document whether they normalize
-the value. When writing lower-level SQLAlchemy expressions, prefer the generated
-enum member for enum columns.
+Toolkit functions that accept source-facing strings document their normalization rules. In lower-level SQLAlchemy expressions, prefer the generated enum member for enum columns.
 
-## Selected entities
+## HemOnc CUIs and OMOP concepts
 
-The [model API reference](../reference/entities.md) documents selected entity
-classes and their generated columns. The complete generated surface can be
-larger than the small set most analyses need, because it follows the current
-data dictionary.
+A HemOnc CUI is a source identifier, not an OMOP `concept_id`. When the HemOnc vocabulary is loaded into OMOP, the CUI can be found as `concept_code` with `vocabulary_id = 'HemOnc'`; an external mapping then leads to a target vocabulary and target code. These are separate joins with separate semantics.

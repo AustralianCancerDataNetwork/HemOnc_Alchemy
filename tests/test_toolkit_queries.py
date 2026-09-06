@@ -18,6 +18,7 @@ from hemonc_alchemy.toolkit.analytics.treatment.selection import (
 from hemonc_alchemy.toolkit.analytics.treatment.selection.components import (
     category_expression,
 )
+from hemonc_alchemy.toolkit.core import SigSelectionSpec, sig_search_statement
 from hemonc_alchemy.toolkit.core.components import (
     component_cui_subquery,
     component_search_statement,
@@ -38,7 +39,7 @@ def _sql(statement: sa.Select) -> str:
 def test_condition_lookup_is_composable_and_exact():
     sql = _sql(condition_cui_statement("Acute myeloid leukemia"))
 
-    assert 'conditions.condition IN (\'Acute myeloid leukemia\')' in sql
+    assert "conditions.condition IN ('Acute myeloid leukemia')" in sql
 
 
 def test_standalone_radiation_filter_uses_normalized_study_links():
@@ -47,6 +48,56 @@ def test_standalone_radiation_filter_uses_normalized_study_links():
     assert "JOIN sigs_study ON sigs_study.parent_id = sigs.id" in sql
     assert "sigs.class_field = 'RAD_SIG'" in sql
     assert "sigs.variant_cui IS NULL" in sql
+
+
+def test_sig_selection_uses_normalized_links_and_explicit_nonvariant_policy():
+    spec = SigSelectionSpec.for_conditions(
+        [123],
+        component_terms="External beam radiotherapy",
+        variant_policy="none",
+        class_field="rad sig",
+    )
+    sql = _sql(sig_search_statement(spec))
+
+    assert "JOIN sigs_study ON sigs_study.parent_id = sigs.id" in sql
+    assert "sigs.component ILIKE '%%External beam radiotherapy%%'" in sql
+    assert "sigs.variant_cui IS NULL" in sql
+    assert "sigs.class_field = 'RAD_SIG'" in sql
+
+
+@pytest.mark.parametrize(
+    ("component_terms", "component_columns", "joined_tables"),
+    [
+        ((), ("component",), ()),
+        (("cisplatin",), ("component",), ()),
+        (("cisplatin",), ("drug",), ("drugs",)),
+        (
+            ("cytotoxic",),
+            ("canmed_major_class",),
+            ("drugs", "drugs_canmed_major_class"),
+        ),
+    ],
+)
+def test_sig_selection_adds_only_required_component_joins(
+    component_terms, component_columns, joined_tables
+):
+    spec = SigSelectionSpec.for_conditions(
+        [123],
+        component_terms=component_terms,
+        component_columns=component_columns,
+    )
+    sql = _sql(sig_search_statement(spec))
+
+    for table in ("drugs", "drugs_canmed_major_class", "drugs_canmed_minor_class"):
+        if table in joined_tables:
+            assert f"JOIN {table}" in sql
+        else:
+            assert f"JOIN {table}" not in sql
+
+
+def test_sig_selection_rejects_unknown_search_column():
+    with pytest.raises(ValueError, match="Unknown component search column"):
+        SigSelectionSpec.for_conditions([123], component_columns=("not_a_column",))
 
 
 def test_variant_selection_ranks_versions_and_normalizes_phase():
@@ -126,7 +177,9 @@ def test_category_expression_supports_one_column_and_rejects_empty_mapping():
         category_expression(components, {"main_class": {}})
 
 
-@pytest.mark.parametrize("builder", [component_search_statement, component_cui_subquery])
+@pytest.mark.parametrize(
+    "builder", [component_search_statement, component_cui_subquery]
+)
 def test_component_search_rejects_empty_columns(builder):
     with pytest.raises(ValueError, match="At least one component search column"):
         builder("cisplatin", columns=())
